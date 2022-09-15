@@ -5,6 +5,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import java.awt.*;
 import java.nio.*;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -14,7 +15,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class HelloWorld {
-
+    public Keyboard keyboard = new Keyboard();
     // The window handle
     private long window;
 
@@ -95,7 +96,7 @@ public class HelloWorld {
         GL.createCapabilities();
 
         // Set the clear color
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.5f, 5.0f, 0.5f, 0.5f);
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
@@ -112,6 +113,7 @@ public class HelloWorld {
 
     public static void main(String[] args) {
         new HelloWorld().run();
+
     }
 
 }
