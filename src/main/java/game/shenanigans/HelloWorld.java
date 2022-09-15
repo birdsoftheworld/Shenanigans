@@ -8,6 +8,7 @@ import org.lwjgl.system.*;
 import java.awt.*;
 import java.nio.*;
 
+import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -15,9 +16,10 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class HelloWorld {
-    public Keyboard keyboard = new Keyboard();
     // The window handle
     private long window;
+    private int xPos = 0;
+    private int yPos = 0;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -57,6 +59,14 @@ public class HelloWorld {
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            if ( key == GLFW_KEY_D && action == GLFW_PRESS)
+                xPos+=10;
+            if ( key == GLFW_KEY_A && action == GLFW_PRESS)
+                xPos-=10;
+            if ( key == GLFW_KEY_S && action == GLFW_PRESS)
+                yPos+=10;
+            if ( key == GLFW_KEY_W && action == GLFW_PRESS)
+                yPos-=10;
         });
 
         // Get the thread stack and push a new frame
@@ -95,6 +105,7 @@ public class HelloWorld {
         // bindings available for use.
         GL.createCapabilities();
 
+
         // Set the clear color
         glClearColor(0.5f, 5.0f, 0.5f, 0.5f);
 
@@ -105,6 +116,7 @@ public class HelloWorld {
 
             glfwSwapBuffers(window); // swap the color buffers
 
+            glfwSetWindowPos(window, xPos, yPos);
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
