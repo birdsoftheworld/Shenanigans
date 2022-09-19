@@ -1,5 +1,6 @@
 package game.shenanigans;
 
+import org.joml.Vector2d;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -7,6 +8,7 @@ import org.lwjgl.system.*;
 
 import java.awt.*;
 import java.nio.*;
+import java.util.Vector;
 
 import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
 import static org.lwjgl.glfw.Callbacks.*;
@@ -18,9 +20,6 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class HelloWorld {
     // The window handle
     private long window;
-    private int xPos = 0;
-    private int yPos = 0;
-
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
@@ -54,20 +53,6 @@ public class HelloWorld {
         window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
-
-        // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-            if ( key == GLFW_KEY_D && action == GLFW_PRESS)
-                xPos+=10;
-            if ( key == GLFW_KEY_A && action == GLFW_PRESS)
-                xPos-=10;
-            if ( key == GLFW_KEY_S && action == GLFW_PRESS)
-                yPos+=10;
-            if ( key == GLFW_KEY_W && action == GLFW_PRESS)
-                yPos-=10;
-        });
 
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {
@@ -106,8 +91,13 @@ public class HelloWorld {
         GL.createCapabilities();
 
 
+        Vector2d pos = new Vector2d(0,0);
+        Vector2d vel = new Vector2d(10, 10);
+        Vector2d screenSize = new Vector2d(1920 - 300, 1080 - 300);
+
+
         // Set the clear color
-        glClearColor(0.5f, 5.0f, 0.5f, 0.5f);
+
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
@@ -116,7 +106,21 @@ public class HelloWorld {
 
             glfwSwapBuffers(window); // swap the color buffers
 
-            glfwSetWindowPos(window, xPos, yPos);
+            if(pos.x > screenSize.x || pos.x < 0) {
+                vel.x = -vel.x;
+                vel.y *= 0.7 + (Math.random() * 0.6);
+            }
+
+            if(pos.y > screenSize.y || pos.y < 0) {
+                vel.y = -vel.y;
+                vel.x *= 0.8 + (Math.random() * 0.6);
+            }
+
+            pos.add(vel);
+
+            // Center the window
+            glfwSetWindowPos(window, (int) pos.x, (int) pos.y);
+            glClearColor((float) (pos.x / screenSize.x), (float) (pos.y / screenSize.y), (float) (vel.length() / 30), 0.5f);
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
