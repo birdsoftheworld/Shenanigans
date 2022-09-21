@@ -1,46 +1,35 @@
-package game.shenanigans.engine;
+package shenanigans.engine
 
-import game.shenanigans.engine.window.Window;
-import org.lwjgl.opengl.GL;
+import shenanigans.engine.window.Window
+import org.lwjgl.glfw.GLFW
+import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.GL11
 
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+class Engine {
+    private var window: Window? = null
 
-public class Engine {
-    private Window window;
-
-    public static void main(String[] args) {
-        new Engine().run();
+    private fun init() {
+        window = Window("game", 640, 480)
     }
 
-    public Engine() {
-
-    }
-
-    public void init() {
-        this.window = new Window("game", 640, 480);
-    }
-
-    public void run() {
-        this.init();
-
-        GL.createCapabilities();
-        glClearColor(0.5f, 1.0f, 0.5f, 0.5f);
-
-        while (!window.shouldClose()) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
-            window.swapBuffers();
-
-            glfwPollEvents();
+    fun run() {
+        init()
+        GL.createCapabilities()
+        GL11.glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
+        while (!window!!.shouldClose()) {
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT) // clear the framebuffer
+            window!!.swapBuffers()
+            GLFW.glfwPollEvents()
         }
-
-        glfwTerminate();
-        glfwSetErrorCallback(null).free();
+        GLFW.glfwTerminate()
     }
 
-    public void loop() {
+    fun loop() {}
 
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            Engine().run()
+        }
     }
 }

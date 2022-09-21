@@ -1,4 +1,3 @@
-package game.shenanigans.engine;
+package shenanigans.engine
 
-public class Logic {
-}
+class Logic 

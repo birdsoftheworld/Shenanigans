@@ -1,32 +1,31 @@
-package game.shenanigans.engine.graphics.shader;
+package shenanigans.engine.graphics.shader
 
-import static org.lwjgl.opengl.GL30C.*;
+import org.lwjgl.opengl.GL30C.*
 
-public class Shader {
+class Shader(vertexShader: String, fragmentShader: String) {
+    private val programId: Int
 
-    private final int programId;
+    init {
+        programId = glCreateProgram()
 
-    public Shader(String vertexShader, String fragmentShader) {
-        this.programId = glCreateProgram();
+        val vertShaderId = glCreateShader(GL_VERTEX_SHADER)
+        val fragShaderId = glCreateShader(GL_FRAGMENT_SHADER)
 
-        int vertShaderId = glCreateShader(GL_VERTEX_SHADER);
-        int fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(vertShaderId, vertexShader)
+        glShaderSource(fragShaderId, fragmentShader)
 
-        glShaderSource(vertShaderId, vertexShader);
-        glShaderSource(fragShaderId, fragmentShader);
+        glAttachShader(programId, vertShaderId)
+        glAttachShader(programId, fragShaderId)
 
-        glAttachShader(this.programId, vertShaderId);
-        glAttachShader(this.programId, fragShaderId);
-
-        glDeleteShader(vertShaderId);
-        glDeleteShader(fragShaderId);
+        glDeleteShader(vertShaderId)
+        glDeleteShader(fragShaderId)
     }
 
-    public void use() {
-        glUseProgram(this.programId);
+    fun use() {
+        glUseProgram(programId)
     }
 
-    public void discard() {
-        glDeleteProgram(programId);
+    fun discard() {
+        glDeleteProgram(programId)
     }
 }

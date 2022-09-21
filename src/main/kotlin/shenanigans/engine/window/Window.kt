@@ -1,85 +1,69 @@
-package game.shenanigans.engine.window;
+package shenanigans.engine.window
 
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.system.MemoryStack;
+import org.lwjgl.glfw.Callbacks
+import org.lwjgl.glfw.GLFW
+import org.lwjgl.opengl.GL11
+import org.lwjgl.system.MemoryStack
 
-import java.nio.IntBuffer;
+class Window(title: String, width: Int, height: Int) {
+    private val windowId: Long
 
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
-import static org.lwjgl.system.MemoryStack.stackPush;
-
-public class Window {
-    private final long windowId;
-
-    public Window(String title, int width, int height) {
-        if(!glfwInit()) {
-            throw new IllegalStateException("Failed to initialize GLFW");
+    init {
+        check(GLFW.glfwInit()) { "Failed to initialize GLFW" }
+        GLFW.glfwDefaultWindowHints()
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2)
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL11.GL_TRUE)
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE)
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE)
+        windowId = GLFW.glfwCreateWindow(width, height, title, 0, 0)
+        if (windowId == 0L) {
+            throw RuntimeException("Failed to create window")
         }
-
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-        this.windowId = glfwCreateWindow(width, height, title, 0, 0);
-        if(windowId == 0) {
-            throw new RuntimeException("Failed to create window");
-        }
-
-        this.setKeyCallback((key, scancode, action, mods) -> {
-            if(key == GLFW_KEY_ESCAPE) {
-                this.setShouldClose(true);
+        setKeyCallback { key: Int, _: Int, _: Int, _: Int ->
+            if (key == GLFW.GLFW_KEY_ESCAPE) {
+                setShouldClose(true)
             }
-        });
-
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer pWidth = stack.mallocInt(1);
-            IntBuffer pHeight = stack.mallocInt(1);
-
-            glfwGetWindowSize(windowId, pWidth, pHeight);
-
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-            setPosition((vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
         }
-
-        glfwMakeContextCurrent(windowId);
-        glfwSwapInterval(1); // vsync
-
-        glfwShowWindow(windowId);
+        MemoryStack.stackPush().use { stack ->
+            val pWidth = stack.mallocInt(1)
+            val pHeight = stack.mallocInt(1)
+            GLFW.glfwGetWindowSize(windowId, pWidth, pHeight)
+            val vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor())
+            setPosition((vidmode!!.width() - pWidth[0]) / 2, (vidmode.height() - pHeight[0]) / 2)
+        }
+        GLFW.glfwMakeContextCurrent(windowId)
+        GLFW.glfwSwapInterval(1) // vsync
+        GLFW.glfwShowWindow(windowId)
     }
 
-    private void setKeyCallback(KeyCallback callback) {
-        glfwSetKeyCallback(this.windowId, (windowId, key, scancode, actions, mods) -> callback.event(key, scancode, actions, mods));
+    private fun setKeyCallback(callback: (Int, Int, Int, Int) -> Unit) {
+        GLFW.glfwSetKeyCallback(windowId) { _: Long, key: Int, scancode: Int, actions: Int, mods: Int -> callback(key, scancode, actions, mods) }
     }
 
-    public void setShouldClose(boolean value) {
-        glfwSetWindowShouldClose(this.windowId, value);
+    fun setShouldClose(value: Boolean) {
+        GLFW.glfwSetWindowShouldClose(windowId, value)
     }
 
-    public boolean shouldClose() {
-        return glfwWindowShouldClose(this.windowId);
+    fun shouldClose(): Boolean {
+        return GLFW.glfwWindowShouldClose(windowId)
     }
 
-    public void setPosition(int x, int y) {
-        glfwSetWindowPos(windowId, x, y);
+    fun setPosition(x: Int, y: Int) {
+        GLFW.glfwSetWindowPos(windowId, x, y)
     }
 
-    public void swapBuffers() {
-        glfwSwapBuffers(windowId);
+    fun swapBuffers() {
+        GLFW.glfwSwapBuffers(windowId)
     }
 
-    public boolean isKeyPressed(int key) {
-        return glfwGetKey(this.windowId, key) == GLFW_PRESS;
+    fun isKeyPressed(key: Int): Boolean {
+        return GLFW.glfwGetKey(windowId, key) == GLFW.GLFW_PRESS
     }
 
-    public void discard() {
-        glfwFreeCallbacks(this.windowId);
-        glfwDestroyWindow(this.windowId);
+    fun discard() {
+        Callbacks.glfwFreeCallbacks(windowId)
+        GLFW.glfwDestroyWindow(windowId)
     }
 }

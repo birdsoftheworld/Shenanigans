@@ -1,4 +1,3 @@
-package game.shenanigans.engine.graphics;
+package shenanigans.engine.graphics
 
-public class Renderer {
-}
+class Renderer 
