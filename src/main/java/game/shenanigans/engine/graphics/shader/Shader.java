@@ -1,4 +1,4 @@
-package game.shenanigans.engine.shader;
+package game.shenanigans.engine.graphics.shader;
 
 import static org.lwjgl.opengl.GL30C.*;
 
