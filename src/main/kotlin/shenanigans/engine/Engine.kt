@@ -1,9 +1,9 @@
 package shenanigans.engine
 
 import shenanigans.engine.window.Window
-import org.lwjgl.glfw.GLFW
+import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL30C.*
 
 class Engine {
     private var window: Window? = null
@@ -15,13 +15,13 @@ class Engine {
     fun run() {
         init()
         GL.createCapabilities()
-        GL11.glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
+        glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         while (!window!!.shouldClose()) {
-            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT) // clear the framebuffer
+            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
             window!!.swapBuffers()
-            GLFW.glfwPollEvents()
+            glfwPollEvents()
         }
-        GLFW.glfwTerminate()
+        glfwTerminate()
     }
 
     fun loop() {}
