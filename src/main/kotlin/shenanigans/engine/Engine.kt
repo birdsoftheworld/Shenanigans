@@ -1,9 +1,11 @@
 package shenanigans.engine
 
+import org.joml.Vector2d
 import shenanigans.engine.window.Window
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
+import java.util.Vector
 
 class Engine {
     private var window: Window? = null
@@ -14,17 +16,21 @@ class Engine {
 
     fun run() {
         init()
+        loop()
+        glfwTerminate()
+    }
+
+    fun loop() {
         GL.createCapabilities()
+
         glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
+
         while (!window!!.shouldClose()) {
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
             window!!.swapBuffers()
             glfwPollEvents()
         }
-        glfwTerminate()
     }
-
-    fun loop() {}
 
     companion object {
         @JvmStatic

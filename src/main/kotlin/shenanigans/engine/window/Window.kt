@@ -1,9 +1,12 @@
 package shenanigans.engine.window
 
+import org.joml.Vector2d
+import org.joml.Vector2i
 import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryStack
+import java.nio.IntBuffer
 
 class Window(title: String, width: Int, height: Int) {
     private val windowId: Long
@@ -52,6 +55,13 @@ class Window(title: String, width: Int, height: Int) {
 
     fun setPosition(x: Int, y: Int) {
         glfwSetWindowPos(windowId, x, y)
+    }
+
+    fun getPosition() : Vector2i{
+        val xPos = IntArray(1)
+        val yPos = IntArray(1)
+        glfwGetWindowPos(windowId, xPos, yPos)
+        return Vector2i(xPos[0], yPos[0])
     }
 
     fun swapBuffers() {
