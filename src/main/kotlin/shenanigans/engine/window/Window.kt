@@ -1,12 +1,10 @@
 package shenanigans.engine.window
 
-import org.joml.Vector2d
 import org.joml.Vector2i
 import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.system.MemoryStack
-import java.nio.IntBuffer
 
 class Window(title: String, width: Int, height: Int) {
     private val windowId: Long
@@ -17,7 +15,7 @@ class Window(title: String, width: Int, height: Int) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL11.GL_TRUE)
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
         windowId = glfwCreateWindow(width, height, title, 0, 0)
@@ -37,7 +35,7 @@ class Window(title: String, width: Int, height: Int) {
             setPosition((videoMode!!.width() - pWidth[0]) / 2, (videoMode.height() - pHeight[0]) / 2)
         }
         glfwMakeContextCurrent(windowId)
-        glfwSwapInterval(1) // vsync
+        glfwSwapInterval(0) // vsync
         glfwShowWindow(windowId)
     }
 

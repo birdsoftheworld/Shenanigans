@@ -1,3 +1,5 @@
 package shenanigans.engine.graphics
 
-class Renderer 
+class Renderer {
+
+}
