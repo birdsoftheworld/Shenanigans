@@ -4,6 +4,7 @@ import shenanigans.engine.window.Window
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
+import shenanigans.engine.graphics.Renderer
 
 class Engine() {
 
@@ -23,11 +24,23 @@ class Engine() {
         GL.createCapabilities()
 
         glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
+        var previousTime = glfwGetTime();
 
         while (!window.shouldClose()) {
-            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
-            window.swapBuffers()
+            val currentTime = glfwGetTime()
+            val deltaTime = currentTime - previousTime
+
             glfwPollEvents()
+            // Events.loadEvents()
+
+            // Entities.runSystems(deltaTime)
+
+            /*TODO move to rendering*/
+            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
+            // Renderer.update()
+            window.swapBuffers()
+
+            previousTime = currentTime
         }
     }
 }

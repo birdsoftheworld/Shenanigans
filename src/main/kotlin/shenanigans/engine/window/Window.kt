@@ -35,7 +35,7 @@ class Window(title: String, width: Int, height: Int) {
             setPosition((videoMode!!.width() - pWidth[0]) / 2, (videoMode.height() - pHeight[0]) / 2)
         }
         glfwMakeContextCurrent(windowId)
-        glfwSwapInterval(1) // vsync
+        glfwSwapInterval(0) // vsync
         glfwShowWindow(windowId)
     }
 
