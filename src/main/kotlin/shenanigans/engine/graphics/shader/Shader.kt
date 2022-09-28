@@ -3,11 +3,9 @@ package shenanigans.engine.graphics.shader
 import org.lwjgl.opengl.GL30C.*
 
 class Shader(vertexShader: String, fragmentShader: String) {
-    private val programId: Int
+    private val programId: Int = glCreateProgram()
 
     init {
-        programId = glCreateProgram()
-
         val vertShaderId = glCreateShader(GL_VERTEX_SHADER)
         val fragShaderId = glCreateShader(GL_FRAGMENT_SHADER)
 
