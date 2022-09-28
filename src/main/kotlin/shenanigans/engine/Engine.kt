@@ -31,7 +31,3 @@ class Engine() {
         }
     }
 }
-
-fun main() {
-    Engine().run()
-}
