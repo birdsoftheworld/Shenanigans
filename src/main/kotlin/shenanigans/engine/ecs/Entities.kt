@@ -11,7 +11,7 @@ class Entities constructor(val componentOrder: List<KClass<Component>>) {
 }
 
 private class EntityIterator(val query: Iterable<KClass<Component>>, val components: List<Array<Component?>>) :
-    AbstractIterator<List<Component?>> {
+    AbstractIterator<List<Component?>>() {
     var pos: Int = 0
 
     override fun computeNext() {
