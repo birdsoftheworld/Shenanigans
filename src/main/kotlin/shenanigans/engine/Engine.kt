@@ -31,9 +31,9 @@ class Engine {
             val deltaTime = currentTime - previousTime
 
             glfwPollEvents()
-            // Events.loadEvents()
+            //Events.loadEvents()
 
-            // Entities.runSystems(deltaTime)
+            //Entities.runSystems(deltaTime)
 
             Renderer.renderGame(window)
 
