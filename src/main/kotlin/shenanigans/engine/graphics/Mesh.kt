@@ -5,37 +5,50 @@ import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
 
 
-class Mesh {
-    private val vaoId: Int = glGenVertexArrays()
-    private val vboId: Int
+class Mesh(private val vertices: FloatArray, private val indices: IntArray, private val colors: FloatArray) {
+    val vaoId: Int = glGenVertexArrays()
+    private val posVboId: Int
+    private val idxVboId: Int
+    private val colVboId: Int
+
+    val verticesCount
+        get() = vertices.size
 
     init {
         glBindVertexArray(vaoId)
 
-        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(0)
-        verticesBuffer
-//            .put(vertices)
+        val indicesBuffer = MemoryUtil.memAllocInt(indices.size)
+        indicesBuffer
+            .put(indices)
             .flip()
+        idxVboId = glGenBuffers()
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idxVboId)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
+        MemoryUtil.memFree(indicesBuffer)
 
-        vboId = glGenBuffers()
-        glBindBuffer(GL_ARRAY_BUFFER, vboId)
+        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(verticesCount)
+        verticesBuffer
+            .put(vertices)
+            .flip()
+        posVboId = glGenBuffers()
+        glBindBuffer(GL_ARRAY_BUFFER, posVboId)
         glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
-
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
         MemoryUtil.memFree(verticesBuffer)
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
+        val colorBuffer = MemoryUtil.memAllocFloat(colors.size)
+        colorBuffer
+            .put(colors)
+            .flip()
+        colVboId = glGenBuffers()
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, colVboId)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, colorBuffer, GL_STATIC_DRAW)
+        glEnableVertexAttribArray(1)
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0)
+        MemoryUtil.memFree(colorBuffer)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-        glBindVertexArray(0)
-    }
-
-    fun doThings() {
-        glBindVertexArray(vaoId)
-        glEnableVertexAttribArray(0)
-
-        glDrawArrays(GL_TRIANGLES, 0, 3)
-
-        glDisableVertexAttribArray(0)
         glBindVertexArray(0)
     }
 
@@ -43,7 +56,9 @@ class Mesh {
         glDisableVertexAttribArray(0)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-        glDeleteBuffers(vboId)
+        glDeleteBuffers(posVboId)
+        glDeleteBuffers(idxVboId)
+        glDeleteBuffers(colVboId)
 
         glBindVertexArray(0)
         glDeleteVertexArrays(vaoId)

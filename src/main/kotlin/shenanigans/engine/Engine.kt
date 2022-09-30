@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.graphics.Renderer
 
-class Engine() {
+class Engine {
 
     private lateinit var window: Window
 
@@ -26,7 +26,7 @@ class Engine() {
         glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         var previousTime = glfwGetTime();
 
-        while (!window.shouldClose()) {
+        while (!window.shouldClose) {
             val currentTime = glfwGetTime()
             val deltaTime = currentTime - previousTime
 
@@ -35,12 +35,11 @@ class Engine() {
 
             // Entities.runSystems(deltaTime)
 
-            /*TODO move to rendering*/
-            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
-            // Renderer.update()
-            window.swapBuffers()
+            Renderer.renderGame(window)
 
             previousTime = currentTime
         }
+
+        Renderer.discard()
     }
 }
