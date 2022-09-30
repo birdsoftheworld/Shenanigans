@@ -4,7 +4,6 @@ import shenanigans.engine.window.Window
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
-import shenanigans.engine.graphics.Renderer
 
 class Engine() {
 
@@ -31,13 +30,13 @@ class Engine() {
             val deltaTime = currentTime - previousTime
 
             glfwPollEvents()
-            // Events.loadEvents()
+            //Events.loadEvents()
 
-            // Entities.runSystems(deltaTime)
+            //Entities.runSystems(deltaTime)
 
             /*TODO move to rendering*/
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
-            // Renderer.update()
+            //Renderer.update()
             window.swapBuffers()
 
             previousTime = currentTime
