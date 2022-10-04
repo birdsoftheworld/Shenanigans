@@ -1,10 +1,18 @@
 package shenanigans.engine.graphics
 
+import org.joml.Matrix4f
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.graphics.shader.Shader
 import shenanigans.engine.window.Window
 
 object Renderer {
+    private var previousWidth = -1
+    private var previousHeight = -1
+    private val projectionMatrix: Matrix4f = Matrix4f()
+
+    private val FOV = Math.toRadians(60.0).toFloat()
+    private const val Z_NEAR = 0.01f
+    private const val Z_FAR = 1000f
 
     private val shader = Shader(
         """
@@ -14,9 +22,11 @@ object Renderer {
             layout (location=1) in vec3 inColor;
 
             out vec3 outColor;
+            
+            uniform mat4 projectionMatrix;
 
             void main() {
-                gl_Position = vec4(position, 1.0);
+                gl_Position = projectionMatrix * vec4(position, 1.0);
                 outColor = inColor;
             }
         """.trimIndent(),
@@ -31,14 +41,17 @@ object Renderer {
             }
         """.trimIndent(),
     )
-    private val mesh = Mesh(floatArrayOf(
-            -0.5f,  0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.5f,  0.5f, 0.0f,
-        ), intArrayOf(
+    private val mesh = Mesh(
+        floatArrayOf(
+            -0.5f, 0.5f, -1.05f,
+            -0.5f, -0.5f, -1.05f,
+            0.5f, -0.5f, -1.05f,
+            0.5f, 0.5f, -1.05f,
+        ),
+        intArrayOf(
             0, 1, 3, 3, 1, 2,
-        ), floatArrayOf(
+        ),
+        floatArrayOf(
             0.5f, 0.0f, 0.0f,
             0.0f, 0.5f, 0.0f,
             0.0f, 0.0f, 0.5f,
@@ -47,6 +60,7 @@ object Renderer {
     )
 
     fun init() {
+        shader.createUniform("projectionMatrix")
     }
 
     fun discard() {
@@ -55,10 +69,22 @@ object Renderer {
     }
 
     fun renderGame(window: Window) {
-        glViewport(0, 0, window.width, window.height)
+        val width = window.width
+        val height = window.height
+        glViewport(0, 0, width, height)
+
+        if(width != previousWidth || height != previousHeight) {
+            previousWidth = width
+            previousHeight = height
+
+            val aspectRatio: Float = width / height.toFloat()
+            projectionMatrix.setPerspective(FOV, aspectRatio, Z_NEAR, Z_FAR)
+        }
+
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         shader.bind()
+        shader.setUniform("projectionMatrix", projectionMatrix)
 
         renderMesh(mesh)
 
@@ -69,12 +95,11 @@ object Renderer {
 
     private fun renderMesh(mesh: Mesh) {
         glBindVertexArray(mesh.vaoId)
-        glEnableVertexAttribArray(0)
-        glEnableVertexAttribArray(1)
-        glDrawElements(GL_TRIANGLES, mesh.verticesCount, GL_UNSIGNED_INT, 0)
 
-        glDisableVertexAttribArray(0)
-        glDisableVertexAttribArray(1)
+        mesh.enableVertexAttribs()
+        glDrawElements(GL_TRIANGLES, mesh.verticesCount, GL_UNSIGNED_INT, 0)
+        mesh.disableVertexAttribs()
+
         glBindVertexArray(0)
     }
 }

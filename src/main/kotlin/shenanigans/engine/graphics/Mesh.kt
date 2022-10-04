@@ -2,14 +2,11 @@ package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.system.MemoryUtil
-import java.nio.FloatBuffer
-
 
 class Mesh(private val vertices: FloatArray, private val indices: IntArray, private val colors: FloatArray) {
     val vaoId: Int = glGenVertexArrays()
-    private val posVboId: Int
-    private val idxVboId: Int
-    private val colVboId: Int
+    private val vboIds = mutableListOf<Int>()
+    private val vertexAttribs = hashMapOf<Int, Int>()
 
     val verticesCount
         get() = vertices.size
@@ -17,48 +14,70 @@ class Mesh(private val vertices: FloatArray, private val indices: IntArray, priv
     init {
         glBindVertexArray(vaoId)
 
-        val indicesBuffer = MemoryUtil.memAllocInt(indices.size)
-        indicesBuffer
-            .put(indices)
-            .flip()
-        idxVboId = glGenBuffers()
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idxVboId)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
-        MemoryUtil.memFree(indicesBuffer)
+        defineBufferData(indices, GL_ELEMENT_ARRAY_BUFFER)
 
-        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(verticesCount)
-        verticesBuffer
-            .put(vertices)
-            .flip()
-        posVboId = glGenBuffers()
-        glBindBuffer(GL_ARRAY_BUFFER, posVboId)
-        glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
-        MemoryUtil.memFree(verticesBuffer)
-
-        val colorBuffer = MemoryUtil.memAllocFloat(colors.size)
-        colorBuffer
-            .put(colors)
-            .flip()
-        colVboId = glGenBuffers()
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, colVboId)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, colorBuffer, GL_STATIC_DRAW)
-        glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0)
-        MemoryUtil.memFree(colorBuffer)
+        defineVertexAttrib(vertices, 3, 0)
+        defineVertexAttrib(colors, 3, 1)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
+    }
+
+    private fun defineVertexAttrib(array: FloatArray, size: Int, index: Int) {
+        val vboId = defineBufferData(array, GL_ARRAY_BUFFER)
+        vertexAttribs[index] = vboId
+        glEnableVertexAttribArray(index)
+        glVertexAttribPointer(index, size, GL_FLOAT, false, 0, 0)
+    }
+
+    private fun defineBufferData(array: FloatArray, type: Int): Int {
+        val buffer = MemoryUtil.memAllocFloat(array.size)
+        buffer.put(array).flip()
+        val vboId = glGenBuffers()
+        glBindBuffer(type, vboId)
+        glBufferData(type, buffer, GL_STATIC_DRAW)
+        MemoryUtil.memFree(buffer)
+        vboIds.add(vboId)
+        return vboId
+    }
+
+    private fun defineBufferData(array: IntArray, type: Int): Int {
+        val buffer = MemoryUtil.memAllocInt(array.size)
+        buffer.put(array).flip()
+        val vboId = glGenBuffers()
+        glBindBuffer(type, vboId)
+        glBufferData(type, buffer, GL_STATIC_DRAW)
+        MemoryUtil.memFree(buffer)
+        vboIds.add(vboId)
+        return vboId
+    }
+
+    /**
+     * enable all vertex attributes of this mesh
+     */
+    fun enableVertexAttribs() {
+        for (vertexAttrib in vertexAttribs) {
+            glEnableVertexAttribArray(vertexAttrib.key)
+        }
+    }
+
+    /**
+     * disable all vertex attributes of this mesh
+     */
+    fun disableVertexAttribs() {
+        for (vertexAttrib in vertexAttribs) {
+            glDisableVertexAttribArray(vertexAttrib.key)
+        }
     }
 
     fun discard() {
         glDisableVertexAttribArray(0)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-        glDeleteBuffers(posVboId)
-        glDeleteBuffers(idxVboId)
-        glDeleteBuffers(colVboId)
+
+        for (vboId in vboIds) {
+            glDeleteBuffers(vboId)
+        }
 
         glBindVertexArray(0)
         glDeleteVertexArrays(vaoId)

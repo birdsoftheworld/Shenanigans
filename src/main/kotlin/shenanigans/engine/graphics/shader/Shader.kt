@@ -1,13 +1,17 @@
 package shenanigans.engine.graphics.shader
 
+import org.joml.Matrix4f
 import org.lwjgl.opengl.GL30C.*
+import org.lwjgl.system.MemoryStack
 import java.io.File
-import java.lang.IllegalStateException
+import kotlin.IllegalStateException
 
 class Shader(vertexShader: String, fragmentShader: String) {
     private val programId: Int = glCreateProgram()
     private val vertShaderId: Int
     private val fragShaderId: Int
+
+    private val uniforms = hashMapOf<String, Int>()
 
     init {
         vertShaderId = createShader(vertexShader, GL_VERTEX_SHADER)
@@ -63,6 +67,23 @@ class Shader(vertexShader: String, fragmentShader: String) {
     fun discard() {
         unbind()
         glDeleteProgram(programId)
+    }
+
+    fun createUniform(name: String) {
+        val uniform = glGetUniformLocation(programId, name)
+        if(uniform < 0) {
+            throw IllegalStateException("Failed to find uniform location: $name")
+        }
+        uniforms[name] = uniform
+    }
+
+    fun setUniform(name: String, value: Matrix4f) {
+        val stack = MemoryStack.stackPush()
+        stack.use {
+            val buffer = it.mallocFloat(16)
+            value.get(buffer) // put matrix into buffer
+            glUniformMatrix4fv(uniforms[name]!!, false, buffer)
+        }
     }
 
     companion object {

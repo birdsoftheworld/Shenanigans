@@ -22,6 +22,7 @@ class Engine {
 
     private fun loop() {
         GL.createCapabilities()
+        Renderer.init()
 
         glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         var previousTime = glfwGetTime();
