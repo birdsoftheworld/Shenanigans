@@ -6,6 +6,4 @@ import com.esotericsoftware.kryonet.EndPoint
 
 fun RegisterClasses(endpoint: EndPoint){
     val kryo: Kryo = endpoint.getKryo()
-
-
 }
