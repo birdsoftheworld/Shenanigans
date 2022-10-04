@@ -9,6 +9,33 @@ import org.lwjgl.system.MemoryStack
 class Window(title: String, width: Int, height: Int) {
     private val windowId: Long
 
+    var shouldClose: Boolean
+        get() = glfwWindowShouldClose(windowId)
+        set(value) = glfwSetWindowShouldClose(windowId, value)
+
+    var position: Vector2i
+        get() {
+            val xPos = IntArray(1)
+            val yPos = IntArray(1)
+            glfwGetWindowPos(windowId, xPos, yPos)
+            return Vector2i(xPos[0], yPos[0])
+        }
+        set(value) = glfwSetWindowPos(windowId, value.x, value.y)
+
+    val size: Vector2i
+        get() {
+            val width = IntArray(1)
+            val height = IntArray(1)
+            glfwGetWindowSize(windowId, width, height)
+            return Vector2i(width[0], height[0])
+        }
+
+    val width: Int
+        get() = size.x
+
+    val height: Int
+        get() = size.y
+
     init {
         check(glfwInit()) { "Failed to initialize GLFW" }
         glfwDefaultWindowHints()
@@ -24,7 +51,7 @@ class Window(title: String, width: Int, height: Int) {
         }
         setKeyCallback { key: Int, _: Int, _: Int, _: Int ->
             if (key == GLFW_KEY_ESCAPE) {
-                setShouldClose(true)
+                shouldClose = true
             }
         }
         MemoryStack.stackPush().use { stack ->
@@ -32,7 +59,7 @@ class Window(title: String, width: Int, height: Int) {
             val pHeight = stack.mallocInt(1)
             glfwGetWindowSize(windowId, pWidth, pHeight)
             val videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor())
-            setPosition((videoMode!!.width() - pWidth[0]) / 2, (videoMode.height() - pHeight[0]) / 2)
+            position = Vector2i((videoMode!!.width() - pWidth[0]) / 2, (videoMode.height() - pHeight[0]) / 2)
         }
         glfwMakeContextCurrent(windowId)
         glfwSwapInterval(0) // vsync
@@ -41,25 +68,6 @@ class Window(title: String, width: Int, height: Int) {
 
     private fun setKeyCallback(callback: (Int, Int, Int, Int) -> Unit) {
         glfwSetKeyCallback(windowId) { _: Long, key: Int, scancode: Int, actions: Int, mods: Int -> callback(key, scancode, actions, mods) }
-    }
-
-    fun setShouldClose(value: Boolean) {
-        glfwSetWindowShouldClose(windowId, value)
-    }
-
-    fun shouldClose(): Boolean {
-        return glfwWindowShouldClose(windowId)
-    }
-
-    fun setPosition(x: Int, y: Int) {
-        glfwSetWindowPos(windowId, x, y)
-    }
-
-    fun getPosition() : Vector2i{
-        val xPos = IntArray(1)
-        val yPos = IntArray(1)
-        glfwGetWindowPos(windowId, xPos, yPos)
-        return Vector2i(xPos[0], yPos[0])
     }
 
     fun swapBuffers() {
