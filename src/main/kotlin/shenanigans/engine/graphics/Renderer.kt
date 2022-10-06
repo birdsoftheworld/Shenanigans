@@ -1,18 +1,12 @@
 package shenanigans.engine.graphics
 
-import org.joml.Matrix4f
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.graphics.shader.Shader
+import shenanigans.engine.util.OrthoCamera
 import shenanigans.engine.window.Window
 
 object Renderer {
-    private var previousWidth = -1
-    private var previousHeight = -1
-    private val projectionMatrix: Matrix4f = Matrix4f()
-
-    private val FOV = Math.toRadians(60.0).toFloat()
-    private const val Z_NEAR = 0.01f
-    private const val Z_FAR = 1000f
+    private val orthoCamera = OrthoCamera()
 
     private val shader = Shader(
         """
@@ -43,10 +37,10 @@ object Renderer {
     )
     private val mesh = Mesh(
         floatArrayOf(
-            -0.5f, 0.5f, -1.05f,
-            -0.5f, -0.5f, -1.05f,
-            0.5f, -0.5f, -1.05f,
-            0.5f, 0.5f, -1.05f,
+            0f, 100f, 0f,
+            0f, 0f, 0f,
+            100f, 0f, 0f,
+            100f, 100f, 0f,
         ),
         intArrayOf(
             0, 1, 3, 3, 1, 2,
@@ -61,6 +55,7 @@ object Renderer {
 
     fun init() {
         shader.createUniform("projectionMatrix")
+        shader.createUniform("worldMatrix")
     }
 
     fun discard() {
@@ -73,18 +68,10 @@ object Renderer {
         val height = window.height
         glViewport(0, 0, width, height)
 
-        if(width != previousWidth || height != previousHeight) {
-            previousWidth = width
-            previousHeight = height
-
-            val aspectRatio: Float = width / height.toFloat()
-            projectionMatrix.setPerspective(FOV, aspectRatio, Z_NEAR, Z_FAR)
-        }
-
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         shader.bind()
-        shader.setUniform("projectionMatrix", projectionMatrix)
+        shader.setUniform("projectionMatrix", orthoCamera.getProjectionMatrix(width, height))
 
         renderMesh(mesh)
 
