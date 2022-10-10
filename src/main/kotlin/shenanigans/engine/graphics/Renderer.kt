@@ -55,7 +55,6 @@ object Renderer {
 
     fun init() {
         shader.createUniform("projectionMatrix")
-        shader.createUniform("worldMatrix")
     }
 
     fun discard() {
