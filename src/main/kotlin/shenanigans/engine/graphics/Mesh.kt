@@ -1,55 +1,97 @@
 package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
-import org.lwjgl.system.MemoryUtil
 
-class Mesh(private val vertices: FloatArray, private val indices: IntArray, private val colors: FloatArray) {
+const val VERTICES_INDEX = 0
+const val COLORS_INDEX = 1
+
+// must be greater than the highest vertex attribute,
+// in order to keep vboIds and vertexAttribs in sync
+// probably fix this
+const val INDICES_INDEX = 2
+
+class Mesh(val nVertices: Int, val nIndices: Int, val nColors: Int) {
+
+    constructor(vertices: FloatArray, indices: IntArray, colors: FloatArray) : this(vertices.size, indices.size, colors.size) {
+        writeData(VERTICES_INDEX, vertices)
+        writeData(COLORS_INDEX, colors)
+        writeIndices(indices)
+    }
+
     val vaoId: Int = glGenVertexArrays()
     private val vboIds = mutableListOf<Int>()
     private val vertexAttribs = hashMapOf<Int, Int>()
 
-    val verticesCount
-        get() = vertices.size
+    var indicesCount = 0
 
     init {
         glBindVertexArray(vaoId)
 
-        defineBufferData(indices, GL_ELEMENT_ARRAY_BUFFER)
+        // order is important: index will be position createBuffer/defineVertexAttrib is called in
+        defineVertexAttrib(nVertices, Float.SIZE_BYTES, 3, VERTICES_INDEX)
+        defineVertexAttrib(nColors, Float.SIZE_BYTES, 3, COLORS_INDEX)
 
-        defineVertexAttrib(vertices, 3, 0)
-        defineVertexAttrib(colors, 3, 1)
+        createBuffer(nIndices, GL_ELEMENT_ARRAY_BUFFER)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
     }
 
-    private fun defineVertexAttrib(array: FloatArray, size: Int, index: Int) {
-        val vboId = defineBufferData(array, GL_ARRAY_BUFFER)
+    /**
+     * create a buffer and define it as a vertex attribute
+     */
+    private fun defineVertexAttrib(size: Int, typeSize: Int, attribSize: Int, index: Int) {
+        val vboId = createBuffer(size * attribSize, typeSize, GL_ARRAY_BUFFER)
         vertexAttribs[index] = vboId
         glEnableVertexAttribArray(index)
-        glVertexAttribPointer(index, size, GL_FLOAT, false, 0, 0)
+        glVertexAttribPointer(index, attribSize, GL_FLOAT, false, 0, 0)
     }
 
-    private fun defineBufferData(array: FloatArray, type: Int): Int {
-        val buffer = MemoryUtil.memAllocFloat(array.size)
-        buffer.put(array).flip()
+    /**
+     * create a buffer of `size` elements of `typeSize` in bytes with gl type `type`
+     */
+    private fun createBuffer(size: Int, typeSize: Int, type: Int) : Int {
+        return createBuffer(size * typeSize, type)
+    }
+
+    /**
+     * create a buffer of `size` bytes with an OpenGL type of `type`
+     */
+    private fun createBuffer(size: Int, type: Int): Int {
         val vboId = glGenBuffers()
         glBindBuffer(type, vboId)
-        glBufferData(type, buffer, GL_STATIC_DRAW)
-        MemoryUtil.memFree(buffer)
+        glBufferData(vboId, size.toLong(), GL_DYNAMIC_DRAW)
         vboIds.add(vboId)
         return vboId
     }
 
-    private fun defineBufferData(array: IntArray, type: Int): Int {
-        val buffer = MemoryUtil.memAllocInt(array.size)
-        buffer.put(array).flip()
-        val vboId = glGenBuffers()
-        glBindBuffer(type, vboId)
-        glBufferData(type, buffer, GL_STATIC_DRAW)
-        MemoryUtil.memFree(buffer)
-        vboIds.add(vboId)
-        return vboId
+    /**
+     * write indices and update indicesCount, assuming the indices array is large enough
+     */
+    fun writeIndices(data: IntArray) {
+        indicesCount = data.size
+        glBufferSubData(vboIds[INDICES_INDEX], 0, data)
+    }
+
+    /**
+     * write `data` to buffer at `index`, assuming the buffer is large enough
+     */
+    fun writeData(index: Int, data: FloatArray) {
+        glBufferSubData(vboIds[index], 0, data)
+    }
+
+    /**
+     * write `data` to buffer at `index`, assuming the buffer is large enough
+     */
+    fun writeData(index: Int, data: IntArray) {
+        glBufferSubData(vboIds[index], 0, data)
+    }
+
+    /**
+     * recreate the buffer at `index` with `size` bytes
+     */
+    private fun recreateBuffer(index: Int, size: Int) {
+        glBufferData(vboIds[index], size.toLong(), GL_DYNAMIC_DRAW)
     }
 
     /**
