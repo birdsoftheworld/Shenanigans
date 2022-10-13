@@ -24,12 +24,16 @@ class Entities {
 
 class EntityView internal constructor(val id: Int, val _map: Map<KClass<out Component>, Component>) {
     inline fun <reified T : Component> component(): T {
-        return _map[T::class] as T
+        return componentOpt()!!
+    }
+
+    inline fun <reified T: Component> componentOpt(): T? {
+        return _map[T::class] as T?
     }
 }
 
 class EntitiesLifecycle internal constructor() {
-    private val requests: MutableList<LifecycleRequest> = mutableListOf();
+    private val requests: MutableList<LifecycleRequest> = mutableListOf()
 
     sealed class LifecycleRequest {
         data class Add(val components: Iterable<Component>) : LifecycleRequest()
