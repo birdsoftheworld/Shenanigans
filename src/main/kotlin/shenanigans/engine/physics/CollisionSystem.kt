@@ -1,13 +1,14 @@
 package shenanigans.engine.physics
 
 import shenanigans.engine.ecs.Component
+import shenanigans.engine.ecs.EntitiesLifecycle
 import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.ecs.components.Collider
 import shenanigans.engine.ecs.components.Transform
 import kotlin.reflect.KClass
 
-class CollisionSystem : System {
+class CollisionSystem : System{
 
     val radii = hashMapOf<Int, Pair<Float, Int>>()
 
@@ -15,6 +16,7 @@ class CollisionSystem : System {
         return listOf(Collider::class, Transform::class)
     }
 
-    override fun run(entities: Iterator<EntityView>) {
+    override fun execute(entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        TODO("Not yet implemented")
     }
 }
