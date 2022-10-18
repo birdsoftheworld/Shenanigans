@@ -1,6 +1,6 @@
 package shenanigans.engine.graphics
 
-import org.joml.Matrix4f
+import org.joml.Vector2f
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
@@ -83,6 +83,10 @@ object Renderer : System {
 
         //ecs.runSystem(this) or whatever
 
+        // for testing
+        shader.setUniform("modelViewMatrix", orthoCamera.getModelViewMatrix(Vector2f(), 0f, Vector2f(1f, 1f), orthoCamera.getViewMatrix()))
+        renderMesh(mesh)
+
         shader.unbind()
 
         window.swapBuffers()
@@ -91,9 +95,12 @@ object Renderer : System {
     private fun renderMesh(mesh: Mesh) {
         glBindVertexArray(mesh.vaoId)
 
-        mesh.enableVertexAttribs()
-        glDrawElements(GL_TRIANGLES, mesh.indicesCount, GL_UNSIGNED_INT, 0)
-        mesh.disableVertexAttribs()
+        mesh.enable()
+
+        // WILL NOT RENDER ANYTHING
+        glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0)
+
+        mesh.disable()
 
         glBindVertexArray(0)
     }
