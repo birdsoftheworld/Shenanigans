@@ -56,6 +56,14 @@ class ComponentView<T: Component>(private val stored: StoredComponent) {
     fun mutate() {
         stored.version++
     }
+
+    fun component1(): T {
+        return get()
+    }
+
+    fun component2(): Int {
+        return version()
+    }
 }
 
 class EntitiesLifecycle internal constructor() {
