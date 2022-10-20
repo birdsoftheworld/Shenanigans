@@ -7,7 +7,10 @@ import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.ecs.components.Collider
 import shenanigans.engine.ecs.components.Transform
+import java.util.Vector
 import javax.swing.text.html.parser.Entity
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.reflect.KClass
 
 class CollisionSystem : System {
@@ -23,8 +26,6 @@ class CollisionSystem : System {
 //            if(radii.get(entity.id).second == entity.component<Collider>().)
 //        }
         val collisionPairs = getCollisionPairs(entities)
-
-
     }
 
     private fun getCollisionPairs(entities: Sequence<EntityView>): MutableList<Pair<EntityView, EntityView>> {
@@ -49,19 +50,36 @@ class CollisionSystem : System {
             prevEntities.add(entity)
         }
 
-        return (collisionPairs)
+        return collisionPairs
     }
+}
+private fun testCollision(collisionPair: Pair<EntityView, EntityView>) {
+    val collider1 = collisionPair.first.component<Collider>().get()
+    val transform1 = collisionPair.first.component<Transform>().get()
+    val collider2 = collisionPair.second.component<Collider>().get()
+    val transform2 = collisionPair.second.component<Transform>().get()
 
-    private fun testCollision(collisionPair: Pair<EntityView, EntityView>) {
-        val collider1 = collisionPair.first.component<Collider>()
-        val collider2 = collisionPair.second.component<Collider>()
+    val normals = getNormals(collider1)
+    normals.addAll(getNormals(collider2))
 
-//        val normals = setOf<Vector2f>(getNormals(collider1).addAll(getNormals(collider2)))
+    val maxCollision = Vector2f()
 
-//        normals.
-
+    for (normal in normals) {
+        var object1Projection = projectionMinMax(collider1, transform1, normal)
+        val object2Projection = projectionMinMax(collider2, transform2, normal)
     }
+}
 
+private fun projectionMinMax(collider : Collider, transform : Transform, normal: Vector2f) : Pair<Float, Float> {
+    var projectionMin = Float.POSITIVE_INFINITY
+    var projectionMax = Float.NEGATIVE_INFINITY
+    val transformProj = normal.dot(transform.position)
+    for (vertex in collider.vertices) {
+        val proj = Vector2f(vertex).add(transform.position).dot(normal)
+        projectionMin = min(projectionMin, proj)
+        projectionMax = max(projectionMax, proj)
+    }
+    return Pair(projectionMin + transformProj, projectionMax + transformProj)
 }
 
 private fun getNormals(collider: Collider): MutableList<Vector2f> {
