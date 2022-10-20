@@ -27,10 +27,12 @@ class Mesh(nVertices: Int, nIndices: Int, nColors: Int) {
         glBindVertexArray(vaoId)
 
         createBuffer(nIndices, Int.SIZE_BYTES, GL_ELEMENT_ARRAY_BUFFER, INDEX)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
         defineVertexAttrib(nVertices, Float.SIZE_BYTES, 3, VERTICES_INDEX, VERTEX)
         defineVertexAttrib(nColors, Float.SIZE_BYTES, 3, COLORS_INDEX, COLOR)
 
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
     }
 
@@ -59,7 +61,7 @@ class Mesh(nVertices: Int, nIndices: Int, nColors: Int) {
         glBindBuffer(type, vboId)
         glBufferData(type, size.toLong(), GL_DYNAMIC_DRAW)
         vboIds[name] = vboId
-        glBindBuffer(type, 0)
+        // buffer is not unbound, because it needs to be bound later in defineVertexAttrib
         return vboId
     }
 

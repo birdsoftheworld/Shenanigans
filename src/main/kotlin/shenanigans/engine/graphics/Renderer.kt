@@ -2,7 +2,6 @@ package shenanigans.engine.graphics
 
 import org.joml.Vector2f
 import org.lwjgl.opengl.GL30C.*
-import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
 import shenanigans.engine.ecs.components.Shape
 import shenanigans.engine.ecs.components.ShapeRender
@@ -97,8 +96,7 @@ object Renderer : System {
 
         mesh.enable()
 
-        // WILL NOT RENDER ANYTHING
-        glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0)
+        glDrawElements(GL_TRIANGLES, mesh.indicesCount, GL_UNSIGNED_INT, 0)
 
         mesh.disable()
 
