@@ -3,7 +3,8 @@ package shenanigans.engine.ecs
 import kotlin.reflect.KClass
 
 class Entities {
-    private val entities: MutableList<Map<KClass<out Component>, Component>> = arrayListOf()
+    private val entities: MutableList<Map<KClass<out Component>, StoredComponent>> = arrayListOf()
+
 
     fun runSystem(system: System) {
         val query = system.query().toSet()
@@ -22,14 +23,51 @@ class Entities {
     }
 }
 
-class EntityView internal constructor(val id: Int, val _map: Map<KClass<out Component>, Component>) {
-    inline fun <reified T : Component> component(): T {
-        return _map[T::class] as T
+data class StoredComponent(val component: Component, var version: Int = 0)
+
+class EntityView internal constructor(
+    val id: Int,
+    val _components: Map<KClass<out Component>, StoredComponent>,
+) {
+    inline fun <reified T : Component> component(): ComponentView<T> {
+        return componentOpt()!!
+    }
+
+    inline fun <reified T : Component> componentOpt(): ComponentView<T>? {
+        val stored = _components[T::class]
+
+        return if (stored !== null) {
+            ComponentView(stored)
+        } else {
+            null
+        }
+    }
+}
+
+class ComponentView<T: Component>(private val stored: StoredComponent) {
+    fun get(): T {
+        return stored.component as T
+    }
+
+    fun version(): Int {
+        return stored.version
+    }
+
+    fun mutate() {
+        stored.version++
+    }
+
+    operator fun component1(): T {
+        return get()
+    }
+
+    operator fun component2(): Int {
+        return version()
     }
 }
 
 class EntitiesLifecycle internal constructor() {
-    private val requests: MutableList<LifecycleRequest> = mutableListOf();
+    private val requests: MutableList<LifecycleRequest> = mutableListOf()
 
     sealed class LifecycleRequest {
         data class Add(val components: Iterable<Component>) : LifecycleRequest()
@@ -44,11 +82,11 @@ class EntitiesLifecycle internal constructor() {
         requests.add(LifecycleRequest.Del(id))
     }
 
-    internal fun finish(entities: MutableList<Map<KClass<out Component>, Component>>) {
+    internal fun finish(entities: MutableList<Map<KClass<out Component>, StoredComponent>>) {
         requests.forEach { req ->
             when (req) {
                 is LifecycleRequest.Add -> {
-                    entities.add(req.components.associateBy { it::class })
+                    entities.add(req.components.map { StoredComponent(it) }.associateBy { it.component::class })
                 }
 
                 is LifecycleRequest.Del -> {

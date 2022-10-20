@@ -3,13 +3,21 @@ package shenanigans.engine.ecs.components
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 
-class Shape constructor(val vertices : Array<Vector2f>) : Component {
+data class Shape(
+    val vertices : Array<Vector2f>
+) : Component {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
 
-    private val triangleMesh : MutableList<Array<Vector2f>> = mutableListOf()
-    
-    init {
-        for(i in 1 until (vertices.size - 1)) {
-            triangleMesh.add(arrayOf<Vector2f>(vertices[0], vertices[i], vertices[i+1]))
-        }
+        other as Shape
+
+        if (!vertices.contentEquals(other.vertices)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return vertices.contentHashCode()
     }
 }
