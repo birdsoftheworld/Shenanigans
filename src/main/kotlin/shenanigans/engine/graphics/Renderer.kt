@@ -2,16 +2,11 @@ package shenanigans.engine.graphics
 
 import org.joml.Vector2f
 import org.lwjgl.opengl.GL30C.*
-import shenanigans.engine.ecs.*
-import shenanigans.engine.ecs.components.Shape
-import shenanigans.engine.ecs.components.ShapeRender
-import shenanigans.engine.ecs.components.Transform
 import shenanigans.engine.graphics.shader.Shader
 import shenanigans.engine.util.OrthoCamera
 import shenanigans.engine.window.Window
-import kotlin.reflect.KClass
 
-object Renderer : System {
+object Renderer {
     private val orthoCamera = OrthoCamera()
 
     private val shader = Shader(
@@ -101,22 +96,5 @@ object Renderer : System {
         mesh.disable()
 
         glBindVertexArray(0)
-    }
-
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(ShapeRender::class, Shape::class, Transform::class)
-    }
-
-    override fun execute(entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        val viewMatrix = orthoCamera.getViewMatrix()
-        entities.forEach {
-            val transform = it.component<Transform>()
-            val modelViewMatrix = orthoCamera.getModelViewMatrix(transform.position, transform.rotation, transform.scale, viewMatrix)
-            shader.setUniform("modelViewMatrix", modelViewMatrix)
-            val shape = it.component<Shape>()
-            shape.vertices.forEach { vertex ->
-                vertex.x
-            }
-        }
     }
 }
