@@ -57,11 +57,11 @@ class ComponentView<T: Component>(private val stored: StoredComponent) {
         stored.version++
     }
 
-    fun component1(): T {
+    operator fun component1(): T {
         return get()
     }
 
-    fun component2(): Int {
+    operator fun component2(): Int {
         return version()
     }
 }

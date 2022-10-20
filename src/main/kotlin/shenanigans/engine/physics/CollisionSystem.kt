@@ -10,9 +10,9 @@ import shenanigans.engine.ecs.components.Transform
 import javax.swing.text.html.parser.Entity
 import kotlin.reflect.KClass
 
-class CollisionSystem : System{
+class CollisionSystem : System {
 
-    val radii = hashMapOf<Int, Pair<Float, Int>>()
+    private val radii = hashMapOf<Int, Pair<Float, Int>>()
 
     override fun query(): Iterable<KClass<out Component>> {
         return listOf(Collider::class, Transform::class)
@@ -27,24 +27,32 @@ class CollisionSystem : System{
 
     }
 
-    private fun getCollisionPairs (entities: Sequence<EntityView>): MutableList<Pair<EntityView, EntityView>>{
+    private fun getCollisionPairs(entities: Sequence<EntityView>): MutableList<Pair<EntityView, EntityView>> {
         val collisionPairs = mutableListOf<Pair<EntityView, EntityView>>()
 
         val prevEntities = mutableListOf<EntityView>()
         entities.forEach { entity ->
+            val (transform, transformV) = entity.component<Transform>();
+
+            if ((radii[entity.id]?.second ?: -1) < transformV) {
+                radii[entity.id] = Pair(Float.NaN, transformV)
+            }
+
             prevEntities.forEach { other ->
-                if(Vector2f(entity.component<Transform>().position).sub(other.component<Transform>().position).length() <
-                    ((radii[other.id]?.first ?: 0) as Float + (radii[entity.id]?.first ?: 0) as Float)) {
+                if (Vector2f(transform.position).sub(
+                        other.component<Transform>().get().position
+                    ).length() < ((radii[other.id]?.first ?: 0) as Float + (radii[entity.id]?.first ?: 0) as Float)
+                ) {
                     collisionPairs.add(Pair(entity, other))
                 }
             }
             prevEntities.add(entity)
         }
 
-        return(collisionPairs)
+        return (collisionPairs)
     }
 
-    private fun testCollision(collisionPair: Pair<EntityView, EntityView>){
+    private fun testCollision(collisionPair: Pair<EntityView, EntityView>) {
         val collider1 = collisionPair.first.component<Collider>()
         val collider2 = collisionPair.second.component<Collider>()
 
@@ -54,15 +62,18 @@ class CollisionSystem : System{
 
     }
 
-    private fun getNormals(collider: Collider): MutableList<Vector2f> {
-        val normals = mutableListOf<Vector2f>()
-        for(i in 0 until (collider.vertices.size - 1)) {
-            val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1])
-            val normal = Vector2f(-side.y, side.x).normalize()
-            if(!normals.contains(normal)) {
-                normals.add(normal)
-            }
+}
+
+private fun getNormals(collider: Collider): MutableList<Vector2f> {
+    val normals = mutableListOf<Vector2f>()
+
+    for (i in 0 until (collider.vertices.size - 1)) {
+        val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1])
+        val normal = Vector2f(-side.y, side.x).normalize()
+        if (!normals.contains(normal)) {
+            normals.add(normal)
         }
-        return(normals)
     }
+
+    return normals
 }
