@@ -1,73 +1,114 @@
 package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
-import org.lwjgl.system.MemoryUtil
 
-class Mesh(private val vertices: FloatArray, private val indices: IntArray, private val colors: FloatArray) {
+const val VERTICES_INDEX = 0
+const val COLORS_INDEX = 1
+
+const val VERTEX = "vertex"
+const val COLOR = "color"
+const val INDEX = "index"
+
+class Mesh(nVertices: Int, nIndices: Int, nColors: Int) {
+
+    constructor(vertices: FloatArray, indices: IntArray, colors: FloatArray) : this(vertices.size / 3, indices.size, colors.size / 3) {
+        writeIndices(indices)
+        writeData(VERTEX, vertices, GL_ARRAY_BUFFER)
+        writeData(COLOR, colors, GL_ARRAY_BUFFER)
+    }
+
     val vaoId: Int = glGenVertexArrays()
-    private val vboIds = mutableListOf<Int>()
+    private val vboIds = hashMapOf<String, Int>()
     private val vertexAttribs = hashMapOf<Int, Int>()
 
-    val verticesCount
-        get() = vertices.size
+    var indicesCount = 0
 
     init {
         glBindVertexArray(vaoId)
 
-        defineBufferData(indices, GL_ELEMENT_ARRAY_BUFFER)
+        createBuffer(nIndices, Int.SIZE_BYTES, GL_ELEMENT_ARRAY_BUFFER, INDEX)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
-        defineVertexAttrib(vertices, 3, 0)
-        defineVertexAttrib(colors, 3, 1)
+        defineVertexAttrib(nVertices, Float.SIZE_BYTES, 3, VERTICES_INDEX, VERTEX)
+        defineVertexAttrib(nColors, Float.SIZE_BYTES, 3, COLORS_INDEX, COLOR)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
     }
 
-    private fun defineVertexAttrib(array: FloatArray, size: Int, index: Int) {
-        val vboId = defineBufferData(array, GL_ARRAY_BUFFER)
+    /**
+     * create a buffer and define it as a vertex attribute
+     */
+    private fun defineVertexAttrib(size: Int, typeSize: Int, attribSize: Int, index: Int, name: String) {
+        val vboId = createBuffer(size * attribSize, typeSize, GL_ARRAY_BUFFER, name)
         vertexAttribs[index] = vboId
         glEnableVertexAttribArray(index)
-        glVertexAttribPointer(index, size, GL_FLOAT, false, 0, 0)
+        glVertexAttribPointer(index, attribSize, GL_FLOAT, false, 0, 0)
     }
 
-    private fun defineBufferData(array: FloatArray, type: Int): Int {
-        val buffer = MemoryUtil.memAllocFloat(array.size)
-        buffer.put(array).flip()
-        val vboId = glGenBuffers()
-        glBindBuffer(type, vboId)
-        glBufferData(type, buffer, GL_STATIC_DRAW)
-        MemoryUtil.memFree(buffer)
-        vboIds.add(vboId)
-        return vboId
+    /**
+     * create a buffer of `size` elements of `typeSize` in bytes with gl type `type`
+     */
+    private fun createBuffer(size: Int, typeSize: Int, type: Int, name: String) : Int {
+        return createBuffer(size * typeSize, type, name)
     }
 
-    private fun defineBufferData(array: IntArray, type: Int): Int {
-        val buffer = MemoryUtil.memAllocInt(array.size)
-        buffer.put(array).flip()
+    /**
+     * create a buffer of `size` bytes with an OpenGL type of `type`
+     */
+    private fun createBuffer(size: Int, type: Int, name: String): Int {
         val vboId = glGenBuffers()
         glBindBuffer(type, vboId)
-        glBufferData(type, buffer, GL_STATIC_DRAW)
-        MemoryUtil.memFree(buffer)
-        vboIds.add(vboId)
+        glBufferData(type, size.toLong(), GL_DYNAMIC_DRAW)
+        vboIds[name] = vboId
+        // buffer is not unbound, because it needs to be bound later in defineVertexAttrib
         return vboId
     }
 
     /**
-     * enable all vertex attributes of this mesh
+     * write indices and update indicesCount, assuming the indices buffer is large enough
      */
-    fun enableVertexAttribs() {
-        for (vertexAttrib in vertexAttribs) {
-            glEnableVertexAttribArray(vertexAttrib.key)
+    fun writeIndices(data: IntArray) {
+        indicesCount = data.size
+        writeData(INDEX, data, GL_ELEMENT_ARRAY_BUFFER)
+    }
+
+    /**
+     * write `data` to buffer `name`, assuming the buffer is large enough
+     */
+    fun writeData(name: String, data: FloatArray, type: Int) {
+        glBindBuffer(type, vboIds[name]!!)
+        glBufferSubData(type, 0, data)
+        glBindBuffer(type, 0)
+    }
+
+    /**
+     * write `data` to buffer `name`, assuming the buffer is large enough
+     */
+    fun writeData(name: String, data: IntArray, type: Int) {
+        glBindBuffer(type, vboIds[name]!!)
+        glBufferSubData(type, 0, data)
+        glBindBuffer(type, 0)
+    }
+
+    /**
+     * enable vertex attributes and indices of this mesh
+     */
+    fun enable() {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX]!!)
+        for ((index, _) in vertexAttribs) {
+            glEnableVertexAttribArray(index)
         }
     }
 
     /**
-     * disable all vertex attributes of this mesh
+     * disable vertex attributes and indices of this mesh
      */
-    fun disableVertexAttribs() {
-        for (vertexAttrib in vertexAttribs) {
-            glDisableVertexAttribArray(vertexAttrib.key)
+    fun disable() {
+        for ((index, _) in vertexAttribs) {
+            glDisableVertexAttribArray(index)
         }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
     }
 
     fun discard() {
@@ -75,11 +116,12 @@ class Mesh(private val vertices: FloatArray, private val indices: IntArray, priv
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-        for (vboId in vboIds) {
+        for ((_, vboId) in vboIds) {
             glDeleteBuffers(vboId)
         }
 
         glBindVertexArray(0)
+
         glDeleteVertexArrays(vaoId)
     }
 }

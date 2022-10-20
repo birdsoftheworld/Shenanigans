@@ -33,7 +33,7 @@ class CollisionSystem : System {
 
         val prevEntities = mutableListOf<EntityView>()
         entities.forEach { entity ->
-            val (transform, transformV) = entity.component<Transform>();
+            val (transform, transformV) = entity.component<Transform>()
 
             if ((radii[entity.id]?.second ?: -1) < transformV) {
                 radii[entity.id] = Pair(Float.NaN, transformV)
@@ -42,7 +42,7 @@ class CollisionSystem : System {
             prevEntities.forEach { other ->
                 if (Vector2f(transform.position).sub(
                         other.component<Transform>().get().position
-                    ).length() < ((radii[other.id]?.first ?: 0) as Float + (radii[entity.id]?.first ?: 0) as Float)
+                    ).length() < (radii[entity.id]!!.first + radii[other.id]!!.first)
                 ) {
                     collisionPairs.add(Pair(entity, other))
                 }
@@ -85,8 +85,8 @@ private fun projectionMinMax(collider : Collider, transform : Transform, normal:
 private fun getNormals(collider: Collider): MutableList<Vector2f> {
     val normals = mutableListOf<Vector2f>()
 
-    for (i in 0 until (collider.vertices.size - 1)) {
-        val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1])
+    for (i in 0 until collider.vertices.size) {
+        val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1 % collider.vertices.size])
         val normal = Vector2f(-side.y, side.x).normalize()
         if (!normals.contains(normal)) {
             normals.add(normal)

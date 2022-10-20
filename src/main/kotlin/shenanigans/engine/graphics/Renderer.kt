@@ -1,5 +1,6 @@
 package shenanigans.engine.graphics
 
+import org.joml.Vector2f
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.graphics.shader.Shader
 import shenanigans.engine.util.OrthoCamera
@@ -18,9 +19,10 @@ object Renderer {
             out vec3 outColor;
             
             uniform mat4 projectionMatrix;
+            uniform mat4 modelViewMatrix;
 
             void main() {
-                gl_Position = projectionMatrix * vec4(position, 1.0);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 outColor = inColor;
             }
         """.trimIndent(),
@@ -55,6 +57,7 @@ object Renderer {
 
     fun init() {
         shader.createUniform("projectionMatrix")
+        shader.createUniform("modelViewMatrix")
     }
 
     fun discard() {
@@ -72,6 +75,10 @@ object Renderer {
         shader.bind()
         shader.setUniform("projectionMatrix", orthoCamera.getProjectionMatrix(width, height))
 
+        //ecs.runSystem(this) or whatever
+
+        // for testing
+        shader.setUniform("modelViewMatrix", orthoCamera.getModelViewMatrix(Vector2f(), 0f, Vector2f(1f, 1f), orthoCamera.getViewMatrix()))
         renderMesh(mesh)
 
         shader.unbind()
@@ -82,9 +89,11 @@ object Renderer {
     private fun renderMesh(mesh: Mesh) {
         glBindVertexArray(mesh.vaoId)
 
-        mesh.enableVertexAttribs()
-        glDrawElements(GL_TRIANGLES, mesh.verticesCount, GL_UNSIGNED_INT, 0)
-        mesh.disableVertexAttribs()
+        mesh.enable()
+
+        glDrawElements(GL_TRIANGLES, mesh.indicesCount, GL_UNSIGNED_INT, 0)
+
+        mesh.disable()
 
         glBindVertexArray(0)
     }
