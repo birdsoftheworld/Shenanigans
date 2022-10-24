@@ -13,25 +13,28 @@ object Renderer {
             #version 330
 
             layout (location=0) in vec3 position;
-            layout (location=1) in vec3 inColor;
+            layout (location=1) in vec2 texCoord;
 
-            out vec3 outColor;
+            out vec2 outTexCoord;
             
+            uniform mat4 worldMatrix;
             uniform mat4 projectionMatrix;
 
             void main() {
-                gl_Position = projectionMatrix * vec4(position, 1.0);
-                outColor = inColor;
+                gl_Position = projectionMatrix * worldMatrix * vec4(position, 1.0);
+                outTexCoord = texCoord;
             }
         """.trimIndent(),
         """
             #version 330
 
-            in vec3 outColor;
+            in vec2 outTexCoord;
             out vec4 fragColor;
+            
+            uniform sampler2D texture_sampler;
 
             void main() {
-                fragColor = vec4(outColor, 1.0);
+                fragColor = texture(texture_sampler, outTexCoord);
             }
         """.trimIndent(),
     )
@@ -42,19 +45,22 @@ object Renderer {
             100f, 0f, 0f,
             100f, 100f, 0f,
         ),
+
+        floatArrayOf(
+            0f, 1f,
+            0f, 0f,
+            1f, 0f,
+            1f, 1f,
+            ),
+
         intArrayOf(
             0, 1, 3, 3, 1, 2,
         ),
-        floatArrayOf(
-            0.5f, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f,
-            0.0f, 0.0f, 0.5f,
-            0.0f, 0.5f, 0.5f,
-        ),
+        texture = Texture(),
     )
 
     fun init() {
-        shader.createUniform("projectionMatrix")
+        shader.createUniform("texture_sampler")
     }
 
     fun discard() {
@@ -70,7 +76,7 @@ object Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         shader.bind()
-        shader.setUniform("projectionMatrix", orthoCamera.getProjectionMatrix(width, height))
+        shader.setUniform("texture_sampler", orthoCamera.getProjectionMatrix(width, height))
 
         renderMesh(mesh)
 
@@ -80,7 +86,13 @@ object Renderer {
     }
 
     private fun renderMesh(mesh: Mesh) {
-        glBindVertexArray(mesh.vaoId)
+        //activate texture unit
+        glActiveTexture(GL_TEXTURE0)
+
+        //bind texture
+        glBindTexture(GL_TEXTURE_2D, mesh.texture.textureId)
+
+        glBindVertexArray(mesh.vboId)
 
         mesh.enableVertexAttribs()
         glDrawElements(GL_TRIANGLES, mesh.verticesCount, GL_UNSIGNED_INT, 0)

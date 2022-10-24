@@ -86,6 +86,10 @@ class Shader(vertexShader: String, fragmentShader: String) {
         }
     }
 
+    fun setUniform(name : String, value : Int){
+        glUniform1i(uniforms[name]!!, value)
+    }
+
     companion object {
         fun create(vertexFile: File, fragmentFile: File): Shader {
             val vertex = read(vertexFile)
