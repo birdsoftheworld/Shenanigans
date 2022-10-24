@@ -26,6 +26,26 @@ class CollisionSystem : System {
 //            if(radii.get(entity.id).second == entity.component<Collider>().)
 //        }
         val collisionPairs = getCollisionPairs(entities)
+
+        collisionPairs.forEach() {
+            val collision = testCollision(it)
+            if(!it.first.component<Collider>().get().static && !it.second.component<Collider>().get().static) {
+                collision.mul(0.5f)
+                it.first.component<Transform>().get().position.add(collision)
+                it.first.component<Transform>().mutate()
+                it.second.component<Transform>().get().position.add(collision.negate())
+                it.second.component<Transform>().mutate()
+            }
+            else if(!it.first.component<Collider>().get().static) {
+                it.first.component<Transform>().get().position.add(collision)
+                it.first.component<Transform>().mutate()
+            }
+            else if(!it.second.component<Collider>().get().static) {
+                it.second.component<Transform>().get().position.add(collision)
+                it.second.component<Transform>().mutate()
+            }
+
+        }
     }
 
     private fun getCollisionPairs(entities: Sequence<EntityView>): MutableList<Pair<EntityView, EntityView>> {
@@ -44,6 +64,7 @@ class CollisionSystem : System {
                         other.component<Transform>().get().position
                     ).length() < (radii[entity.id]!!.first + radii[other.id]!!.first)
                 ) {
+                    if(!(entity.component<Collider>().get().static && other.component<Collider>().get().static))
                     collisionPairs.add(Pair(entity, other))
                 }
             }
@@ -53,21 +74,32 @@ class CollisionSystem : System {
         return collisionPairs
     }
 }
-private fun testCollision(collisionPair: Pair<EntityView, EntityView>) {
+private fun testCollision(collisionPair: Pair<EntityView, EntityView>): Vector2f {
     val collider1 = collisionPair.first.component<Collider>().get()
     val transform1 = collisionPair.first.component<Transform>().get()
     val collider2 = collisionPair.second.component<Collider>().get()
     val transform2 = collisionPair.second.component<Transform>().get()
 
-    val normals = getNormals(collider1)
-    normals.addAll(getNormals(collider2))
+    val normals = getNormals(collider1, false)
+    normals.addAll(getNormals(collider2, true))
 
-    val maxCollision = Vector2f()
+    var minCollision = Vector2f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
 
     for (normal in normals) {
-        var object1Projection = projectionMinMax(collider1, transform1, normal)
+        val object1Projection = projectionMinMax(collider1, transform1, normal)
         val object2Projection = projectionMinMax(collider2, transform2, normal)
+
+        val overlapDist = min(
+            object2Projection.second - object1Projection.first,
+            object1Projection.second - object2Projection.first)
+
+        if(overlapDist > 0) {
+            normal.mul(overlapDist)
+            if(minCollision.length() > normal.length()) minCollision = normal
+        }
+        else return Vector2f()
     }
+    return minCollision
 }
 
 private fun projectionMinMax(collider : Collider, transform : Transform, normal: Vector2f) : Pair<Float, Float> {
@@ -82,14 +114,14 @@ private fun projectionMinMax(collider : Collider, transform : Transform, normal:
     return Pair(projectionMin + transformProj, projectionMax + transformProj)
 }
 
-private fun getNormals(collider: Collider): MutableList<Vector2f> {
+private fun getNormals(collider: Collider, negate: Boolean): MutableList<Vector2f> {
     val normals = mutableListOf<Vector2f>()
 
     for (i in 0 until collider.vertices.size) {
         val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1 % collider.vertices.size])
         val normal = Vector2f(-side.y, side.x).normalize()
         if (!normals.contains(normal)) {
-            normals.add(normal)
+            normals.add(if (negate) normal.negate() else normal)
         }
     }
 
