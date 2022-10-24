@@ -1,10 +1,7 @@
 package shenanigans.engine.physics
 
 import org.joml.Vector2f
-import shenanigans.engine.ecs.Component
-import shenanigans.engine.ecs.EntitiesLifecycle
-import shenanigans.engine.ecs.EntityView
-import shenanigans.engine.ecs.System
+import shenanigans.engine.ecs.*
 import shenanigans.engine.util.Transform
 import kotlin.math.max
 import kotlin.math.min
@@ -18,7 +15,7 @@ class CollisionSystem : System {
         return listOf(Collider::class, Transform::class)
     }
 
-    override fun execute(entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
 //        for (entity in entities) {
 //            if(radii.get(entity.id).second == entity.component<Collider>().)
 //        }
