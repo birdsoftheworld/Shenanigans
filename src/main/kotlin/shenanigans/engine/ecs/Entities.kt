@@ -6,11 +6,12 @@ class Entities {
     private val entities: MutableList<Map<KClass<out Component>, StoredComponent>> = arrayListOf()
 
 
-    fun runSystem(system: System) {
+    fun runSystem(system: System, resources: Resources) {
         val query = system.query().toSet()
 
         val lifecycle = EntitiesLifecycle()
         system.execute(
+            resources,
             entities
                 .asSequence()
                 .withIndex()

@@ -25,7 +25,7 @@ class Engine {
         Renderer.init()
 
         glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
-        var previousTime = glfwGetTime();
+        var previousTime = glfwGetTime()
 
         while (!window.shouldClose) {
             val currentTime = glfwGetTime()

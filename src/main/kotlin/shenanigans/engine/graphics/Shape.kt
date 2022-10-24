@@ -1,4 +1,4 @@
-package shenanigans.engine.ecs.components
+package shenanigans.engine.graphics
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
