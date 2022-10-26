@@ -22,7 +22,7 @@ object Renderer {
             uniform mat4 modelViewMatrix;
 
             void main() {
-                gl_Position = projectionMatrix * worldMatrix * vec4(position, 1.0);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 outTexCoord = texCoord;
             }
         """.trimIndent(),
@@ -32,10 +32,10 @@ object Renderer {
             in vec2 outTexCoord;
             out vec4 fragColor;
             
-            uniform sampler2D texture_sampler;
+            uniform sampler2D textureSampler;
 
             void main() {
-                fragColor = texture(texture_sampler, outTexCoord);
+                fragColor = texture(textureSampler, outTexCoord);
             }
         """.trimIndent(),
     )
@@ -46,22 +46,21 @@ object Renderer {
             100f, 0f, 0f,
             100f, 100f, 0f,
         ),
-
+        intArrayOf(
+            0, 1, 3, 3, 1, 2,
+        ),
         floatArrayOf(
             0f, 1f,
             0f, 0f,
             1f, 0f,
             1f, 1f,
-            ),
-
-        intArrayOf(
-            0, 1, 3, 3, 1, 2,
-        ),
-        texture = Texture(),
+        )
     )
 
+    private val texture = Texture.create("/textureImage.png")
+
     fun init() {
-        shader.createUniform("texture_sampler")
+        shader.createUniform("textureSampler")
         shader.createUniform("projectionMatrix")
         shader.createUniform("modelViewMatrix")
     }
@@ -69,6 +68,7 @@ object Renderer {
     fun discard() {
         shader.discard()
         mesh.discard()
+        texture.discard()
     }
 
     fun renderGame(window: Window) {
@@ -79,7 +79,7 @@ object Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         shader.bind()
-        shader.setUniform("texture_sampler", orthoCamera.getProjectionMatrix(width, height))
+        shader.setUniform("projectionMatrix", orthoCamera.getProjectionMatrix(width, height))
 
         //ecs.runSystem(this) or whatever
 
@@ -93,19 +93,18 @@ object Renderer {
     }
 
     private fun renderMesh(mesh: Mesh) {
-        //activate texture unit
-        glActiveTexture(GL_TEXTURE0)
-
         //bind texture
-        glBindTexture(GL_TEXTURE_2D, mesh.texture.textureId)
+        texture.bind()
 
-        glBindVertexArray(mesh.vboId)
+        glBindVertexArray(mesh.vaoId)
 
         mesh.enable()
 
         glDrawElements(GL_TRIANGLES, mesh.indicesCount, GL_UNSIGNED_INT, 0)
 
         mesh.disable()
+
+        texture.unbind()
 
         glBindVertexArray(0)
     }
