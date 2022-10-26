@@ -4,7 +4,6 @@ import org.joml.Matrix4f
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.system.MemoryStack
 import java.io.File
-import kotlin.IllegalStateException
 
 class Shader(vertexShader: String, fragmentShader: String) {
     private val programId: Int = glCreateProgram()

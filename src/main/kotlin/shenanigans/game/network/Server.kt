@@ -1,9 +1,8 @@
 package shenanigans.game.network
-import com.esotericsoftware.kryonet.Server
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
-import shenanigans.engine.ecs.components.Transform
-
+import com.esotericsoftware.kryonet.Server
+import shenanigans.engine.util.Transform
 
 object Server {
     val server : Server = Server()

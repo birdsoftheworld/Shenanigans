@@ -3,7 +3,7 @@ package shenanigans.engine.window
 import org.joml.Vector2i
 import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.opengl.GL30C.*
+import org.lwjgl.opengl.GL30C.GL_TRUE
 import org.lwjgl.system.MemoryStack
 
 class Window(title: String, width: Int, height: Int) {

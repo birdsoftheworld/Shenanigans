@@ -1,10 +1,10 @@
 package shenanigans.engine
 
-import shenanigans.engine.window.Window
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL30C.*
+import org.lwjgl.opengl.GL30C.glClearColor
 import shenanigans.engine.graphics.Renderer
+import shenanigans.engine.window.Window
 
 class Engine {
 

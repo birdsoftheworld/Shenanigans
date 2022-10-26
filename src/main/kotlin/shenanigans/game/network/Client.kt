@@ -3,11 +3,8 @@ package shenanigans.game.network
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
-import shenanigans.engine.ecs.Entities
-import shenanigans.engine.ecs.components.Transform
+import shenanigans.engine.util.Transform
 import java.io.IOException
-import javax.swing.text.html.parser.Entity
-
 
 object Client {
     val client : Client = Client()
