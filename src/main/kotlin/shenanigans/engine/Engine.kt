@@ -4,14 +4,20 @@ import shenanigans.engine.window.Window
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
+import shenanigans.engine.resources.DeltaTime
 import shenanigans.engine.graphics.Renderer
+import shenanigans.engine.scene.Scene
 
 class Engine {
 
     private lateinit var window: Window
 
+    private lateinit var scene: Scene;
+
     private fun init() {
         window = Window("game", 640, 480)
+
+        scene = Scene()
     }
 
     fun run() {
@@ -29,12 +35,12 @@ class Engine {
 
         while (!window.shouldClose) {
             val currentTime = glfwGetTime()
-            val deltaTime = currentTime - previousTime
+            val deltaTime = DeltaTime(currentTime - previousTime)
 
             glfwPollEvents()
             //Events.loadEvents()
 
-            //Entities.runSystems(deltaTime)
+            scene.runSystems(deltaTime)
 
             Renderer.renderGame(window)
 
