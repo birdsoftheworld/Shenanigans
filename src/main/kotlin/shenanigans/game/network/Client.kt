@@ -3,7 +3,10 @@ package shenanigans.game.network
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
+import shenanigans.engine.ecs.Entities
+import shenanigans.engine.ecs.components.Transform
 import java.io.IOException
+import javax.swing.text.html.parser.Entity
 
 
 object Client {
@@ -22,7 +25,10 @@ object Client {
             e.printStackTrace()
         }
         addListeners()
-        client.sendTCP("test")
+    }
+
+    fun sendObj(msg : Transform){
+        client.sendTCP(msg)
     }
 
     private fun addListeners() {
