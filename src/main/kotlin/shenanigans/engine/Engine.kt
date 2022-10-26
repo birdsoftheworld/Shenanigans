@@ -12,7 +12,7 @@ class Engine {
 
     private lateinit var window: Window
 
-    private lateinit var scene: Scene;
+    private lateinit var scene: Scene
 
     private fun init() {
         window = Window("game", 640, 480)
@@ -42,7 +42,7 @@ class Engine {
 
             scene.runSystems(deltaTime)
 
-            Renderer.renderGame(window)
+            Renderer.renderGame(window, scene)
 
             previousTime = currentTime
         }
