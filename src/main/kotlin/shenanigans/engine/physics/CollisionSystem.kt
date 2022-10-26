@@ -35,7 +35,7 @@ class CollisionSystem : System {
                 it.first.component<Transform>().mutate()
             }
             else if(!it.second.component<Collider>().get().static) {
-                it.second.component<Transform>().get().position.add(collision)
+                it.second.component<Transform>().get().position.add(collision.negate())
                 it.second.component<Transform>().mutate()
             }
 
