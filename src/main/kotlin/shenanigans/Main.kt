@@ -1,7 +1,7 @@
 package shenanigans
 
-import shenanigans.engine.scene.Scene
+import shenanigans.engine.Engine
 
 fun main() {
-    Scene()
+    Engine().run()
 }

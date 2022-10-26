@@ -6,15 +6,15 @@ const val VERTICES_INDEX = 0
 const val COLORS_INDEX = 1
 
 const val VERTEX = "vertex"
-const val COLOR = "color"
+const val TEX_COORDS = "tex_coords"
 const val INDEX = "index"
 
-class Mesh(nVertices: Int, nIndices: Int, nColors: Int) {
+class Mesh(nVertices: Int, nIndices: Int) {
 
-    constructor(vertices: FloatArray, indices: IntArray, colors: FloatArray) : this(vertices.size / 3, indices.size, colors.size / 3) {
+    constructor(vertices: FloatArray, indices: IntArray, texCoords: FloatArray) : this(vertices.size / 3, indices.size) {
         writeIndices(indices)
         writeData(VERTEX, vertices, GL_ARRAY_BUFFER)
-        writeData(COLOR, colors, GL_ARRAY_BUFFER)
+        writeData(TEX_COORDS, texCoords, GL_ARRAY_BUFFER)
     }
 
     val vaoId: Int = glGenVertexArrays()
@@ -30,7 +30,7 @@ class Mesh(nVertices: Int, nIndices: Int, nColors: Int) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
         defineVertexAttrib(nVertices, Float.SIZE_BYTES, 3, VERTICES_INDEX, VERTEX)
-        defineVertexAttrib(nColors, Float.SIZE_BYTES, 3, COLORS_INDEX, COLOR)
+        defineVertexAttrib(nVertices, Float.SIZE_BYTES, 2, COLORS_INDEX, TEX_COORDS)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)

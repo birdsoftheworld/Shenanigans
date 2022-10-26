@@ -14,26 +14,28 @@ object Renderer {
             #version 330
 
             layout (location=0) in vec3 position;
-            layout (location=1) in vec3 inColor;
+            layout (location=1) in vec2 texCoord;
 
-            out vec3 outColor;
+            out vec2 outTexCoord;
             
             uniform mat4 projectionMatrix;
             uniform mat4 modelViewMatrix;
 
             void main() {
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                outColor = inColor;
+                outTexCoord = texCoord;
             }
         """.trimIndent(),
         """
             #version 330
 
-            in vec3 outColor;
+            in vec2 outTexCoord;
             out vec4 fragColor;
+            
+            uniform sampler2D textureSampler;
 
             void main() {
-                fragColor = vec4(outColor, 1.0);
+                fragColor = texture(textureSampler, outTexCoord);
             }
         """.trimIndent(),
     )
@@ -48,14 +50,17 @@ object Renderer {
             0, 1, 3, 3, 1, 2,
         ),
         floatArrayOf(
-            0.5f, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f,
-            0.0f, 0.0f, 0.5f,
-            0.0f, 0.5f, 0.5f,
-        ),
+            0f, 1f,
+            0f, 0f,
+            1f, 0f,
+            1f, 1f,
+        )
     )
 
+    private val texture = Texture.create("/textureImage.png")
+
     fun init() {
+        shader.createUniform("textureSampler")
         shader.createUniform("projectionMatrix")
         shader.createUniform("modelViewMatrix")
     }
@@ -63,6 +68,7 @@ object Renderer {
     fun discard() {
         shader.discard()
         mesh.discard()
+        texture.discard()
     }
 
     fun renderGame(window: Window) {
@@ -87,6 +93,9 @@ object Renderer {
     }
 
     private fun renderMesh(mesh: Mesh) {
+        //bind texture
+        texture.bind()
+
         glBindVertexArray(mesh.vaoId)
 
         mesh.enable()
@@ -94,6 +103,8 @@ object Renderer {
         glDrawElements(GL_TRIANGLES, mesh.indicesCount, GL_UNSIGNED_INT, 0)
 
         mesh.disable()
+
+        texture.unbind()
 
         glBindVertexArray(0)
     }

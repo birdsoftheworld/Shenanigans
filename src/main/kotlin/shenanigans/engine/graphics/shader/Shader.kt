@@ -4,7 +4,6 @@ import org.joml.Matrix4f
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.system.MemoryStack
 import java.io.File
-import kotlin.IllegalStateException
 
 class Shader(vertexShader: String, fragmentShader: String) {
     private val programId: Int = glCreateProgram()
@@ -84,6 +83,10 @@ class Shader(vertexShader: String, fragmentShader: String) {
             value.get(buffer) // put matrix into buffer
             glUniformMatrix4fv(uniforms[name]!!, false, buffer)
         }
+    }
+
+    fun setUniform(name : String, value : Int){
+        glUniform1i(uniforms[name]!!, value)
     }
 
     companion object {

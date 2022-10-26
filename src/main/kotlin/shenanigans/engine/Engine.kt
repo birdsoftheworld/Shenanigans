@@ -1,11 +1,11 @@
 package shenanigans.engine
 
-import shenanigans.engine.window.Window
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.resources.DeltaTime
 import shenanigans.engine.graphics.Renderer
+import shenanigans.engine.window.Window
 import shenanigans.engine.scene.Scene
 
 class Engine {
