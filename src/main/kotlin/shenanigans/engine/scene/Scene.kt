@@ -1,19 +1,51 @@
 package shenanigans.engine.scene
 
-import shenanigans.engine.ecs.Entities
-import shenanigans.engine.ecs.Resources
-import shenanigans.engine.ecs.System
-import shenanigans.engine.resources.DeltaTime
+import org.joml.Vector2f
+import shenanigans.engine.ecs.*
+import shenanigans.engine.graphics.Shape
+import kotlin.reflect.KClass
 
 class Scene {
-    private val entities : Entities = Entities()
+    private val entities = Entities()
     private val systems = mutableListOf<System>()
 
-    fun runSystems(deltaTime : DeltaTime) {
-        val resources = Resources()
-        resources.set(deltaTime)
+    val resources = Resources()
 
-        systems.forEach() {
+    private inner class InitSystem : System {
+        override fun query(): Iterable<KClass<out Component>> {
+            return emptySet()
+        }
+
+        override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+            lifecycle.add(setOf(Shape(arrayOf(
+                Vector2f(0f, 0f),
+                Vector2f(0f, 100f),
+                Vector2f(100f, 100f),
+                Vector2f(100f, 0f)
+            ))))
+        }
+    }
+
+    init {
+        entities.runSystem(InitSystem(), resources)
+    }
+
+    inline fun <reified T : Resource> getResource() : T {
+        return resources.get()
+    }
+
+    inline fun <reified T : Resource> setResource(resource: T) {
+        resources.set(resource)
+    }
+
+    fun runSystems() {
+        systems.forEach {
+            entities.runSystem(it, resources)
+        }
+    }
+
+    fun runSystems(resources: Resources, systems: List<System>) {
+        systems.forEach {
             entities.runSystem(it, resources)
         }
     }
