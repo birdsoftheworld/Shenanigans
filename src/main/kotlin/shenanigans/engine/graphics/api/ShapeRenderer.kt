@@ -1,5 +1,6 @@
 package shenanigans.engine.graphics.api
 
+import org.joml.Vector2f
 import shenanigans.engine.graphics.*
 import shenanigans.engine.graphics.shader.Shader
 import shenanigans.engine.util.OrthoCamera
@@ -78,6 +79,22 @@ class ShapeRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapaci
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
+    }
+
+    fun polygon(vertices: Array<Vector2f>, color: Color) {
+        for (i in 1..vertices.size - 2) {
+            addIndex(i)
+            addIndex(i + 1)
+            addIndex(0)
+        }
+
+        for (vertex in vertices) {
+            addVertex(vertex.x, vertex.y)
+
+            colors.add(color.r)
+            colors.add(color.g)
+            colors.add(color.b)
+        }
     }
 
     private fun addIndex(index: Int) {

@@ -4,6 +4,7 @@ import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.Color
 import shenanigans.engine.graphics.Shape
+import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 class Scene {
@@ -18,20 +19,24 @@ class Scene {
         }
 
         override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-            lifecycle.add(setOf(Shape(arrayOf(
-                Vector2f(0f, 0f),
-                Vector2f(0f, 100f),
-                Vector2f(100f, 100f),
-                Vector2f(100f, 0f)
-            ), Color(0f, 1f, 0f)
-            )))
-            lifecycle.add(setOf(Shape(arrayOf(
-                Vector2f(50f, 50f),
-                Vector2f(50f, 150f),
-                Vector2f(150f, 150f),
-                Vector2f(150f, 50f)
-            ), Color(1f, 1f, 0f)
-            )))
+            lifecycle.add(
+                setOf(
+                    Shape(
+                        arrayOf(
+                            Vector2f(0f, 0f),
+                            Vector2f(0f, 100f),
+                            Vector2f(100f, 100f),
+                            Vector2f(100f, 0f)
+                        ),
+                        Color(0f, 1f, 1f)
+                    ),
+                    Transform(
+                        Vector2f(100f, 100f),
+                        0f,
+                        Vector2f(1f, 1f)
+                    )
+                )
+            )
         }
     }
 
