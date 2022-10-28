@@ -40,7 +40,8 @@ class Engine {
             glfwPollEvents()
             //Events.loadEvents()
 
-            scene.runSystems(deltaTime)
+            scene.setResource(deltaTime)
+            scene.runSystems()
 
             Renderer.renderGame(window, scene)
 

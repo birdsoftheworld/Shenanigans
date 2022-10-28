@@ -1,19 +1,29 @@
 package shenanigans.engine.scene
 
-import shenanigans.engine.ecs.Entities
-import shenanigans.engine.ecs.Resources
-import shenanigans.engine.ecs.System
-import shenanigans.engine.resources.DeltaTime
+import shenanigans.engine.ecs.*
 
 class Scene {
-    private val entities : Entities = Entities()
+    private val entities = Entities()
     private val systems = mutableListOf<System>()
 
-    fun runSystems(deltaTime : DeltaTime) {
-        val resources = Resources()
-        resources.set(deltaTime)
+    val resources = Resources()
 
-        systems.forEach() {
+    inline fun <reified T : Resource> getResource() : T {
+        return resources.get()
+    }
+
+    inline fun <reified T : Resource> setResource(resource: T) {
+        resources.set(resource)
+    }
+
+    fun runSystems() {
+        systems.forEach {
+            entities.runSystem(it, resources)
+        }
+    }
+
+    fun runSystems(resources: Resources, systems: List<System>) {
+        systems.forEach {
             entities.runSystem(it, resources)
         }
     }
