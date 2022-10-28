@@ -76,6 +76,7 @@ object Renderer {
         texture.discard()
     }
 
+    val ____TEST = ShapeRenderer()
     fun renderGame(window: Window, scene: Scene) {
         val width = window.width
         val height = window.height
@@ -92,12 +93,6 @@ object Renderer {
 //        renderMesh(mesh)
 //
 //        shader.unbind()
-
-        val ____TEST = ShapeRenderer(orthoCamera, 4, 6)
-        ____TEST.start()
-//        ____TEST.rect(0f, 0f, 50f, 50f, Color(1f, 0f, 1f))
-        ____TEST.end()
-
 
         val resources = Resources()
         resources.set(CameraResource(orthoCamera))
