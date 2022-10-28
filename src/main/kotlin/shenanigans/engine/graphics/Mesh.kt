@@ -112,7 +112,7 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
     /**
      * enable vertex attributes and indices of this mesh
      */
-    fun enable() {
+    private fun enable() {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX]!!)
         for ((index, _) in vertexAttribs) {
             glEnableVertexAttribArray(index)
@@ -122,7 +122,7 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
     /**
      * disable vertex attributes and indices of this mesh
      */
-    fun disable() {
+    private fun disable() {
         for ((index, _) in vertexAttribs) {
             glDisableVertexAttribArray(index)
         }

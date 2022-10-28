@@ -1,12 +1,34 @@
 package shenanigans.engine.scene
 
+import org.joml.Vector2f
 import shenanigans.engine.ecs.*
+import shenanigans.engine.graphics.Shape
+import kotlin.reflect.KClass
 
 class Scene {
     private val entities = Entities()
     private val systems = mutableListOf<System>()
 
     val resources = Resources()
+
+    private inner class InitSystem : System {
+        override fun query(): Iterable<KClass<out Component>> {
+            return emptySet()
+        }
+
+        override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+            lifecycle.add(setOf(Shape(arrayOf(
+                Vector2f(0f, 0f),
+                Vector2f(0f, 100f),
+                Vector2f(100f, 100f),
+                Vector2f(100f, 0f)
+            ))))
+        }
+    }
+
+    init {
+        entities.runSystem(InitSystem(), resources)
+    }
 
     inline fun <reified T : Resource> getResource() : T {
         return resources.get()

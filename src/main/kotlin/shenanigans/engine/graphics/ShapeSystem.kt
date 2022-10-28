@@ -1,6 +1,7 @@
 package shenanigans.engine.graphics
 
 import shenanigans.engine.ecs.*
+import shenanigans.engine.graphics.api.ShapeRenderer
 import shenanigans.engine.resources.CameraResource
 import kotlin.reflect.KClass
 
@@ -17,7 +18,7 @@ class ShapeSystem : System {
 
         for (entity in entities) {
             val shape = entity.component<Shape>().get()
-            renderer.rect(shape.vertices[0].x, shape.vertices[0].y, 50f, 50f, Color(1f, 1f, 1f))
+            renderer.rect(shape.vertices[0].x, shape.vertices[0].y, 50f, 50f, Color(1f, 0f, 1f))
         }
 
         renderer.end()

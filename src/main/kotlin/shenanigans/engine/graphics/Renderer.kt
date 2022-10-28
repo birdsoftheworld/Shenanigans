@@ -1,8 +1,8 @@
 package shenanigans.engine.graphics
 
-import org.joml.Vector2f
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.ecs.Resources
+import shenanigans.engine.graphics.api.ShapeRenderer
 import shenanigans.engine.graphics.shader.Shader
 import shenanigans.engine.resources.CameraResource
 import shenanigans.engine.scene.Scene
@@ -80,17 +80,24 @@ object Renderer {
         val width = window.width
         val height = window.height
         glViewport(0, 0, width, height)
+        orthoCamera.setScreenSize(width, height)
 
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
 //        shader.bind()
-//        shader.setUniform("projectionMatrix", orthoCamera.getProjectionMatrix(width, height))
+//        shader.setUniform("projectionMatrix", orthoCamera.getProjectionMatrix())
 //
 //        // for testing
 //        shader.setUniform("modelViewMatrix", orthoCamera.getModelViewMatrix(Vector2f(), 0f, Vector2f(1f, 1f), orthoCamera.getViewMatrix()))
 //        renderMesh(mesh)
 //
 //        shader.unbind()
+
+        val ____TEST = ShapeRenderer(orthoCamera, 4, 6)
+        ____TEST.start()
+//        ____TEST.rect(0f, 0f, 50f, 50f, Color(1f, 0f, 1f))
+        ____TEST.end()
+
 
         val resources = Resources()
         resources.set(CameraResource(orthoCamera))
