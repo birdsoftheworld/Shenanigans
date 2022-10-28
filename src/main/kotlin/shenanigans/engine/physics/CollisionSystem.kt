@@ -16,29 +16,28 @@ class CollisionSystem : System {
     }
 
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-//        for (entity in entities) {
-//            if(radii.get(entity.id).second == entity.component<Collider>().)
-//        }
+
         val collisionPairs = getCollisionPairs(entities)
 
-        collisionPairs.forEach() {
-            val collision = testCollision(it)
-            if(!it.first.component<Collider>().get().static && !it.second.component<Collider>().get().static) {
+        collisionPairs.forEach() { pair ->
+            val collision = testCollision(pair)
+            val transform1 = pair.first.component<Transform>()
+            val transform2 = pair.second.component<Transform>()
+            if(!pair.first.component<Collider>().get().static && !pair.second.component<Collider>().get().static) {
                 collision.mul(0.5f)
-                it.first.component<Transform>().get().position.add(collision)
-                it.first.component<Transform>().mutate()
-                it.second.component<Transform>().get().position.add(collision.negate())
-                it.second.component<Transform>().mutate()
+                transform1.get().position.add(collision)
+                transform1.mutate()
+                transform2.get().position.add(collision.negate())
+                transform2.mutate()
             }
-            else if(!it.first.component<Collider>().get().static) {
-                it.first.component<Transform>().get().position.add(collision)
-                it.first.component<Transform>().mutate()
+            else if(!pair.first.component<Collider>().get().static) {
+                transform1.get().position.add(collision)
+                transform1.mutate()
             }
-            else if(!it.second.component<Collider>().get().static) {
-                it.second.component<Transform>().get().position.add(collision.negate())
-                it.second.component<Transform>().mutate()
+            else if(!pair.second.component<Collider>().get().static) {
+                transform2.get().position.add(collision.negate())
+                transform2.mutate()
             }
-
         }
     }
 
@@ -50,7 +49,11 @@ class CollisionSystem : System {
             val (transform, transformV) = entity.component<Transform>()
 
             if ((radii[entity.id]?.second ?: -1) < transformV) {
-                radii[entity.id] = Pair(Float.NaN, transformV)
+                var radius = 0f
+                entity.component<Collider>().get().vertices.forEach {vertex ->
+                    radius = max(radius, vertex.length())
+                }
+                radii[entity.id] = Pair(radius, transformV)
             }
 
             prevEntities.forEach { other ->
@@ -58,8 +61,10 @@ class CollisionSystem : System {
                         other.component<Transform>().get().position
                     ).length() < (radii[entity.id]!!.first + radii[other.id]!!.first)
                 ) {
-                    if(!(entity.component<Collider>().get().static && other.component<Collider>().get().static))
-                    collisionPairs.add(Pair(entity, other))
+                    if(!(entity.component<Collider>().get().static && other.component<Collider>().get().static)) {
+                        println("test")
+                        collisionPairs.add(Pair(entity, other))
+                    }
                 }
             }
             prevEntities.add(entity)
@@ -111,7 +116,7 @@ private fun projectionMinMax(collider : Collider, transform : Transform, normal:
 private fun getNormals(collider: Collider, negate: Boolean): MutableList<Vector2f> {
     val normals = mutableListOf<Vector2f>()
 
-    for (i in 0 until collider.vertices.size) {
+    for (i in 0 until collider.vertices.size - 1) {
         val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1 % collider.vertices.size])
         val normal = Vector2f(-side.y, side.x).normalize()
         if (!normals.contains(normal)) {

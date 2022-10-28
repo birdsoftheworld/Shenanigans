@@ -9,6 +9,6 @@ class Collider constructor(
         val static: Boolean,
         val triggerCollider: Boolean
         ) : Component {
-    constructor(shape: Shape, static: Boolean, triggerCollider: Boolean) :
-            this(shape.vertices, static, triggerCollider)
+    constructor(shape: Shape, static: Boolean) :
+            this(shape.vertices, static, false)
 }

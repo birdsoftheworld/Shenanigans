@@ -3,6 +3,7 @@ package shenanigans.engine
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
+import shenanigans.engine.api.SceneManager
 import shenanigans.engine.resources.DeltaTime
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.window.Window
@@ -12,12 +13,10 @@ class Engine {
 
     private lateinit var window: Window
 
-    private lateinit var scene: Scene;
+    private val sceneManager = SceneManager();
 
     private fun init() {
         window = Window("game", 640, 480)
-
-        scene = Scene()
     }
 
     fun run() {
@@ -40,7 +39,7 @@ class Engine {
             glfwPollEvents()
             //Events.loadEvents()
 
-            scene.runSystems(deltaTime)
+            sceneManager.scene.runSystems(deltaTime)
 
             Renderer.renderGame(window)
 
