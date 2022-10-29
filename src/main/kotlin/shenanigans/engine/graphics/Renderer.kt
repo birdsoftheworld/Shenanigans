@@ -2,7 +2,6 @@ package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.ecs.Resources
-import shenanigans.engine.graphics.api.ShapeRenderer
 import shenanigans.engine.graphics.shader.Shader
 import shenanigans.engine.resources.CameraResource
 import shenanigans.engine.scene.Scene
@@ -76,7 +75,6 @@ object Renderer {
         texture.discard()
     }
 
-    val ____TEST = ShapeRenderer()
     fun renderGame(window: Window, scene: Scene) {
         val width = window.width
         val height = window.height

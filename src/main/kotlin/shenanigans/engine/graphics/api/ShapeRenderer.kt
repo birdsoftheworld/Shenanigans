@@ -1,15 +1,16 @@
 package shenanigans.engine.graphics.api
 
+import org.joml.Matrix4f
 import org.joml.Vector2f
+import org.joml.Vector4f
 import shenanigans.engine.graphics.*
 import shenanigans.engine.graphics.shader.Shader
-import shenanigans.engine.util.OrthoCamera
 import java.lang.IllegalStateException
 
 private const val DEFAULT_MAX_VERTICES = 500
 private const val DEFAULT_MAX_INDICES = 250
 
-class ShapeRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapacity: Int) {
+class ShapeRenderer(vertexCapacity: Int, indicesCapacity: Int) {
     private val shader = Shader(
         """
             #version 330
@@ -48,12 +49,32 @@ class ShapeRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapaci
 
     private var lowestIndex = 0
 
+    /**
+     * the projection matrix, used for projecting all vertices once `end()` is called
+     */
+    var projection = Matrix4f()
+        set(value) { projection.set(value) }
+
+    /**
+     * the transformation matrix, used for transforming any drawing calls such as `rect()`
+     */
+    var transformation = Matrix4f()
+        set(value) { transformation.set(value) }
+
+    private val _temp = Vector4f()
+
     init {
         shader.createUniform("projectionMatrix")
     }
 
-    constructor() : this(null, DEFAULT_MAX_VERTICES, DEFAULT_MAX_INDICES)
+    /**
+     * create a shape renderer with the default maximum vertices and indices
+     */
+    constructor() : this(DEFAULT_MAX_VERTICES, DEFAULT_MAX_INDICES)
 
+    /**
+     * draw a rectangle at `x`, `y` with size `w`, `h` of the given color, transformed by this renderer's transformation
+     */
     fun rect(x: Float, y: Float, w: Float, h: Float, color: Color) {
         addIndex(0)
         addIndex(2)
@@ -67,20 +88,26 @@ class ShapeRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapaci
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
+
         addVertex(x + w, y)
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
+
         addVertex(x, y + h)
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
+
         addVertex(x + w, y + h)
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
     }
 
+    /**
+     * draw a convex polygon with the given vertices, transformed by this renderer's transformation
+     */
     fun polygon(vertices: Array<Vector2f>, color: Color) {
         for (i in 1..vertices.size - 2) {
             addIndex(i)
@@ -102,17 +129,26 @@ class ShapeRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapaci
     }
 
     private fun addVertex(x: Float, y: Float) {
-        positions.add(x)
-        positions.add(y)
+        _temp.set(x, y, 0f, 1f).mul(transformation)
+        positions.add(_temp.x)
+        positions.add(_temp.y)
         positions.add(0f)
         lowestIndex++
     }
 
+    /**
+     * start rendering
+     * must be called before end()
+     */
     fun start() {
         if(started) throw IllegalStateException("Must end rendering before starting")
         started = true
     }
 
+    /**
+     * stop rendering
+     * must be called after start()
+     */
     fun end() {
         if(!started) throw IllegalStateException("Must start rendering before ending")
 
@@ -129,9 +165,13 @@ class ShapeRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapaci
         started = false
     }
 
+    fun discard() {
+        mesh.discard()
+    }
+
     private fun render() {
         shader.bind()
-        shader.setUniform("projectionMatrix", camera!!.getProjectionMatrix())
+        shader.setUniform("projectionMatrix", projection)
         mesh.render()
         shader.unbind()
     }
