@@ -4,7 +4,10 @@ import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.Shape
+import shenanigans.engine.physics.Collider
+import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.input.Key
+import shenanigans.engine.input.Movable
 import shenanigans.engine.resources.DeltaTime
 import shenanigans.engine.resources.KeyboardInput
 import shenanigans.engine.util.Transform
@@ -22,22 +25,35 @@ class Scene {
         }
 
         override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+            val shape = Shape(
+                arrayOf(
+                    Vector2f(0f, 0f),
+                    Vector2f(0f, 100f),
+                    Vector2f(100f, 100f),
+                    Vector2f(100f, 0f)
+                ),
+                Color(0f, 1f, 1f)
+            )
             lifecycle.add(
                 setOf(
-                    Shape(
-                        arrayOf(
-                            Vector2f(0f, 0f),
-                            Vector2f(0f, 100f),
-                            Vector2f(100f, 100f),
-                            Vector2f(100f, 0f)
-                        ),
-                        Color(0f, 1f, 1f)
-                    ),
-                    Transform(
-                        Vector2f(100f, 100f),
-                        0f,
-                        Vector2f(1f, 1f)
+                    shape,
+                    Transform(Vector2f(100f, 100f)),
+                    Collider(
+                        shape,
+                        true
                     )
+                )
+            )
+
+            lifecycle.add(
+                setOf(
+                    shape,
+                    Transform(Vector2f(140f, 150f)),
+                    Collider(
+                        shape,
+                        false
+                    ),
+                    Movable()
                 )
             )
         }
@@ -46,7 +62,7 @@ class Scene {
     // fixme
     private inner class DontLetThisGetPushedToMaster : System {
         override fun query(): Iterable<KClass<out Component>> {
-            return setOf(Transform::class)
+            return setOf(Transform::class, Movable::class)
         }
 
         override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
@@ -87,6 +103,8 @@ class Scene {
 
     init {
         entities.runSystem(InitSystem(), resources)
+
+        systems.add(CollisionSystem())
         systems.add(DontLetThisGetPushedToMaster())
     }
 
