@@ -4,7 +4,7 @@ import org.lwjgl.opengl.GL30C.*
 import java.nio.ByteBuffer
 
 class Texture(val width: Int, val height: Int, private val buf: ByteBuffer) {
-    val textureId = glGenTextures()
+    private val textureId = glGenTextures()
 
     init {
         glBindTexture(GL_TEXTURE_2D, textureId)
