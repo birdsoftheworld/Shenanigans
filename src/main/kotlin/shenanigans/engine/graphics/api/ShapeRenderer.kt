@@ -130,8 +130,8 @@ class ShapeRenderer(vertexCapacity: Int, indicesCapacity: Int) {
 
     private fun addVertex(x: Float, y: Float) {
         _temp.set(x, y, 0f, 1f).mul(transformation)
-        positions.add(_temp.x)
-        positions.add(_temp.y)
+        positions.add(_temp.x / _temp.w)
+        positions.add(_temp.y / _temp.w)
         positions.add(0f)
         lowestIndex++
     }
