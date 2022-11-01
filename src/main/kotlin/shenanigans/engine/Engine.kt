@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.api.SceneManager
 import shenanigans.engine.resources.DeltaTime
 import shenanigans.engine.graphics.Renderer
+import shenanigans.engine.resources.KeyboardInput
 import shenanigans.engine.resources.WindowResource
 import shenanigans.engine.window.Window
 import shenanigans.engine.scene.Scene
@@ -18,8 +19,8 @@ class Engine {
 
     private fun init() {
         window = Window("game", 640, 480)
-        scene = Scene()
         sceneManager.scene.setResource(WindowResource(window))
+        sceneManager.scene.setResource(KeyboardInput(window))
     }
 
     fun run() {
@@ -42,10 +43,10 @@ class Engine {
             glfwPollEvents()
             //Events.loadEvents()
 
-            scene.setResource(deltaTime)
+            sceneManager.scene.setResource(deltaTime)
             sceneManager.scene.runSystems()
 
-            Renderer.renderGame(window, scene)
+            Renderer.renderGame(window, sceneManager.scene)
 
             previousTime = currentTime
         }
