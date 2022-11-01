@@ -2,8 +2,8 @@ package shenanigans.engine.scene
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
-import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.graphics.api.Shape
+import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
@@ -21,14 +21,9 @@ class Scene {
         override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
             lifecycle.add(
                 setOf(
-                    Shape(
-                        arrayOf(
-                            Vector2f(0f, 0f),
-                            Vector2f(0f, 100f),
-                            Vector2f(100f, 100f),
-                            Vector2f(100f, 0f)
-                        ),
-                        Color(0f, 1f, 1f)
+                    Sprite(
+                        TextureManager.createTexture("/sprite.png").getRegion(),
+                        Vector2f(50f, 50f)
                     ),
                     Transform(
                         Vector2f(100f, 100f),

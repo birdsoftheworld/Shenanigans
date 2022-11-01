@@ -1,20 +1,17 @@
 package shenanigans.engine.graphics
 
 import shenanigans.engine.ecs.*
-import shenanigans.engine.graphics.api.component.Shape
-import shenanigans.engine.graphics.api.ShapeRenderer
+import shenanigans.engine.graphics.api.TextureRenderer
+import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.resources.CameraResource
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
-/**
- * draws each entity that has a `Shape` and `Transform` component
- */
-class ShapeSystem : System {
-    private val renderer = ShapeRenderer()
+class SpriteSystem : System {
+    private val renderer = TextureRenderer()
 
     override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Shape::class, Transform::class)
+        return setOf(Sprite::class)
     }
 
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
@@ -24,10 +21,10 @@ class ShapeSystem : System {
         val view = camera.getViewMatrix()
 
         for (entity in entities) {
-            val shape = entity.component<Shape>().get()
+            val sprite = entity.component<Sprite>().get()
             val transform = entity.component<Transform>().get()
             renderer.transformation = camera.getModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
-            renderer.polygon(shape.vertices, shape.color)
+            renderer.textureRect(0f, 0f, sprite.size.x, sprite.size.y, sprite.sprite)
         }
 
         renderer.end()

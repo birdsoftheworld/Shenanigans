@@ -67,18 +67,27 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
     fun end() {
         if (!started) throw IllegalStateException("Must start rendering before ending")
 
-        mesh.writeIndices(indices.toIntArray())
-        mesh.writeData(VertexAttribute.POSITION, positions.toFloatArray())
-        this.writeVertexAttributes()
+        this.writeToMesh()
 
         this.render()
 
+        this.clear()
+
+        started = false
+    }
+
+    protected fun writeToMesh() {
+        mesh.writeIndices(indices.toIntArray())
+        mesh.writeData(VertexAttribute.POSITION, positions.toFloatArray())
+        this.writeVertexAttributes()
+    }
+
+    protected fun clear() {
         indices.clear()
         positions.clear()
         this.clearVertexAttributes()
 
         lowestIndex = 0
-        started = false
     }
 
     protected abstract fun writeVertexAttributes()
@@ -91,7 +100,7 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
         mesh.discard()
     }
 
-    private fun render() {
+    protected open fun render() {
         shader.bind()
         setUniforms()
         mesh.render()

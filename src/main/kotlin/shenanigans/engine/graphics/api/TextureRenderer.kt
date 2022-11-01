@@ -1,19 +1,16 @@
 package shenanigans.engine.graphics.api
 
-import shenanigans.engine.graphics.Mesh
-import shenanigans.engine.graphics.Texture
+import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.VertexAttribute
+import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.graphics.shader.Shader
-import shenanigans.engine.util.OrthoCamera
-import java.lang.IllegalStateException
 
+class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(setOf(
+    VertexAttribute.POSITION, VertexAttribute.TEX_COORDS
+), vertexCapacity, indicesCapacity) {
 
-private const val DEFAULT_MAX_VERTICES = 500
-private const val DEFAULT_MAX_INDICES = 250
-
-class TextureRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapacity: Int) {
-
-    private val shader = Shader(
+    override val shader = Shader(
         """
             #version 330
 
@@ -43,42 +40,26 @@ class TextureRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapa
         """.trimIndent(),
     )
 
-    private val mesh = Mesh(vertexCapacity, indicesCapacity, setOf(VertexAttribute.POSITION, VertexAttribute.TEX_COORDS))
-
-    private var started = false
-
-    private val indices = ArrayList<Int>(DEFAULT_MAX_INDICES)
-    private val positions = ArrayList<Float>(DEFAULT_MAX_VERTICES*3)
     private val texCoords = ArrayList<Float>(DEFAULT_MAX_VERTICES*2)
-    private var texture: Texture? = null
-
-    private var lowestIndex = 0
+    private var texture: TextureKey? = null
 
     init {
         shader.createUniform("textureSampler")
         shader.createUniform("projectionMatrix")
     }
 
-    constructor() : this(null, DEFAULT_MAX_VERTICES, DEFAULT_MAX_INDICES)
-
-
     private fun renderCurrent(){
-        mesh.writeIndices(indices.toIntArray())
-        mesh.writeData(VertexAttribute.POSITION, positions.toFloatArray())
-        mesh.writeData(VertexAttribute.TEX_COORDS, texCoords.toFloatArray())
+        this.writeToMesh()
 
         this.render()
 
-        indices.clear()
-        positions.clear()
-        texCoords.clear()
-        lowestIndex = 0
+        this.clear()
     }
-    fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: Texture){
-        if(this.texture != texture && this.texture != null){
+    fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) {
+        if(this.texture != texture.getKey() && this.texture != null) {
             this.renderCurrent()
         }
-        this.texture = texture
+        this.texture = texture.getKey()
         addIndex(0)
         addIndex(2)
         addIndex(1)
@@ -88,17 +69,13 @@ class TextureRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapa
         addIndex(1)
 
         addVertex(x, y)
-        addTexCoord(0f, 0f)
+        addTexCoord(texture.x, texture.y)
         addVertex(x + w, y)
-        addTexCoord(1f, 0f)
+        addTexCoord(texture.x + texture.w, texture.y)
         addVertex(x, y + h)
-        addTexCoord(0f, 1f)
+        addTexCoord(texture.x, texture.y + texture.h)
         addVertex(x + w, y + h)
-        addTexCoord(1f, 1f)
-    }
-
-    private fun addIndex(index: Int) {
-        indices.add(index + lowestIndex)
+        addTexCoord(texture.x + texture.w, texture.y + texture.h)
     }
 
     private fun addTexCoord(x: Float, y: Float) {
@@ -106,33 +83,26 @@ class TextureRenderer(var camera: OrthoCamera?, vertexCapacity: Int, indicesCapa
         texCoords.add(y)
     }
 
-    private fun addVertex(x: Float, y: Float) {
-        positions.add(x)
-        positions.add(y)
-        positions.add(0f)
-        lowestIndex++
+    override fun writeVertexAttributes() {
+        mesh.writeData(VertexAttribute.TEX_COORDS, texCoords.toFloatArray())
     }
 
-    fun start() {
-        if(started) throw IllegalStateException("Must end rendering before starting")
-        started = true
+    override fun clearVertexAttributes() {
+        texCoords.clear()
     }
 
-    fun end() {
-        if(!started) throw IllegalStateException("Must start rendering before ending")
-
-        renderCurrent()
-
-        started = false
-        this.texture = null
+    override fun setUniforms() {
+        shader.setUniform("projectionMatrix", projection)
     }
 
-    private fun render() {
-        shader.bind()
-        shader.setUniform("projectionMatrix", camera!!.getProjectionMatrix())
-        texture!!.bind()
-        mesh.render()
-        texture!!.unbind()
-        shader.unbind()
+    override fun createUniforms() {
+        shader.createUniform("projectionMatrix")
+    }
+
+    override fun render() {
+        val texture = TextureManager.getTexture(texture!!)
+        texture.bind()
+        super.render()
+        texture.unbind()
     }
 }
