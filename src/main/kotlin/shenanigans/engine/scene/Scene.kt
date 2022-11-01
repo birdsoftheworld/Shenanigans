@@ -4,6 +4,9 @@ import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.Shape
+import shenanigans.engine.input.Key
+import shenanigans.engine.resources.DeltaTime
+import shenanigans.engine.resources.KeyboardInput
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
@@ -40,8 +43,51 @@ class Scene {
         }
     }
 
+    // fixme
+    private inner class DontLetThisGetPushedToMaster : System {
+        override fun query(): Iterable<KClass<out Component>> {
+            return setOf(Transform::class)
+        }
+
+        override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+            val dt = resources.get<DeltaTime>().deltaTime
+
+            val keyboard = resources.get<KeyboardInput>()
+            val w = keyboard.isDown(Key.W)
+            val a = keyboard.isDown(Key.A)
+            val s = keyboard.isDown(Key.S)
+            val d = keyboard.isDown(Key.D)
+
+            var x = 0f
+            var y = 0f
+
+            val speed = 300f
+
+            if(w) {
+                y -= dt.toFloat() * speed
+            }
+            if(a) {
+                x -= dt.toFloat() * speed
+            }
+            if(s) {
+                y += dt.toFloat() * speed
+            }
+            if(d) {
+                x += dt.toFloat() * speed
+            }
+
+            val combined = Vector2f(x, y)
+
+            for (entity in entities) {
+                val trans = entity.component<Transform>().get()
+                trans.position.add(combined)
+            }
+        }
+    }
+
     init {
         entities.runSystem(InitSystem(), resources)
+        systems.add(DontLetThisGetPushedToMaster())
     }
 
     /**
