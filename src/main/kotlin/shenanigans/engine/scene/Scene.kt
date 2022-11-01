@@ -4,6 +4,7 @@ import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.Color
 import shenanigans.engine.graphics.Shape
+import shenanigans.engine.graphics.Texture
 import kotlin.reflect.KClass
 
 class Scene {
@@ -23,14 +24,14 @@ class Scene {
                 Vector2f(0f, 100f),
                 Vector2f(100f, 100f),
                 Vector2f(100f, 0f)
-            ), Color(0f, 1f, 0f)
+            ), Color(0f, 1f, 0f), Texture.create("/textureImage.png")
             )))
             lifecycle.add(setOf(Shape(arrayOf(
                 Vector2f(50f, 50f),
                 Vector2f(50f, 150f),
                 Vector2f(150f, 150f),
                 Vector2f(150f, 50f)
-            ), Color(1f, 1f, 0f)
+            ), Color(1f, 1f, 0f), Texture.create("/textureImage.png")
             )))
         }
     }

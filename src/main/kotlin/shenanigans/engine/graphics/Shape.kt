@@ -5,7 +5,8 @@ import shenanigans.engine.ecs.Component
 
 data class Shape(
     val vertices : Array<Vector2f>,
-    val color: Color
+    val color: Color,
+    val texture: Texture,
 ) : Component {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
