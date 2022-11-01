@@ -11,7 +11,15 @@ class OrthoCamera {
     private val translation = Vector2f()
     private val rotation = 0f
 
-    fun getProjectionMatrix(screenWidth: Int, screenHeight: Int): Matrix4f {
+    private var screenWidth = -1
+    private var screenHeight = -1
+
+    fun setScreenSize(w: Int, h: Int) {
+        screenWidth = w
+        screenHeight = h
+    }
+
+    fun getProjectionMatrix(): Matrix4f {
         return projectionMatrix
             .identity()
             .ortho2D(0f, screenWidth.toFloat(), screenHeight.toFloat(), 0f)

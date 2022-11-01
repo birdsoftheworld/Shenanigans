@@ -5,14 +5,14 @@ import kotlin.reflect.KClass
 interface Resource
 
 class Resources {
-    val _resources: HashMap<KClass<out Resource>, Resource> = hashMapOf()
+    @PublishedApi internal val resources: HashMap<KClass<out Resource>, Resource> = hashMapOf()
 
     inline fun <reified T : Resource> get(): T {
         return getOpt()!!
     }
 
     inline fun <reified T : Resource> getOpt(): T? {
-        val stored = _resources[T::class]
+        val stored = resources[T::class]
 
         return if (stored !== null) {
             stored as T
@@ -22,6 +22,6 @@ class Resources {
     }
 
     inline fun <reified T : Resource> set(res: T) {
-        _resources[T::class] = res
+        resources[T::class] = res
     }
 }
