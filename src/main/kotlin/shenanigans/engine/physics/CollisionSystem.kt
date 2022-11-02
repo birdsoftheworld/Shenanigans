@@ -79,8 +79,8 @@ private fun testCollision(collisionPair: Pair<EntityView, EntityView>): Vector2f
     val collider2 = collisionPair.second.component<Collider>().get()
     val transform2 = collisionPair.second.component<Transform>().get()
 
-    val normals = getNormals(collider1, false)
-    normals.addAll(getNormals(collider2, true))
+    val normals = getNormals(collider1)
+    normals.addAll(getNormals(collider2))
 
     var minCollision = Vector2f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
 
@@ -94,6 +94,7 @@ private fun testCollision(collisionPair: Pair<EntityView, EntityView>): Vector2f
 
         if(overlapDist > 0) {
             normal.mul(overlapDist)
+            if(object1Projection.first < object2Projection.first) normal.negate()
             if(minCollision.length() > normal.length()) minCollision = normal
         }
         else return Vector2f()
@@ -113,13 +114,13 @@ private fun projectionMinMax(collider : Collider, transform : Transform, normal:
     return Pair(projectionMin + transformProj, projectionMax + transformProj)
 }
 
-private fun getNormals(collider: Collider, negate: Boolean): MutableSet<Vector2f> {
+private fun getNormals(collider: Collider): MutableSet<Vector2f> {
     val normals = mutableSetOf<Vector2f>()
 
     for (i in 0 until collider.vertices.size - 1) {
         val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1 % collider.vertices.size])
         val normal = Vector2f(-side.y, side.x).normalize()
-        normals.add(if (negate) normal.negate() else normal)
+        normals.add(normal)
     }
 
     return normals

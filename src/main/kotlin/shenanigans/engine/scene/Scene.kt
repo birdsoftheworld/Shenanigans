@@ -27,12 +27,13 @@ class Scene {
         override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
             val shape = Shape(
                 arrayOf(
-                    Vector2f(0f, 0f),
-                    Vector2f(0f, 100f),
-                    Vector2f(100f, 100f),
-                    Vector2f(100f, 0f)
+                    Vector2f(0f, -20f),
+                    Vector2f(0f, 120f),
+                    Vector2f(130f, 100f),
+                    Vector2f(100f, 0f),
+                    Vector2f(30f, -10f)
                 ),
-                Color(0f, 1f, 1f)
+                Color(0f, 0.5f, 0.5f)
             )
             lifecycle.add(
                 setOf(
@@ -40,7 +41,17 @@ class Scene {
                     Transform(Vector2f(100f, 100f)),
                     Collider(
                         shape,
-                        true
+                        false
+                    )
+                )
+            )
+            lifecycle.add(
+                setOf(
+                    shape,
+                    Transform(Vector2f(100f, 100f)),
+                    Collider(
+                        shape,
+                        false
                     )
                 )
             )
