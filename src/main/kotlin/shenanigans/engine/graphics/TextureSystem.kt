@@ -19,7 +19,7 @@ class TextureSystem : System {
 
         for (entity in entities) {
             val shape = entity.component<Shape>().get()
-            renderer.textureRect(shape.vertices[0].x, shape.vertices[0].y, 50f, 50f, shape.texture)
+            renderer.textureRect(shape.vertices[0].x, shape.vertices[0].y, 200f, 200f, shape.texture)
         }
 
         renderer.end()

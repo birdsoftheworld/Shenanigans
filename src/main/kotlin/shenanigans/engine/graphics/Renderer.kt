@@ -1,6 +1,7 @@
 package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
+import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.graphics.api.ShapeRenderer
 import shenanigans.engine.graphics.shader.Shader
@@ -13,70 +14,14 @@ object Renderer {
     private val orthoCamera = OrthoCamera()
 
     private val shapeSystem = ShapeSystem()
-
-    private val shader = Shader(
-        """
-            #version 330
-
-            layout (location=0) in vec3 position;
-            layout (location=1) in vec2 texCoord;
-
-            out vec2 outTexCoord;
-            
-            uniform mat4 projectionMatrix;
-            uniform mat4 modelViewMatrix;
-
-            void main() {
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                outTexCoord = texCoord;
-            }
-        """.trimIndent(),
-        """
-            #version 330
-
-            in vec2 outTexCoord;
-            out vec4 fragColor;
-            
-            uniform sampler2D textureSampler;
-
-            void main() {
-                fragColor = texture(textureSampler, outTexCoord);
-            }
-        """.trimIndent(),
-    )
-    private val mesh = Mesh(
-        floatArrayOf(
-            0f, 100f, 0f,
-            0f, 0f, 0f,
-            100f, 0f, 0f,
-            100f, 100f, 0f,
-        ),
-        intArrayOf(
-            0, 1, 3, 3, 1, 2,
-        ),
-        floatArrayOf(
-            0f, 1f,
-            0f, 0f,
-            1f, 0f,
-            1f, 1f,
-        )
-    )
-
-    private val texture = Texture.create("/textureImage.png")
+    private val textureSystem = TextureSystem()
 
     fun init() {
-        shader.createUniform("textureSampler")
-        shader.createUniform("projectionMatrix")
-        shader.createUniform("modelViewMatrix")
+        GLUtil.setupDebugMessageCallback()
     }
 
     fun discard() {
-        shader.discard()
-        mesh.discard()
-        texture.discard()
     }
-
-    val ____TEST = ShapeRenderer()
     fun renderGame(window: Window, scene: Scene) {
         val width = window.width
         val height = window.height
@@ -96,17 +41,70 @@ object Renderer {
 
         val resources = Resources()
         resources.set(CameraResource(orthoCamera))
-        scene.runSystems(resources, listOf(shapeSystem))
+        //scene.runSystems(resources, listOf(shapeSystem))
+        scene.runSystems(resources, listOf(textureSystem))
 
         window.swapBuffers()
     }
 
-    private fun renderMesh(mesh: Mesh) {
-        //bind texture
-        texture.bind()
+//    private val shader = Shader(
+//        """
+//            #version 330
+//
+//            layout (location=0) in vec3 position;
+//            layout (location=1) in vec2 texCoord;
+//
+//            out vec2 outTexCoord;
+//
+//            uniform mat4 projectionMatrix;
+//            uniform mat4 modelViewMatrix;
+//
+//            void main() {
+//                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+//                outTexCoord = texCoord;
+//            }
+//        """.trimIndent(),
+//        """
+//            #version 330
+//
+//            in vec2 outTexCoord;
+//            out vec4 fragColor;
+//
+//            uniform sampler2D textureSampler;
+//
+//            void main() {
+//                fragColor = texture(textureSampler, outTexCoord);
+//            }
+//        """.trimIndent(),
+//    )
+//    private val mesh = Mesh(
+//        floatArrayOf(
+//            0f, 100f, 0f,
+//            0f, 0f, 0f,
+//            100f, 0f, 0f,
+//            100f, 100f, 0f,
+//        ),
+//        intArrayOf(
+//            0, 1, 3, 3, 1, 2,
+//        ),
+//        floatArrayOf(
+//            0f, 1f,
+//            0f, 0f,
+//            1f, 0f,
+//            1f, 1f,
+//        )
+//    )
+//
+//    private val texture = Texture.create("/textureImage.png")
+//
 
-        mesh.render()
-
-        texture.unbind()
-    }
+//
+//    private fun renderMesh(mesh: Mesh) {
+//        //bind texture
+//        texture.bind()
+//
+//        mesh.render()
+//
+//        texture.unbind()
+//    }
 }

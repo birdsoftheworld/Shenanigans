@@ -27,11 +27,32 @@ class Scene {
             ), Color(0f, 1f, 0f), Texture.create("/textureImage.png")
             )))
             lifecycle.add(setOf(Shape(arrayOf(
-                Vector2f(50f, 50f),
+                Vector2f(200f, 200f),
                 Vector2f(50f, 150f),
                 Vector2f(150f, 150f),
                 Vector2f(150f, 50f)
             ), Color(1f, 1f, 0f), Texture.create("/textureImage.png")
+            )))
+            lifecycle.add(setOf(Shape(arrayOf(
+                Vector2f(200f, 600f),
+                Vector2f(50f, 150f),
+                Vector2f(150f, 150f),
+                Vector2f(150f, 50f)
+            ), Color(1f, 1f, 0f), Texture.create("/textureImage.png")
+            )))
+            lifecycle.add(setOf(Shape(arrayOf(
+                Vector2f(0f, 800f),
+                Vector2f(50f, 150f),
+                Vector2f(150f, 150f),
+                Vector2f(150f, 50f)
+            ), Color(1f, 1f, 0f), Texture.create("/textureImage.png")
+            )))
+            lifecycle.add(setOf(Shape(arrayOf(
+                Vector2f(0f, 400f),
+                Vector2f(50f, 150f),
+                Vector2f(150f, 150f),
+                Vector2f(150f, 50f)
+            ), Color(1f, 1f, 0f), Texture.create("/playerTexture.png")
             )))
         }
     }
