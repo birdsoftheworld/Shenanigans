@@ -38,11 +38,7 @@ class OrthoCamera {
     }
 
     fun getModelViewMatrix(translation: Vector2f, rotation: Float, scale: Vector2f, viewMatrix: Matrix4f): Matrix4f {
-        modelViewMatrix
-            .identity()
-            .translate(translation.x, translation.y, 0f)
-            .rotateZ(rotation)
-            .scale(scale.x, scale.y, 1f)
+        modelViewMatrix.setToTransform(translation, rotation, scale)
         return Matrix4f(viewMatrix).mul(modelViewMatrix)
     }
 }
