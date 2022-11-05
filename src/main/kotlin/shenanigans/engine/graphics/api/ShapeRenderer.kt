@@ -1,17 +1,13 @@
 package shenanigans.engine.graphics.api
 
-import org.joml.Matrix4f
 import org.joml.Vector2f
-import org.joml.Vector4f
-import shenanigans.engine.graphics.*
+import shenanigans.engine.graphics.VertexAttribute
 import shenanigans.engine.graphics.shader.Shader
-import java.lang.IllegalStateException
 
-private const val DEFAULT_MAX_VERTICES = 500
-private const val DEFAULT_MAX_INDICES = 250
+private val ATTRIBUTES = setOf(VertexAttribute.POSITION, VertexAttribute.COLOR)
+class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(ATTRIBUTES, vertexCapacity, indicesCapacity) {
 
-class ShapeRenderer(vertexCapacity: Int, indicesCapacity: Int) {
-    private val shader = Shader(
+    override val shader = Shader(
         """
             #version 330
 
@@ -39,38 +35,11 @@ class ShapeRenderer(vertexCapacity: Int, indicesCapacity: Int) {
         """.trimIndent(),
     )
 
-    private val mesh = Mesh(vertexCapacity, indicesCapacity, setOf(VertexAttribute.POSITION, VertexAttribute.COLOR))
-
-    private var started = false
-
-    private val indices = ArrayList<Int>(DEFAULT_MAX_INDICES)
-    private val positions = ArrayList<Float>(DEFAULT_MAX_VERTICES * 3)
-    private val colors = ArrayList<Float>(DEFAULT_MAX_VERTICES * 3)
-
-    private var lowestIndex = 0
-
-    /**
-     * the projection matrix, used for projecting all vertices once `end()` is called
-     */
-    var projection = Matrix4f()
-        set(value) { projection.set(value) }
-
-    /**
-     * the transformation matrix, used for transforming any drawing calls such as `rect()`
-     */
-    var transformation = Matrix4f()
-        set(value) { transformation.set(value) }
-
-    private val _temp = Vector4f()
-
     init {
-        shader.createUniform("projectionMatrix")
+        createUniforms()
     }
 
-    /**
-     * create a shape renderer with the default maximum vertices and indices
-     */
-    constructor() : this(DEFAULT_MAX_VERTICES, DEFAULT_MAX_INDICES)
+    private val colors = ArrayList<Float>(DEFAULT_MAX_VERTICES * 3)
 
     /**
      * draw a rectangle at `x`, `y` with size `w`, `h` of the given color, transformed by this renderer's transformation
@@ -124,55 +93,19 @@ class ShapeRenderer(vertexCapacity: Int, indicesCapacity: Int) {
         }
     }
 
-    private fun addIndex(index: Int) {
-        indices.add(index + lowestIndex)
-    }
-
-    private fun addVertex(x: Float, y: Float) {
-        _temp.set(x, y, 0f, 1f).mul(transformation)
-        positions.add(_temp.x / _temp.w)
-        positions.add(_temp.y / _temp.w)
-        positions.add(0f)
-        lowestIndex++
-    }
-
-    /**
-     * start rendering
-     * must be called before end()
-     */
-    fun start() {
-        if(started) throw IllegalStateException("Must end rendering before starting")
-        started = true
-    }
-
-    /**
-     * stop rendering
-     * must be called after start()
-     */
-    fun end() {
-        if(!started) throw IllegalStateException("Must start rendering before ending")
-
-        mesh.writeIndices(indices.toIntArray())
-        mesh.writeData(VertexAttribute.POSITION, positions.toFloatArray())
-        mesh.writeData(VertexAttribute.COLOR, colors.toFloatArray())
-
-        this.render()
-
-        indices.clear()
-        positions.clear()
+    override fun clearVertexAttributes() {
         colors.clear()
-        lowestIndex = 0
-        started = false
     }
 
-    fun discard() {
-        mesh.discard()
+    override fun writeVertexAttributes() {
+        mesh.writeData(VertexAttribute.COLOR, colors.toFloatArray())
     }
 
-    private fun render() {
-        shader.bind()
+    override fun setUniforms() {
         shader.setUniform("projectionMatrix", projection)
-        mesh.render()
-        shader.unbind()
+    }
+
+    override fun createUniforms() {
+        shader.createUniform("projectionMatrix")
     }
 }
