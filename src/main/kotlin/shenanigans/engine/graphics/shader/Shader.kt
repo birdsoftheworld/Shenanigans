@@ -12,6 +12,8 @@ class Shader(vertexShader: String, fragmentShader: String) {
 
     private val uniforms = hashMapOf<String, Int>()
 
+    private var bound: Boolean = false
+
     init {
         vertShaderId = createShader(vertexShader, GL_VERTEX_SHADER)
         fragShaderId = createShader(fragmentShader, GL_FRAGMENT_SHADER)
@@ -57,10 +59,12 @@ class Shader(vertexShader: String, fragmentShader: String) {
 
     fun bind() {
         glUseProgram(programId)
+        bound = true
     }
 
     fun unbind() {
         glUseProgram(0)
+        bound = false
     }
 
     fun discard() {
@@ -77,6 +81,9 @@ class Shader(vertexShader: String, fragmentShader: String) {
     }
 
     fun setUniform(name: String, value: Matrix4f) {
+        if(!bound) {
+            throw IllegalStateException("Bind shader before changing uniforms")
+        }
         val stack = MemoryStack.stackPush()
         stack.use {
             val buffer = it.mallocFloat(16)
@@ -85,7 +92,10 @@ class Shader(vertexShader: String, fragmentShader: String) {
         }
     }
 
-    fun setUniform(name : String, value : Int){
+    fun setUniform(name : String, value : Int) {
+        if(!bound) {
+            throw IllegalStateException("Bind shader before changing uniforms")
+        }
         glUniform1i(uniforms[name]!!, value)
     }
 

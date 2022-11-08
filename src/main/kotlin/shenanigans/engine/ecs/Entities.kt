@@ -28,14 +28,14 @@ data class StoredComponent(val component: Component, var version: Int = 0)
 
 class EntityView internal constructor(
     val id: Int,
-    val _components: Map<KClass<out Component>, StoredComponent>,
+    @PublishedApi internal val components: Map<KClass<out Component>, StoredComponent>,
 ) {
     inline fun <reified T : Component> component(): ComponentView<T> {
         return componentOpt()!!
     }
 
     inline fun <reified T : Component> componentOpt(): ComponentView<T>? {
-        val stored = _components[T::class]
+        val stored = components[T::class]
 
         return if (stored !== null) {
             ComponentView(stored)
