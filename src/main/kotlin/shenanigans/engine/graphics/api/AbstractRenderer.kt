@@ -16,10 +16,10 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
     protected abstract val shader: Shader
 
     protected val mesh = Mesh(vertexCapacity, indicesCapacity, attribs)
-    private var started = false
-    private val indices = ArrayList<Int>(vertexCapacity)
-    private val positions = ArrayList<Float>(indicesCapacity * 3)
-    private var lowestIndex = 0
+    protected var started = false
+    protected val indices = ArrayList<Int>(vertexCapacity)
+    protected val positions = ArrayList<Float>(indicesCapacity * 3)
+    protected var lowestIndex = 0
 
     /**
      * the projection matrix, used for projecting all vertices once `end()` is called

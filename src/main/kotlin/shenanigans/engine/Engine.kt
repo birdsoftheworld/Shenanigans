@@ -14,7 +14,7 @@ class Engine {
 
     private lateinit var window: Window
 
-    private val sceneManager = SceneManager();
+    private val sceneManager = SceneManager()
 
     private fun init() {
         window = Window("game", 640, 480)

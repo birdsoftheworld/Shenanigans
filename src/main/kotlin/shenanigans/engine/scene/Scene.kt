@@ -4,6 +4,7 @@ import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
@@ -20,7 +21,7 @@ class Scene {
 
         override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
             lifecycle.add(
-                setOf(
+                listOf(
                     Sprite(
                         TextureManager.createTexture("/sprite.png").getRegion(),
                         Vector2f(50f, 50f)
@@ -30,12 +31,13 @@ class Scene {
                         0f,
                         Vector2f(1f, 1f)
                     )
-                )
+                ).asSequence()
             )
         }
     }
 
     init {
+        entities.runSystem(InitSystem(), resources)
         systems.add(CollisionSystem())
     }
 

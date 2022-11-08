@@ -18,12 +18,14 @@ object Renderer {
     private val renderSystems = listOf(shapeSystem, spriteSystem)
 
     fun init() {
-        GLUtil.setupDebugMessageCallback()
+        if(System.getProperty("render_debug") != null) {
+            GLUtil.setupDebugMessageCallback()
+        }
         TextureManager.initialize()
     }
 
     fun discard() {
-
+        TextureManager.discard()
     }
 
     fun renderGame(window: Window, scene: Scene) {

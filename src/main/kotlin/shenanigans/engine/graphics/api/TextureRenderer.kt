@@ -48,10 +48,11 @@ class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacit
         shader.createUniform("projectionMatrix")
     }
 
-    private fun renderCurrent(){
-        this.writeToMesh()
-
-        this.render()
+    private fun renderCurrent() {
+        if(lowestIndex != 0) {
+            this.writeToMesh()
+            this.render()
+        }
 
         this.clear()
     }
@@ -100,6 +101,7 @@ class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacit
     }
 
     override fun render() {
+        if(texture == null) return
         val texture = TextureManager.getTexture(texture!!)
         texture.bind()
         super.render()
