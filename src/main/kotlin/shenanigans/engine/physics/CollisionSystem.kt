@@ -1,15 +1,20 @@
 package shenanigans.engine.physics
 
+import org.joml.Matrix4f
 import org.joml.Vector2f
+import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.util.Transform
-import kotlin.math.max
-import kotlin.math.min
+import shenanigans.engine.util.setToTransform
+import java.util.Vector
+import kotlin.math.*
 import kotlin.reflect.KClass
 
 class CollisionSystem : System {
 
     private val radii = hashMapOf<Int, Pair<Float, Int>>()
+
+    private val transformMatrix = Matrix4f()
 
     override fun query(): Iterable<KClass<out Component>> {
         return listOf(Collider::class, Transform::class)
@@ -49,9 +54,19 @@ class CollisionSystem : System {
         entities.forEach { entity ->
             val (transform, transformV) = entity.component<Transform>()
 
+            val collider = entity.component<Collider>().get()
+
+            transformMatrix.setToTransform(Vector2f(), transform.rotation, transform.scale)
+
+            for (i in 0 until collider.vertices.size) {
+                val vertex = Vector4f(collider.vertices[i], 0f, 1f).mul(transformMatrix)
+                collider.transformedVertices[i].x = vertex.x
+                collider.transformedVertices[i].y = vertex.y
+            }
+
             if ((radii[entity.id]?.second ?: -1) < transformV) {
                 var radius = 0f
-                entity.component<Collider>().get().vertices.forEach {vertex ->
+                collider.transformedVertices.forEach {vertex ->
                     radius = max(radius, vertex.length())
                 }
                 radii[entity.id] = Pair(radius, transformV)
@@ -106,7 +121,7 @@ private fun projectionMinMax(collider : Collider, transform : Transform, normal:
     var projectionMin = Float.POSITIVE_INFINITY
     var projectionMax = Float.NEGATIVE_INFINITY
     val transformProj = normal.dot(transform.position)
-    for (vertex in collider.vertices) {
+    for (vertex in collider.transformedVertices) {
         val proj = vertex.dot(normal)
         projectionMin = min(projectionMin, proj)
         projectionMax = max(projectionMax, proj)
@@ -117,8 +132,8 @@ private fun projectionMinMax(collider : Collider, transform : Transform, normal:
 private fun getNormals(collider: Collider): MutableSet<Vector2f> {
     val normals = mutableSetOf<Vector2f>()
 
-    for (i in 0 until collider.vertices.size - 1) {
-        val side = Vector2f(collider.vertices[i]).sub(collider.vertices[i + 1 % collider.vertices.size])
+    for (i in 0 until collider.transformedVertices.size) {
+        val side = Vector2f(collider.transformedVertices[i]).sub(collider.transformedVertices[(i + 1) % (collider.transformedVertices.size)])
         val normal = Vector2f(-side.y, side.x).normalize()
         normals.add(normal)
     }

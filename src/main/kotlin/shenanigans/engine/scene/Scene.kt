@@ -58,7 +58,7 @@ class Scene {
             lifecycle.add(
                 setOf(
                     shape,
-                    Transform(Vector2f(140f, 150f)),
+                    Transform(Vector2f(140f, 150f), 0f, Vector2f(2f, 2f)),
                     Collider(
                         shape,
                         false
@@ -87,7 +87,11 @@ class Scene {
             var x = 0f
             var y = 0f
 
+            var r = 0f
+
             val speed = 300f
+
+            val rotSpeed = 2f
 
             if(w) {
                 y -= dt.toFloat() * speed
@@ -102,11 +106,19 @@ class Scene {
                 x += dt.toFloat() * speed
             }
 
+            if(keyboard.isDown(Key.Q)) {
+                r += dt.toFloat() * rotSpeed
+            }
+            if(keyboard.isDown(Key.E)) {
+                r -= dt.toFloat() * rotSpeed
+            }
+
             val combined = Vector2f(x, y)
 
             for (entity in entities) {
                 val trans = entity.component<Transform>().get()
                 trans.position.add(combined)
+                trans.rotation += r
             }
         }
     }
