@@ -3,7 +3,6 @@ package shenanigans.engine.graphics
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.TextureRenderer
 import shenanigans.engine.graphics.api.component.Sprite
-import shenanigans.engine.resources.CameraResource
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
