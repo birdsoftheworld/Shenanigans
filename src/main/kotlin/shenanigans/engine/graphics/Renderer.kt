@@ -22,6 +22,7 @@ object Renderer {
             GLUtil.setupDebugMessageCallback()
         }
         TextureManager.initialize()
+        glEnable(GL_MULTISAMPLE)
     }
 
     fun discard() {

@@ -45,6 +45,7 @@ class Window(title: String, width: Int, height: Int) {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
+        glfwWindowHint(GLFW_SAMPLES, 8)
         windowId = glfwCreateWindow(width, height, title, 0, 0)
         if (windowId == 0L) {
             throw RuntimeException("Failed to create window")
