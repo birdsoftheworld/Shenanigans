@@ -8,7 +8,6 @@ interface System {
      */
     fun query(): Iterable<KClass<out Component>>
 
-
     /**
      * Execute the system on the entities.
      */

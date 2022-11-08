@@ -1,4 +1,4 @@
-package shenanigans.engine.resources
+package shenanigans.engine.graphics
 
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.util.OrthoCamera
