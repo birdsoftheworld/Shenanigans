@@ -3,12 +3,12 @@ package shenanigans.engine
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
+import shenanigans.engine.api.SceneManager
 import shenanigans.engine.resources.DeltaTime
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.resources.KeyboardInput
 import shenanigans.engine.resources.WindowResource
 import shenanigans.engine.window.Window
-import shenanigans.engine.scene.Scene
 
 class Engine {
 
