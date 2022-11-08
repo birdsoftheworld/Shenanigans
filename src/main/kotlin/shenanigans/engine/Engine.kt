@@ -14,13 +14,12 @@ class Engine {
 
     private lateinit var window: Window
 
-    private lateinit var scene: Scene
+    private val sceneManager = SceneManager();
 
     private fun init() {
         window = Window("game", 640, 480)
-        scene = Scene()
-        scene.setResource(WindowResource(window))
-        scene.setResource(KeyboardInput(window))
+        sceneManager.scene.setResource(WindowResource(window))
+        sceneManager.scene.setResource(KeyboardInput(window))
     }
 
     fun run() {
@@ -43,10 +42,10 @@ class Engine {
             glfwPollEvents()
             //Events.loadEvents()
 
-            scene.setResource(deltaTime)
-            scene.runSystems()
+            sceneManager.scene.setResource(deltaTime)
+            sceneManager.scene.runSystems()
 
-            Renderer.renderGame(window, scene)
+            Renderer.renderGame(window, sceneManager.scene)
 
             previousTime = currentTime
         }

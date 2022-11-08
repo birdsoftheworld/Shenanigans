@@ -13,35 +13,8 @@ class Scene {
 
     val resources = Resources()
 
-    private inner class InitSystem : System {
-        override fun query(): Iterable<KClass<out Component>> {
-            return emptySet()
-        }
-
-        override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-            lifecycle.add(
-                setOf(
-                    Shape(
-                        arrayOf(
-                            Vector2f(0f, 0f),
-                            Vector2f(0f, 100f),
-                            Vector2f(100f, 100f),
-                            Vector2f(100f, 0f)
-                        ),
-                        Color(0f, 1f, 1f)
-                    ),
-                    Transform(
-                        Vector2f(100f, 100f),
-                        0f,
-                        Vector2f(1f, 1f)
-                    )
-                )
-            )
-        }
-    }
-
     init {
-        entities.runSystem(InitSystem(), resources)
+        systems.add(CollisionSystem())
     }
 
     /**
