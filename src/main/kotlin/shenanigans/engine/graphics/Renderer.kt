@@ -2,7 +2,6 @@ package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.ecs.Resources
-import shenanigans.engine.graphics.api.ShapeRenderer
 import shenanigans.engine.graphics.shader.Shader
 import shenanigans.engine.resources.CameraResource
 import shenanigans.engine.scene.Scene
@@ -92,12 +91,6 @@ object Renderer {
 //        renderMesh(mesh)
 //
 //        shader.unbind()
-
-        val ____TEST = ShapeRenderer(orthoCamera, 4, 6)
-        ____TEST.start()
-//        ____TEST.rect(0f, 0f, 50f, 50f, Color(1f, 0f, 1f))
-        ____TEST.end()
-
 
         val resources = Resources()
         resources.set(CameraResource(orthoCamera))

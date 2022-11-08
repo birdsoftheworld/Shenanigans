@@ -5,7 +5,13 @@ import java.lang.IllegalArgumentException
 
 private const val INDEX = "index"
 
-class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
+/**
+ * a class wrapping vertex attribute and index data
+ */
+class Mesh(nVertices: Int, nIndices: Int, private val vertexAttribs: Set<VertexAttribute>) {
+    /**
+     * create a mesh with the minimum buffer sizes required to contain the given vertex positions, indices, and texture coordinates
+     */
     constructor(vertices: FloatArray, indices: IntArray, texCoords: FloatArray) : this(
         vertices.size / 3,
         indices.size,
@@ -18,9 +24,13 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
 
     val vaoId: Int = glGenVertexArrays()
     private val vboIds = hashMapOf<String, Int>()
-    private val vertexAttribs = hashMapOf<Int, Int>()
+    private val attribs = hashMapOf<Int, Int>()
 
+    /**
+     * the number of indices to draw. change with `writeIndices`
+     */
     var indicesCount = 0
+    private set
 
     init {
         if(!vertexAttribs.contains(VertexAttribute.POSITION)) {
@@ -45,7 +55,7 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
      */
     private fun defineVertexAttrib(size: Int, typeSize: Int, attribSize: Int, index: Int, name: String) {
         val vboId = createBuffer(size * attribSize, typeSize, GL_ARRAY_BUFFER, name)
-        vertexAttribs[index] = vboId
+        attribs[index] = vboId
         glEnableVertexAttribArray(index)
         glVertexAttribPointer(index, attribSize, GL_FLOAT, false, 0, 0)
     }
@@ -81,6 +91,7 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
      * write `data` to vertex attribute's buffer, assuming the buffer is large enough
      */
     fun writeData(attrib: VertexAttribute, data: FloatArray) {
+        require(vertexAttribs.contains(attrib)) { "Mesh doesn't have attribute: " + attrib.name }
         writeData(attrib.name, data, GL_ARRAY_BUFFER)
     }
 
@@ -97,6 +108,7 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
      * write `data` to vertex attribute's buffer, assuming the buffer is large enough
      */
     fun writeData(attrib: VertexAttribute, data: IntArray) {
+        require(vertexAttribs.contains(attrib)) { "Mesh doesn't have attribute: " + attrib.name }
         writeData(attrib.name, data, GL_ARRAY_BUFFER)
     }
 
@@ -114,7 +126,7 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
      */
     private fun enable() {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX]!!)
-        for ((index, _) in vertexAttribs) {
+        for ((index, _) in attribs) {
             glEnableVertexAttribArray(index)
         }
     }
@@ -123,7 +135,7 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
      * disable vertex attributes and indices of this mesh
      */
     private fun disable() {
-        for ((index, _) in vertexAttribs) {
+        for ((index, _) in attribs) {
             glDisableVertexAttribArray(index)
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
@@ -143,6 +155,9 @@ class Mesh(nVertices: Int, nIndices: Int, vertexAttribs: Set<VertexAttribute>) {
         glDeleteVertexArrays(vaoId)
     }
 
+    /**
+     * render `indicesCount` elements as triangles using this mesh's buffers
+     */
     fun render() {
         glBindVertexArray(vaoId)
         enable()
