@@ -18,6 +18,7 @@ class Engine {
 
     private fun init() {
         window = Window("game", 640, 480)
+        GL.createCapabilities()
         scene = Scene()
         scene.setResource(WindowResource(window))
         scene.setResource(KeyboardInput(window))
@@ -30,7 +31,6 @@ class Engine {
     }
 
     private fun loop() {
-        GL.createCapabilities()
         Renderer.init()
 
         glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
