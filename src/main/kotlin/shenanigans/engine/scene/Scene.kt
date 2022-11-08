@@ -36,7 +36,7 @@ class Scene {
     }
 
     init {
-        entities.runSystem(InitSystem(), resources)
+        systems.add(CollisionSystem())
     }
 
     /**

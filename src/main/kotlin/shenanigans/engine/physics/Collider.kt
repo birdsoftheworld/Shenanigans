@@ -9,6 +9,8 @@ class Collider constructor(
         val static: Boolean,
         val triggerCollider: Boolean
         ) : Component {
-    constructor(shape: Shape, static: Boolean, triggerCollider: Boolean) :
-            this(shape.vertices, static, triggerCollider)
+    var transformedVertices = Array(vertices.size) { Vector2f() }
+
+    constructor(shape: Shape, static: Boolean) :
+            this(shape.vertices, static, false)
 }
