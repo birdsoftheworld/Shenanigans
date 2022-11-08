@@ -31,10 +31,12 @@ class Shader(vertexShader: String, fragmentShader: String) {
             glDetachShader(programId, fragShaderId)
         }
 
-        // only necessary for debugging
-        glValidateProgram(programId)
-        if(glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
-            System.err.println("Shader validation warning: ${glGetProgramInfoLog(programId, 1024)}")
+        if(System.getProperty("render_debug") != null) {
+            // only necessary for debugging
+            glValidateProgram(programId)
+            if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
+                System.err.println("Shader validation warning: ${glGetProgramInfoLog(programId, 1024)}")
+            }
         }
     }
 

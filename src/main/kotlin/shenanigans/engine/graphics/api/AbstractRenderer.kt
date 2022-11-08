@@ -16,10 +16,10 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
     protected abstract val shader: Shader
 
     protected val mesh = Mesh(vertexCapacity, indicesCapacity, attribs)
-    private var started = false
-    private val indices = ArrayList<Int>(vertexCapacity)
-    private val positions = ArrayList<Float>(indicesCapacity * 3)
-    private var lowestIndex = 0
+    protected var started = false
+    protected val indices = ArrayList<Int>(vertexCapacity)
+    protected val positions = ArrayList<Float>(indicesCapacity * 3)
+    protected var lowestIndex = 0
 
     /**
      * the projection matrix, used for projecting all vertices once `end()` is called
@@ -67,18 +67,27 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
     fun end() {
         if (!started) throw IllegalStateException("Must start rendering before ending")
 
-        mesh.writeIndices(indices.toIntArray())
-        mesh.writeData(VertexAttribute.POSITION, positions.toFloatArray())
-        this.writeVertexAttributes()
+        this.writeToMesh()
 
         this.render()
 
+        this.clear()
+
+        started = false
+    }
+
+    protected fun writeToMesh() {
+        mesh.writeIndices(indices.toIntArray())
+        mesh.writeData(VertexAttribute.POSITION, positions.toFloatArray())
+        this.writeVertexAttributes()
+    }
+
+    protected fun clear() {
         indices.clear()
         positions.clear()
         this.clearVertexAttributes()
 
         lowestIndex = 0
-        started = false
     }
 
     protected abstract fun writeVertexAttributes()
@@ -91,7 +100,7 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
         mesh.discard()
     }
 
-    private fun render() {
+    protected open fun render() {
         shader.bind()
         setUniforms()
         mesh.render()

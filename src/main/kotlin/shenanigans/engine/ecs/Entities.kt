@@ -71,11 +71,11 @@ class EntitiesLifecycle internal constructor() {
     private val requests: MutableList<LifecycleRequest> = mutableListOf()
 
     sealed class LifecycleRequest {
-        data class Add(val components: Iterable<Component>) : LifecycleRequest()
+        data class Add(val components: Sequence<Component>) : LifecycleRequest()
         data class Del(val id: Int) : LifecycleRequest()
     }
 
-    fun add(components: Iterable<Component>) {
+    fun add(components: Sequence<Component>) {
         requests.add(LifecycleRequest.Add(components))
     }
 
