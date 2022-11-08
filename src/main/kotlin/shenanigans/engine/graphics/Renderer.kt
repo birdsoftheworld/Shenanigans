@@ -4,7 +4,6 @@ import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.graphics.api.texture.TextureManager
-import shenanigans.engine.resources.CameraResource
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.OrthoCamera
 import shenanigans.engine.window.Window
