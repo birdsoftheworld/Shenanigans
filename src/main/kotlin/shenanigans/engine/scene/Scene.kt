@@ -1,12 +1,7 @@
 package shenanigans.engine.scene
 
-import org.joml.Vector2f
 import shenanigans.engine.ecs.*
-import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.graphics.api.Shape
 import shenanigans.engine.physics.CollisionSystem
-import shenanigans.engine.util.Transform
-import kotlin.reflect.KClass
 
 class Scene {
     private val entities = Entities()
