@@ -3,7 +3,6 @@ package shenanigans.engine.graphics
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.Shape
 import shenanigans.engine.graphics.api.ShapeRenderer
-import shenanigans.engine.resources.CameraResource
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 

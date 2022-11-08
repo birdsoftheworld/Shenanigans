@@ -12,30 +12,14 @@ class Scene {
     private val entities = Entities()
     private val systems = mutableListOf<System>()
 
-    val resources = Resources()
-
     init {
         systems.add(CollisionSystem())
     }
 
     /**
-     * get a resource from the default resources
-     */
-    inline fun <reified T : Resource> getResource() : T {
-        return resources.get()
-    }
-
-    /**
-     * set a resource in the default resources
-     */
-    inline fun <reified T : Resource> setResource(resource: T) {
-        resources.set(resource)
-    }
-
-    /**
      * run the default systems with default resources
      */
-    fun runSystems() {
+    fun runSystems(resources: Resources) {
         systems.forEach {
             entities.runSystem(it, resources)
         }

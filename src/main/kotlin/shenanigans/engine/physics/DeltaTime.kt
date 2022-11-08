@@ -1,4 +1,4 @@
-package shenanigans.engine.resources
+package shenanigans.engine.physics
 
 import shenanigans.engine.ecs.Resource
 
