@@ -1,23 +1,16 @@
 package shenanigans.engine.scene
 
 import shenanigans.engine.ecs.*
-import shenanigans.engine.physics.CollisionSystem
 
 class Scene {
-    private val entities = Entities()
-    private val systems = mutableListOf<System>()
-
-    init {
-        systems.add(CollisionSystem())
-    }
+    private val entities: Entities = Entities()
+    var defaultSystems = mutableListOf<System>()
 
     /**
      * run the default systems with default resources
      */
     fun runSystems(resources: Resources) {
-        systems.forEach {
-            entities.runSystem(it, resources)
-        }
+        runSystems(resources, defaultSystems)
     }
 
     /**

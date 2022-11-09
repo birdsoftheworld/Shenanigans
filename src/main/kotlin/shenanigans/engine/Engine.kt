@@ -12,11 +12,11 @@ import shenanigans.engine.scene.Scene
 import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 
-class Engine {
+class Engine(initScene: Scene) {
 
     private lateinit var window: Window
 
-    private var scene = Scene()
+    private var scene: Scene = initScene
     private val resources = Resources()
 
     private var unprocessedEvents = mutableListOf<Event>();
