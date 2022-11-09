@@ -16,7 +16,7 @@ class Engine {
 
     private lateinit var window: Window
 
-    private val scene = Scene()
+    private var scene = Scene()
     private val resources = Resources()
 
     private var unprocessedEvents = mutableListOf<Event>();
@@ -33,6 +33,7 @@ class Engine {
 
     private fun init() {
         window = Window("game", 640, 480)
+        window.onEvent(::queueEvent)
         resources.set(WindowResource(window))
     }
 
