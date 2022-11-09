@@ -45,7 +45,7 @@ class EntityView internal constructor(
     }
 }
 
-class ComponentView<T: Component>(private val stored: StoredComponent) {
+class ComponentView<T : Component>(private val stored: StoredComponent) {
     fun get(): T {
         return stored.component as T
     }
