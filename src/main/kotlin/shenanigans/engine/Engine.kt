@@ -13,6 +13,7 @@ import shenanigans.engine.scene.Scene
 import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
+import shenanigans.engine.window.events.MouseState
 
 class Engine(initScene: Scene) {
 
@@ -40,6 +41,7 @@ class Engine(initScene: Scene) {
         resources.set(WindowResource(window))
 
         resources.set(KeyboardState())
+        resources.set(MouseState())
     }
 
     private fun loop() {
