@@ -50,7 +50,7 @@ class Engine(initScene: Scene) {
             // shhhhh just pretend this is atomic
             val events = unprocessedEvents
             unprocessedEvents = mutableListOf()
-            resources.set(EventQueue(events.asSequence()))
+            resources.set(EventQueue(events.asSequence(), ::queueEvent))
 
             val currentTime = glfwGetTime()
             resources.set(DeltaTime(currentTime - previousTime))
