@@ -5,6 +5,8 @@ import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL30C.GL_TRUE
 import org.lwjgl.system.MemoryStack
+import shenanigans.engine.events.Event
+import shenanigans.engine.window.events.*
 
 class Window(title: String, width: Int, height: Int) {
     private val windowId: Long
@@ -50,11 +52,6 @@ class Window(title: String, width: Int, height: Int) {
         if (windowId == 0L) {
             throw RuntimeException("Failed to create window")
         }
-        setKeyCallback { key: Int, _: Int, _: Int, _: Int ->
-            if (key == GLFW_KEY_ESCAPE) {
-                shouldClose = true
-            }
-        }
         MemoryStack.stackPush().use { stack ->
             val pWidth = stack.mallocInt(1)
             val pHeight = stack.mallocInt(1)
@@ -67,16 +64,20 @@ class Window(title: String, width: Int, height: Int) {
         glfwShowWindow(windowId)
     }
 
-    private fun setKeyCallback(callback: (Int, Int, Int, Int) -> Unit) {
-        glfwSetKeyCallback(windowId) { _: Long, key: Int, scancode: Int, actions: Int, mods: Int -> callback(key, scancode, actions, mods) }
-    }
-
     fun swapBuffers() {
         glfwSwapBuffers(windowId)
     }
 
-    fun isKeyPressed(key: Int): Boolean {
-        return glfwGetKey(windowId, key) == GLFW_PRESS
+    /**
+     * Register a function to be called with windowing events.
+     * Currently, this includes mouse and keyboard events.
+     */
+    fun onEvent(callback: (Event) -> Unit) {
+        glfwSetKeyCallback(windowId, KeyEvent.wrappedGlfwCallback(callback))
+        glfwSetCursorPosCallback(windowId, MousePositionEvent.wrappedGlfwCallback(callback))
+        glfwSetCursorEnterCallback(windowId, CursorPresenceEvent.wrappedGlfwCallback(callback))
+        glfwSetMouseButtonCallback(windowId, MouseButtonEvent.wrappedGlfwCallback(callback))
+        glfwSetScrollCallback(windowId, MouseScrollEvent.wrappedGlfwCallback(callback))
     }
 
     fun discard() {
