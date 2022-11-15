@@ -3,11 +3,15 @@ package shenanigans.engine.graphics
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.TextureRenderer
 import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.font.Font
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 class SpriteSystem : System {
     private val renderer = TextureRenderer()
+
+    // FIXME REMOVE THIS
+    private val font = Font.fromFile("/NotoSans-Medium.ttf", 31f)
 
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Sprite::class)
@@ -20,10 +24,12 @@ class SpriteSystem : System {
         val view = camera.getViewMatrix()
 
         for (entity in entities) {
-            val sprite = entity.component<Sprite>().get()
+//            val sprite = entity.component<Sprite>().get()
             val transform = entity.component<Transform>().get()
             renderer.transformation = camera.getModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
-            renderer.textureRect(0f, 0f, sprite.size.x, sprite.size.y, sprite.sprite)
+            // FIXME FIxME FIMXiemfedfgnshjlkfasdnhrulksnk
+            font.drawToTextureRenderer("hey", 0, 0, renderer)
+//            renderer.textureRect(0f, 0f, sprite.size.x, sprite.size.y, sprite.sprite)
         }
 
         renderer.end()

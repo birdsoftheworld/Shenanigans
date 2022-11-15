@@ -4,8 +4,8 @@ import org.joml.Vector2f
 import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.graphics.api.component.Shape
+import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
 import shenanigans.engine.window.events.MousePositionEvent
@@ -38,10 +38,9 @@ class AddTestEntities : System {
             sequenceOf(
                 Transform(
                     Vector2f(0f, 0f)
-                ), Shape(
-                    arrayOf(
-                        Vector2f(0f, 0f), Vector2f(0f, 100f), Vector2f(100f, 100f), Vector2f(100f, 0f)
-                    ), Color(1f, 0f, 0f)
+                ), Sprite(
+                    TextureManager.createTexture("/sprite.png").getRegion(),
+                    Vector2f(75f, 75f)
                 )
             )
         )

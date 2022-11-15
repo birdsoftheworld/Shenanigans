@@ -13,7 +13,6 @@ import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 
 class Engine(initScene: Scene) {
-
     private lateinit var window: Window
 
     private var scene: Scene = initScene

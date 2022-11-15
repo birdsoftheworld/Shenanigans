@@ -17,6 +17,7 @@ object Renderer {
     private val renderSystems = listOf(shapeSystem, spriteSystem)
 
     fun init() {
+        GlobalRendererState.initialize()
         if(System.getProperty("render_debug") != null) {
             GLUtil.setupDebugMessageCallback()
         }
