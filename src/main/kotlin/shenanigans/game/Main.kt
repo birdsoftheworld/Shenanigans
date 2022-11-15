@@ -10,6 +10,8 @@ import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.ui.Button
+import shenanigans.engine.ui.ButtonSystem
 import shenanigans.engine.util.Transform
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
@@ -31,6 +33,7 @@ fun testScene(): Scene {
     scene.defaultSystems.add(MouseMovementSystem())
     scene.defaultSystems.add(KeyboardMovementSystem())
     scene.defaultSystems.add(CollisionSystem())
+    scene.defaultSystems.add(ButtonSystem())
 
     return scene
 }
@@ -57,7 +60,7 @@ class AddTestEntities : System {
                 ),
                 shape,
                 Collider(shape, true),
-                MousePlayer()
+//                MousePlayer()
             )
         )
 
@@ -69,6 +72,17 @@ class AddTestEntities : System {
                 shape,
                 Collider(shape, false),
                 KeyboardPlayer(500f),
+            )
+        )
+
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector2f(200f, 200f)
+                ),
+                shape,
+                Button(),
+                Collider(shape, false)
             )
         )
     }
