@@ -54,7 +54,7 @@ class ButtonSystem : System {
         var count = 0
         for (i in 0 until shape.vertices.size) {
             if(pointProjectionIntersectsLine(
-                    point,
+                    point as Vector2f,
                     Pair(transformedVertices[i], transformedVertices[(i + 1) % shape.vertices.size]))
             ) {
                 count ++
@@ -64,7 +64,7 @@ class ButtonSystem : System {
     }
 
     private fun pointProjectionIntersectsLine(point: Vector2f, line: Pair<Vector2fc, Vector2fc>) : Boolean {
-        return ((((line.first.y() > point.y() && line.second.y() < point.()) ||
+        return ((((line.first.y() > point.y() && line.second.y() < point.y()) ||
             (line.first.y() < point.y() && line.second.y() > point.y()))) &&
                 (point.x() < line.first.x() || point.x() < line.second.x()))
     }
