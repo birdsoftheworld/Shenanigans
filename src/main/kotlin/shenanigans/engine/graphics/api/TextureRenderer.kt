@@ -6,11 +6,11 @@ import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.graphics.shader.Shader
 
-class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(setOf(
+open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(setOf(
     VertexAttribute.POSITION, VertexAttribute.TEX_COORDS
 ), vertexCapacity, indicesCapacity) {
 
-    override val shader = Shader(
+    protected open val vertexShader: String =
         """
             #version 330
 
@@ -25,7 +25,9 @@ class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacit
                 gl_Position = projectionMatrix * vec4(position, 1.0);
                 outTexCoord = texCoord;
             }
-        """.trimIndent(),
+        """.trimIndent()
+
+    protected open val fragShader: String =
         """
             #version 330
 
@@ -37,7 +39,10 @@ class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacit
             void main() {
                 fragColor = texture(textureSampler, outTexCoord);
             }
-        """.trimIndent(),
+        """.trimIndent()
+
+    override val shader = Shader(
+        vertexShader, fragShader
     )
 
     private val texCoords = ArrayList<Float>(DEFAULT_MAX_VERTICES*2)
@@ -56,6 +61,7 @@ class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacit
 
         this.clear()
     }
+
     fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) {
         if(this.texture != texture.getKey() && this.texture != null) {
             this.renderCurrent()

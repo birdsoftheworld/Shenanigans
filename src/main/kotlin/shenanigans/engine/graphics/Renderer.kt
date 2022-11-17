@@ -28,6 +28,9 @@ object Renderer {
     }
 
     fun discard() {
+        for (renderSystem in renderSystems) {
+            renderSystem.discard()
+        }
         TextureManager.discard()
     }
 

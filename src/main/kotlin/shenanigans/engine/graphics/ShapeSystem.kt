@@ -1,6 +1,7 @@
 package shenanigans.engine.graphics
 
 import shenanigans.engine.ecs.*
+import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.ShapeRenderer
 import shenanigans.engine.util.Transform
@@ -9,9 +10,8 @@ import kotlin.reflect.KClass
 /**
  * draws each entity that has a `Shape` and `Transform` component
  */
-class ShapeSystem : System {
+class ShapeSystem : RenderSystem {
     private val renderer = ShapeRenderer()
-
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Shape::class, Transform::class)
     }
@@ -30,5 +30,9 @@ class ShapeSystem : System {
         }
 
         renderer.end()
+    }
+
+    override fun discard() {
+        renderer.discard()
     }
 }

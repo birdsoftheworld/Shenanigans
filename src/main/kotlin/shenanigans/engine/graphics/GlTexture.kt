@@ -3,17 +3,21 @@ import de.matthiasmann.twl.utils.PNGDecoder
 import org.lwjgl.opengl.GL30C.*
 import java.nio.ByteBuffer
 
-class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, textureType: TextureType = TextureType.RGBA) {
+class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, options: TextureOptions = TextureOptions()) {
     private val textureId = glGenTextures()
 
     init {
         glBindTexture(GL_TEXTURE_2D, textureId)
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, textureType.glId, GL_UNSIGNED_BYTE, buf)
+        glTexImage2D(GL_TEXTURE_2D, 0, options.textureType.glId, width, height, 0, options.textureType.glId, GL_UNSIGNED_BYTE, buf)
 
-        //filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        // wrapping
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+
+        // filtering parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, options.filterType.glId)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, options.filterType.glId)
     }
 
     fun discard() {
@@ -41,8 +45,4 @@ class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, te
         }
     }
 
-    enum class TextureType(val glId: Int) {
-        RGBA(GL_RGBA),
-        A(GL_ALPHA)
-    }
 }

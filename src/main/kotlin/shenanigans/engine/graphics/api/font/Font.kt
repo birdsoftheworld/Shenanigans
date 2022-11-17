@@ -6,8 +6,8 @@ import org.lwjgl.stb.STBTTBakedChar
 import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype.*
 import org.lwjgl.system.MemoryStack.stackPush
-import shenanigans.engine.graphics.GlTexture
-import shenanigans.engine.graphics.api.TextureRenderer
+import shenanigans.engine.graphics.TextureOptions
+import shenanigans.engine.graphics.api.FontRenderer
 import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.graphics.api.texture.TextureManager
 import java.nio.ByteBuffer
@@ -24,12 +24,17 @@ class Font(val data: ByteBuffer, val height: Float) {
     private val BITMAP_W = 512
     private val BITMAP_H = 512
 
+    private val FIRST_CHAR = 32
+    private val NUM_CHARS = 96
+
+    val quad: STBTTAlignedQuad = STBTTAlignedQuad.malloc()
+
     init {
         if(!stbtt_InitFont(info, data)) {
             throw RuntimeException("Failed to load font")
         }
 
-        characterData = STBTTBakedChar.malloc(96)
+        characterData = STBTTBakedChar.malloc(NUM_CHARS)
         val bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H)
 
         stackPush().use {
@@ -43,19 +48,19 @@ class Font(val data: ByteBuffer, val height: Float) {
 
         // do some glfwGetMonitorContentScale sorta thing here
 
-        stbtt_BakeFontBitmap(data, height, bitmap, BITMAP_W, BITMAP_H, 32, characterData)
+        stbtt_BakeFontBitmap(data, height, bitmap, BITMAP_W, BITMAP_H, FIRST_CHAR, characterData)
 
-        bmpTexture = TextureManager.createTextureFromData(bitmap, BITMAP_W, BITMAP_H, GlTexture.TextureType.A)
+        bmpTexture = TextureManager.createTextureFromData(bitmap, BITMAP_W, BITMAP_H, TextureOptions(TextureOptions.TextureType.RED, TextureOptions.FilterType.LINEAR))
     }
 
-    fun drawToTextureRenderer(text: String, posX: Int, posY: Int, renderer: TextureRenderer) {
+    fun drawToFontRenderer(text: String, posX: Int, posY: Int, renderer: FontRenderer) {
         val scale = stbtt_ScaleForPixelHeight(info, height)
 
         stackPush().use { stack ->
             val codepointBuf: IntBuffer = stack.mallocInt(1)
             val x: FloatBuffer = stack.floats(0.0f)
             val y: FloatBuffer = stack.floats(0.0f)
-            val quad: STBTTAlignedQuad = STBTTAlignedQuad.malloc(stack)
+            quad.clear()
             var lineStart = 0
             val factorX: Float = 1.0f / 1 // content scale x
             val factorY: Float = 1.0f / 1 // content scale y
@@ -70,11 +75,11 @@ class Font(val data: ByteBuffer, val height: Float) {
                     x.put(0, 0.0f)
                     lineStart = i
                     continue
-                } else*/ if (codepoint < 32 || 128 <= codepoint) {
+                } else*/ if (codepoint < FIRST_CHAR || FIRST_CHAR + NUM_CHARS <= codepoint) {
                     continue
                 }
 //                val xBefore: Float = x.get(0)
-                stbtt_GetBakedQuad(characterData, BITMAP_W, BITMAP_H, codepoint - 32, x, y, quad, true)
+                stbtt_GetBakedQuad(characterData, BITMAP_W, BITMAP_H, codepoint - FIRST_CHAR, x, y, quad, true)
 //                x.put(0, scale(xBefore, x.get(0), factorX))
 
                 if (/* kerning */ true && charIndex < length) {
@@ -87,8 +92,10 @@ class Font(val data: ByteBuffer, val height: Float) {
 //                val y1: Float = scale(lineY, q.y1(), factorY)
                 val width = quad.x1() - quad.x0()
                 val height = quad.y1() - quad.y0()
+                val texWidth = quad.s1() - quad.s0()
+                val texHeight = quad.t1() - quad.t0()
                 renderer.textureRect(quad.x0() + posX, quad.y0() + posY, width, height, bmpTexture.getRegion(
-                    quad.x0(), quad.y0(), width, height
+                    quad.s0(), quad.t0(), texWidth, texHeight
                 ))
             }
         }
@@ -105,6 +112,10 @@ class Font(val data: ByteBuffer, val height: Float) {
         }
         cpOut.put(0, c1.code)
         return 1
+    }
+
+    fun discard() {
+        quad.free()
     }
 
     companion object {

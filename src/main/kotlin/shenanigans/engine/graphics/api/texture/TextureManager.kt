@@ -2,13 +2,14 @@ package shenanigans.engine.graphics.api.texture
 
 import org.joml.Vector2i
 import shenanigans.engine.graphics.GlTexture
+import shenanigans.engine.graphics.TextureOptions
 import shenanigans.engine.graphics.GlobalRendererState
 import shenanigans.engine.graphics.TextureKey
 import java.nio.ByteBuffer
 
 object TextureManager {
     private val queuedTextures = mutableListOf<Pair<TextureKey, String>>()
-    private val queuedRawTextures = mutableListOf<Pair<TextureKey, Triple<ByteBuffer, Vector2i, GlTexture.TextureType>>>()
+    private val queuedRawTextures = mutableListOf<Pair<TextureKey, Triple<ByteBuffer, Vector2i, TextureOptions>>>()
     private val keyedTextures = mutableMapOf<TextureKey, GlTexture>()
 
     fun createTexture(path: String) : Texture {
@@ -20,9 +21,9 @@ object TextureManager {
         return Texture(key)
     }
 
-    fun createTextureFromData(data: ByteBuffer, width: Int, height: Int, type: GlTexture.TextureType) : Texture {
+    fun createTextureFromData(data: ByteBuffer, width: Int, height: Int, options: TextureOptions = TextureOptions()) : Texture {
         val key = TextureKey()
-        queuedRawTextures.add(Pair(key, Triple(data, Vector2i(width, height), type)))
+        queuedRawTextures.add(Pair(key, Triple(data, Vector2i(width, height), options)))
         if(GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
         }
@@ -60,8 +61,8 @@ object TextureManager {
         keyedTextures[key] = glTexture
     }
 
-    private fun createRawTexture(data: ByteBuffer, width: Int, height: Int, type: GlTexture.TextureType, key: TextureKey) {
-        val glTexture = GlTexture(width, height, data, type)
+    private fun createRawTexture(data: ByteBuffer, width: Int, height: Int, options: TextureOptions, key: TextureKey) {
+        val glTexture = GlTexture(width, height, data, options)
         keyedTextures[key] = glTexture
     }
 
