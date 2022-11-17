@@ -2,6 +2,7 @@ package shenanigans.engine.ui
 
 import org.joml.Matrix4f
 import org.joml.Vector2f
+import org.joml.Vector2fc
 import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.Event
@@ -26,7 +27,7 @@ class ButtonSystem : System {
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
             if(event.action == MouseButtonAction.RELEASE) {
-                val mousePos = resources.get<MouseState>().position
+                val mousePos = resources.get<MouseState>().position()
 
                 entities.forEach { button ->
                     if(pointInside(button.component<Shape>().get(), button.component<Transform>().get(), mousePos)) {
@@ -37,7 +38,7 @@ class ButtonSystem : System {
         }
     }
 
-    private fun pointInside(shape: Shape, transform: Transform, point: Vector2f) : Boolean {
+    private fun pointInside(shape: Shape, transform: Transform, point: Vector2fc) : Boolean {
         val transformMatrix = Matrix4f()
 
         transformMatrix.setToTransform(transform.position, transform.rotation, transform.scale)
@@ -62,9 +63,9 @@ class ButtonSystem : System {
         return count % 2 == 1
     }
 
-    private fun pointProjectionIntersectsLine(point: Vector2f, line: Pair<Vector2f, Vector2f>) : Boolean {
-        return ((((line.first.y > point.y && line.second.y < point.y) ||
-            (line.first.y < point.y && line.second.y > point.y))) &&
-                (point.x < line.first.x || point.x < line.second.x))
+    private fun pointProjectionIntersectsLine(point: Vector2f, line: Pair<Vector2fc, Vector2fc>) : Boolean {
+        return ((((line.first.y() > point.y() && line.second.y() < point.()) ||
+            (line.first.y() < point.y() && line.second.y() > point.y()))) &&
+                (point.x() < line.first.x() || point.x() < line.second.x()))
     }
 }
