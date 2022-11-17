@@ -11,7 +11,7 @@ class SpriteSystem : System {
     private val renderer = TextureRenderer()
 
     // FIXME REMOVE THIS
-    private val font = Font.fromFile("/NotoSans-Medium.ttf", 31f)
+    private val font = Font.fromFile("/NotoSans-Medium.ttf", 100f)
 
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Sprite::class)

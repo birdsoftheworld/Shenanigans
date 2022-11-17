@@ -6,6 +6,7 @@ import org.lwjgl.stb.STBTTBakedChar
 import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype.*
 import org.lwjgl.system.MemoryStack.stackPush
+import shenanigans.engine.graphics.GlTexture
 import shenanigans.engine.graphics.api.TextureRenderer
 import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.graphics.api.texture.TextureManager
@@ -43,7 +44,8 @@ class Font(val data: ByteBuffer, val height: Float) {
         // do some glfwGetMonitorContentScale sorta thing here
 
         stbtt_BakeFontBitmap(data, height, bitmap, BITMAP_W, BITMAP_H, 32, characterData)
-        bmpTexture = TextureManager.createTextureFromData(bitmap, BITMAP_W, BITMAP_H)
+
+        bmpTexture = TextureManager.createTextureFromData(bitmap, BITMAP_W, BITMAP_H, GlTexture.TextureType.A)
     }
 
     fun drawToTextureRenderer(text: String, posX: Int, posY: Int, renderer: TextureRenderer) {
@@ -85,7 +87,9 @@ class Font(val data: ByteBuffer, val height: Float) {
 //                val y1: Float = scale(lineY, q.y1(), factorY)
                 val width = quad.x1() - quad.x0()
                 val height = quad.y1() - quad.y0()
-                renderer.textureRect(quad.x0() + posX, quad.y0() + posY, width, height, bmpTexture.getRegion())
+                renderer.textureRect(quad.x0() + posX, quad.y0() + posY, width, height, bmpTexture.getRegion(
+                    quad.x0(), quad.y0(), width, height
+                ))
             }
         }
     }
