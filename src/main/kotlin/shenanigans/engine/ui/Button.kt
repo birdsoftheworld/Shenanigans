@@ -59,12 +59,12 @@ class ButtonSystem : System {
                 count ++
             }
         }
-        return count != 0 && count % 2 == 0
+        return count % 2 == 1
     }
 
     private fun pointProjectionIntersectsLine(point: Vector2f, line: Pair<Vector2f, Vector2f>) : Boolean {
-        return (((line.first.y > point.y && line.second.y < point.y) ||
-            (line.first.y < point.y && line.second.y > point.y)) &&
-            point.x < line.first.x || point.x < line.second.x)
+        return ((((line.first.y > point.y && line.second.y < point.y) ||
+            (line.first.y < point.y && line.second.y > point.y))) &&
+                (point.x < line.first.x || point.x < line.second.x))
     }
 }
