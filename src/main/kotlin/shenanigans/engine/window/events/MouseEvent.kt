@@ -72,10 +72,8 @@ data class MouseScrollEvent(val offset: Vector2fc) : MouseEvent() {
 }
 
 class MouseState : Resource, StateMachineResource {
-    var position = Vector2f()
-        private set
-    var cursorPresent = false
-        private set
+    private val position = Vector2f()
+    private var cursorPresent = false
     private val pressed = mutableMapOf<MouseButton, Boolean>()
 
     override fun transition(queue: EventQueue) {
@@ -98,7 +96,15 @@ class MouseState : Resource, StateMachineResource {
         }
     }
 
-    fun mouseButtonPressed(button: MouseButton): Boolean {
+    fun position(): Vector2fc {
+        return this.position
+    }
+
+    fun cursorPresent(): Boolean {
+        return this.cursorPresent
+    }
+
+    fun isPressed(button: MouseButton): Boolean {
         return pressed.getOrDefault(button, false)
     }
 }
