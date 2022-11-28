@@ -7,7 +7,7 @@ class Entities {
 
 
     fun runSystem(system: System, resources: Resources) {
-        val query = system.query().toSet()
+        val query = system.query()
 
         val lifecycle = EntitiesLifecycle()
         system.execute(
@@ -16,7 +16,7 @@ class Entities {
                 .asSequence()
                 .withIndex()
                 .filter {
-                    it.value.keys.containsAll(query)
+                    it.value.keys.containsAll(query as Collection<KClass<out Component>>)
                 }.map { EntityView(it.index, it.value) },
             lifecycle
         )

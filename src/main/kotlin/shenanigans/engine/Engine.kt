@@ -6,11 +6,14 @@ import org.lwjgl.opengl.GL30C.*
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.StateMachineResource
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
+import shenanigans.engine.window.events.KeyboardState
+import shenanigans.engine.window.events.MouseState
 
 class Engine(initScene: Scene) {
     private lateinit var window: Window
@@ -32,8 +35,12 @@ class Engine(initScene: Scene) {
 
     private fun init() {
         window = Window("game", 640, 480)
+
         window.onEvent(::queueEvent)
         resources.set(WindowResource(window))
+
+        resources.set(KeyboardState())
+        resources.set(MouseState())
     }
 
     private fun loop() {
@@ -49,7 +56,14 @@ class Engine(initScene: Scene) {
             // shhhhh just pretend this is atomic
             val events = unprocessedEvents
             unprocessedEvents = mutableListOf()
-            resources.set(EventQueue(events.asSequence(), ::queueEvent))
+            val eventQueue = EventQueue(events.asSequence(), ::queueEvent)
+            resources.set(eventQueue)
+
+            resources.resources.forEach { (_, value) ->
+                if (value is StateMachineResource) {
+                    value.transition(eventQueue)
+                }
+            }
 
             val currentTime = glfwGetTime()
             resources.set(DeltaTime(currentTime - previousTime))
