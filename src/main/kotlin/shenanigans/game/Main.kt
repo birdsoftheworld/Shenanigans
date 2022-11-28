@@ -1,6 +1,8 @@
 package shenanigans.game
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import org.joml.Vector2f
+import org.joml.Vector2fc
 import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
@@ -13,9 +15,16 @@ import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.Button
 import shenanigans.engine.ui.ButtonSystem
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
+import shenanigans.engine.window.MouseButton
+import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
+import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MousePositionEvent
+import shenanigans.engine.window.events.MouseState
+import java.util.Vector
+import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
@@ -38,7 +47,7 @@ fun testScene(): Scene {
     return scene
 }
 
-class MousePlayer : Component
+class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{fun grab(){this.grabbed=true}fun drop(){this.grabbed=false}}
 data class KeyboardPlayer(val speed: Float) : Component
 
 class AddTestEntities : System {
@@ -49,7 +58,7 @@ class AddTestEntities : System {
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val shape = Shape(
             arrayOf(
-                Vector2f(0f, 0f), Vector2f(0f, 100f), Vector2f(100f, 100f), Vector2f(100f, 0f)
+                Vector2f(0f, 0f), Vector2f(0f, 50f), Vector2f(50f, 50f), Vector2f(50f, 0f)
             ), Color(1f, 0f, 0f)
         )
 
@@ -60,7 +69,7 @@ class AddTestEntities : System {
                 ),
                 shape,
                 Collider(shape, true),
-//                MousePlayer()
+                MousePlayer(false, Vector2f(0f,0f)),
             )
         )
 
@@ -96,8 +105,25 @@ class MouseMovementSystem : System {
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         resources.get<EventQueue>().iterate<MousePositionEvent>().forEach { event ->
             entities.forEach { entity ->
-                entity.component<Transform>().get().position.set(event.position)
-                entity.component<Transform>().mutate()
+                if(entity.component<MousePlayer>().get().grabbed){
+                    entity.component<Transform>().get().position.set(event.position.x()+entity.component<MousePlayer>().get().dragOffset.x(),event.position.y()+entity.component<MousePlayer>().get().dragOffset.y())
+                    entity.component<Transform>().mutate()
+                }
+            }
+        }
+
+        resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
+            entities.forEach { entity ->
+                if(event.action == MouseButtonAction.PRESS && entity.component<Shape>().get().isPointInside(resources.get<MouseState>().position(), entity.component<Transform>().get())){
+                    entity.component<MousePlayer>().get().dragOffset.x = entity.component<Transform>().get().position.x - resources.get<MouseState>().position().x()
+                    entity.component<MousePlayer>().get().dragOffset.y = entity.component<Transform>().get().position.y - resources.get<MouseState>().position().y()
+                    entity.component<MousePlayer>().get().grab()
+                }
+                if(event.action == MouseButtonAction.RELEASE){
+                    entity.component<MousePlayer>().get().drop()
+                    entity.component<Transform>().get().position.x = round(entity.component<Transform>().get().position.x/50)*50
+                    entity.component<Transform>().get().position.y = round(entity.component<Transform>().get().position.y/50)*50
+                }
             }
         }
     }
