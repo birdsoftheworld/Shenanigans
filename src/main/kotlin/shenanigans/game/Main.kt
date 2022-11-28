@@ -69,7 +69,11 @@ class AddTestEntities : System {
                 Transform(
                     Vector2f(200f, 200f)
                 ),
-                shape,
+                Shape(
+                    arrayOf(
+                        Vector2f(0f, 0f), Vector2f(0f, 100f), Vector2f(100f, 100f), Vector2f(100f, 0f)
+                    ), Color(0f, 0f, 1f)
+                ),
                 Collider(shape, false),
                 KeyboardPlayer(500f),
             )
