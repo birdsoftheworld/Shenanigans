@@ -5,7 +5,6 @@ import kotlin.reflect.KClass
 class Entities {
     private val entities: MutableList<Map<KClass<out Component>, StoredComponent>> = arrayListOf()
 
-
     fun runSystem(system: System, resources: Resources) {
         val query = system.query()
 

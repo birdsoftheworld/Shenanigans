@@ -1,5 +1,6 @@
 package shenanigans.engine
 
+import com.esotericsoftware.kryonet.Client
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.*
@@ -25,11 +26,13 @@ class Engine(initScene: Scene) {
 
     private var scene: Scene = initScene
     private val resources = Resources()
+    private val client = Client()
 
     private var unprocessedEvents = mutableListOf<Event>();
 
     fun run() {
         init()
+        client.sendTCP("GIMME")
         loop()
         glfwTerminate()
     }
@@ -39,7 +42,7 @@ class Engine(initScene: Scene) {
     }
 
     private fun init() {
-        window = Window("game", 640, 480)
+        window = Window("game", 700, 500)
 
         window.onEvent(::queueEvent)
         resources.set(WindowResource(window))

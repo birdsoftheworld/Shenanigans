@@ -3,7 +3,6 @@ package shenanigans.game.network
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
-import shenanigans.engine.util.Transform
 import java.io.IOException
 
 object Client {
@@ -24,7 +23,7 @@ object Client {
         addListeners()
     }
 
-    fun sendObj(msg : Transform){
+    fun sendObj(msg : String){
         client.sendTCP(msg)
     }
 

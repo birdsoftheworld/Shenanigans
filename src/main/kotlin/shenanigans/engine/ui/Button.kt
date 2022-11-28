@@ -19,7 +19,7 @@ class ButtonSystem : System {
 
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
-            if(event.action == MouseButtonAction.RELEASE) {
+            if(event.action == MouseButtonAction.PRESS) {
                 val mousePos = resources.get<MouseState>().position()
 
                 entities.forEach { button ->
