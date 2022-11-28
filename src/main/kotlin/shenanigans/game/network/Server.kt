@@ -14,13 +14,14 @@ object Server {
 
     private fun addListeners() {
         server.addListener(object : Listener {
-            override fun received(connection: Connection?, `object`: Any) {
-                if(`object` is String){
-                    server.sendToAllTCP("on its way")
-                    //server.sendToAllTCP("Server Received: $`object`  \nServer Replied: COOL")
-                }
+            override fun received(connection: Connection?, thing: Any) {
+
             }
         })
     }
 
+}
+
+fun main() {
+    Server()
 }
