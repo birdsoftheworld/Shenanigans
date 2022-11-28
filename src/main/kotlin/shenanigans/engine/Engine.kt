@@ -7,6 +7,10 @@ import shenanigans.engine.ecs.Resources
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachineResource
+import shenanigans.engine.events.control.ControlEvent
+import shenanigans.engine.events.control.ExitEvent
+import shenanigans.engine.events.control.SceneChangeEvent
+import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.scene.Scene
@@ -57,7 +61,25 @@ class Engine(initScene: Scene) {
             // shhhhh just pretend this is atomic
             val events = unprocessedEvents
             unprocessedEvents = mutableListOf()
-            val eventQueue = EventQueue(events.asSequence(), ::queueEvent)
+            val eventQueue = EventQueue(events, ::queueEvent)
+
+            val exit = eventQueue.iterate<ControlEvent>().any { e ->
+                when (e) {
+                    is ExitEvent -> true
+                    is SceneChangeEvent -> {
+                        scene = e.scene
+                        false
+                    }
+                    is UpdateDefaultSystemsEvent -> {
+                        e.update(scene.defaultSystems)
+                        false
+                    }
+                }
+            }
+            if (exit) {
+                break
+            }
+
             resources.set(eventQueue)
 
             resources.resources.forEach { (_, value) ->

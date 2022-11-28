@@ -24,7 +24,7 @@ class CollisionSystem : System {
 
         val collisionPairs = getCollisionPairs(entities)
 
-        collisionPairs.forEach() { pair ->
+        collisionPairs.forEach { pair ->
             val collision = testCollision(pair)
             val transform1 = pair.first.component<Transform>()
             val transform2 = pair.second.component<Transform>()
