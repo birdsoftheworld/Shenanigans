@@ -9,8 +9,8 @@ import shenanigans.engine.graphics.shader.Shader
 sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) {
 
     protected companion object {
-        const val DEFAULT_MAX_VERTICES = 500
-        const val DEFAULT_MAX_INDICES = 250
+        const val DEFAULT_MAX_VERTICES = 1024
+        const val DEFAULT_MAX_INDICES = 1024
     }
 
     protected abstract val shader: Shader
