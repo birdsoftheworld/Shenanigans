@@ -6,7 +6,8 @@ import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.reflect.KClass
 
 class CollisionSystem : System {

@@ -1,7 +1,6 @@
 package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
-import java.lang.IllegalArgumentException
 
 private const val INDEX = "index"
 

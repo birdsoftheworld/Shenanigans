@@ -2,9 +2,9 @@ package shenanigans.engine.graphics.api.texture
 
 import org.joml.Vector2i
 import shenanigans.engine.graphics.GlTexture
-import shenanigans.engine.graphics.TextureOptions
 import shenanigans.engine.graphics.GlobalRendererState
 import shenanigans.engine.graphics.TextureKey
+import shenanigans.engine.graphics.TextureOptions
 import java.nio.ByteBuffer
 
 object TextureManager {

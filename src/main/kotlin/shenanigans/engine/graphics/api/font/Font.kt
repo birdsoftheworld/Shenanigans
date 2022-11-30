@@ -2,8 +2,9 @@ package shenanigans.engine.graphics.api.font
 
 import org.lwjgl.BufferUtils
 import org.lwjgl.stb.STBTTFontinfo
+import org.lwjgl.stb.STBTruetype.stbtt_GetFontVMetrics
+import org.lwjgl.stb.STBTruetype.stbtt_InitFont
 import org.lwjgl.system.MemoryStack.stackPush
-import org.lwjgl.stb.STBTruetype.*
 import java.nio.ByteBuffer
 
 class Font(val data: ByteBuffer) {

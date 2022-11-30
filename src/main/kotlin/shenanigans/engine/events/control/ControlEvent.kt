@@ -1,7 +1,7 @@
 package shenanigans.engine.events.control
 
-import shenanigans.engine.events.Event
 import shenanigans.engine.ecs.System
+import shenanigans.engine.events.Event
 import shenanigans.engine.scene.Scene
 
 sealed class ControlEvent : Event

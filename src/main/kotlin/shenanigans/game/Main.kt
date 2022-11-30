@@ -1,8 +1,6 @@
 package shenanigans.game
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import org.joml.Vector2f
-import org.joml.Vector2fc
 import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
@@ -17,13 +15,11 @@ import shenanigans.engine.ui.ButtonSystem
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
-import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MousePositionEvent
 import shenanigans.engine.window.events.MouseState
-import java.util.Vector
 import kotlin.math.round
 import kotlin.reflect.KClass
 

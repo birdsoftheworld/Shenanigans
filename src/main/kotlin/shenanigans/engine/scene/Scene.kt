@@ -1,6 +1,8 @@
 package shenanigans.engine.scene
 
-import shenanigans.engine.ecs.*
+import shenanigans.engine.ecs.Entities
+import shenanigans.engine.ecs.Resources
+import shenanigans.engine.ecs.System
 
 class Scene {
     private val entities: Entities = Entities()

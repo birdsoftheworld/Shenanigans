@@ -3,7 +3,7 @@ package shenanigans.engine
 import com.esotericsoftware.kryonet.Client
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL30C.*
+import org.lwjgl.opengl.GL30C.glClearColor
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
@@ -12,8 +12,8 @@ import shenanigans.engine.events.control.ControlEvent
 import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
-import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.graphics.Renderer
+import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource

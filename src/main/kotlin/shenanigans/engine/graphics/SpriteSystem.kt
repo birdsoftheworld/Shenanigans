@@ -1,6 +1,9 @@
 package shenanigans.engine.graphics
 
-import shenanigans.engine.ecs.*
+import shenanigans.engine.ecs.Component
+import shenanigans.engine.ecs.EntitiesLifecycle
+import shenanigans.engine.ecs.EntityView
+import shenanigans.engine.ecs.Resources
 import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.graphics.api.TextureRenderer
 import shenanigans.engine.graphics.api.component.Sprite
