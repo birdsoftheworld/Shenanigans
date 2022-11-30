@@ -2,7 +2,6 @@ package shenanigans.game.network
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import com.esotericsoftware.kryonet.Server
-import shenanigans.engine.util.Transform
 
 object Server {
     val server : Server = Server()
@@ -15,13 +14,14 @@ object Server {
 
     private fun addListeners() {
         server.addListener(object : Listener {
-            override fun received(connection: Connection?, `object`: Any) {
-                if(`object` is Transform){
-                    server.sendToAllTCP(`object`.toString())
-                    //server.sendToAllTCP("Server Received: $`object`  \nServer Replied: COOL")
-                }
+            override fun received(connection: Connection?, thing: Any) {
+
             }
         })
     }
 
+}
+
+fun main() {
+    Server()
 }

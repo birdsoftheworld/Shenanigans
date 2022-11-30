@@ -6,7 +6,6 @@ import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
-import java.util.Vector
 import kotlin.math.*
 import kotlin.reflect.KClass
 
@@ -24,7 +23,7 @@ class CollisionSystem : System {
 
         val collisionPairs = getCollisionPairs(entities)
 
-        collisionPairs.forEach() { pair ->
+        collisionPairs.forEach { pair ->
             val collision = testCollision(pair)
             val transform1 = pair.first.component<Transform>()
             val transform2 = pair.second.component<Transform>()
