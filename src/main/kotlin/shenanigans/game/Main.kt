@@ -69,17 +69,18 @@ class AddTestEntities : System {
             )
         )
 
+        val shape2 = Shape(
+            arrayOf(
+                Vector2f(0f, 0f), Vector2f(0f, 100f), Vector2f(100f, 100f), Vector2f(100f, 0f)
+            ), Color(0f, 0f, 1f)
+        )
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector2f(200f, 200f)
                 ),
-                Shape(
-                    arrayOf(
-                        Vector2f(0f, 0f), Vector2f(0f, 100f), Vector2f(100f, 100f), Vector2f(100f, 0f)
-                    ), Color(0f, 0f, 1f)
-                ),
-                Collider(shape, false),
+                shape2,
+                Collider(shape2, false),
                 KeyboardPlayer(500f),
             )
         )
@@ -105,8 +106,10 @@ class MouseMovementSystem : System {
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         resources.get<EventQueue>().iterate<MousePositionEvent>().forEach { event ->
             entities.forEach { entity ->
-                if(entity.component<MousePlayer>().get().grabbed){
-                    entity.component<Transform>().get().position.set(event.position.x()+entity.component<MousePlayer>().get().dragOffset.x(),event.position.y()+entity.component<MousePlayer>().get().dragOffset.y())
+                val mousePlayer = entity.component<MousePlayer>().get()
+                val transform = entity.component<Transform>().get()
+                if(mousePlayer.grabbed){
+                    transform.position.set(event.position.x() + mousePlayer.dragOffset.x(), event.position.y() + mousePlayer.dragOffset.y())
                     entity.component<Transform>().mutate()
                 }
             }
@@ -114,15 +117,18 @@ class MouseMovementSystem : System {
 
         resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
             entities.forEach { entity ->
-                if(event.action == MouseButtonAction.PRESS && entity.component<Shape>().get().isPointInside(resources.get<MouseState>().position(), entity.component<Transform>().get())){
-                    entity.component<MousePlayer>().get().dragOffset.x = entity.component<Transform>().get().position.x - resources.get<MouseState>().position().x()
-                    entity.component<MousePlayer>().get().dragOffset.y = entity.component<Transform>().get().position.y - resources.get<MouseState>().position().y()
-                    entity.component<MousePlayer>().get().grab()
+                val transform = entity.component<Transform>().get()
+                val mousePosition = resources.get<MouseState>().position()
+                val mousePlayer = entity.component<MousePlayer>().get()
+                if(event.action == MouseButtonAction.PRESS && entity.component<Shape>().get().isPointInside(mousePosition, transform)){
+                    mousePlayer.dragOffset.x = transform.position.x - mousePosition.x()
+                    mousePlayer.dragOffset.y = transform.position.y - mousePosition.y()
+                    mousePlayer.grab()
                 }
                 if(event.action == MouseButtonAction.RELEASE){
-                    entity.component<MousePlayer>().get().drop()
-                    entity.component<Transform>().get().position.x = round(entity.component<Transform>().get().position.x/50)*50
-                    entity.component<Transform>().get().position.y = round(entity.component<Transform>().get().position.y/50)*50
+                    mousePlayer.drop()
+                    transform.position.x = round(transform.position.x/50)*50
+                    transform.position.y = round(transform.position.y/50)*50
                 }
             }
         }
