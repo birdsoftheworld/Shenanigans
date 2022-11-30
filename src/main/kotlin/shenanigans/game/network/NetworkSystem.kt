@@ -7,11 +7,11 @@ class Sendable : Component {}
 
 class NetworkSystem : System{
 
-    override fun query(): Iterable<KClass<out shenanigans.engine.ecs.Component>> {
+    override fun query(): Iterable<KClass<out Component>> {
         return setOf(Sendable::class)
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
 
     }
 }

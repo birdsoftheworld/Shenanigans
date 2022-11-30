@@ -2,7 +2,9 @@ package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
+import shenanigans.engine.Engine
 import shenanigans.engine.ecs.Resources
+import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.OrthoCamera
@@ -16,7 +18,12 @@ object Renderer {
 
     private val renderSystems = listOf(shapeSystem, spriteSystem)
 
-    fun init() {
+    private lateinit var renderResources: Resources
+
+    fun init(engine: Engine) {
+        renderResources = Resources()
+        renderResources.set(CameraResource(orthoCamera))
+
         GlobalRendererState.initialize()
         if(System.getProperty("render_debug") != null) {
             GLUtil.setupDebugMessageCallback()
@@ -34,7 +41,7 @@ object Renderer {
         TextureManager.discard()
     }
 
-    fun renderGame(window: Window, scene: Scene) {
+    fun renderGame(window: Window, scene: Scene, engineResources: Resources) {
         val width = window.width
         val height = window.height
         glViewport(0, 0, width, height)
@@ -42,8 +49,7 @@ object Renderer {
 
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-        val resources = Resources()
-        resources.set(CameraResource(orthoCamera))
+        val resources = ResourcesView(renderResources, scene.sceneResources, engineResources)
         scene.runSystems(resources, renderSystems)
 
         window.swapBuffers()

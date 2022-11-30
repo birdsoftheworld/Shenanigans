@@ -5,12 +5,12 @@ import kotlin.reflect.KClass
 class Entities {
     private val entities: MutableList<Map<KClass<out Component>, StoredComponent>> = arrayListOf()
 
-    fun runSystem(system: System, resources: Resources) {
+    fun runSystem(system: System, resourcesView: ResourcesView) {
         val query = system.query()
 
         val lifecycle = EntitiesLifecycle()
         system.execute(
-            resources,
+            resourcesView,
             entities
                 .asSequence()
                 .withIndex()

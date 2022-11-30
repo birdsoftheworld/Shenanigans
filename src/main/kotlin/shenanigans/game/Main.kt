@@ -33,7 +33,7 @@ fun testScene(): Scene {
     // NOTE: in the future, this will not be the recommended way to populate a scene
     //       instead, the engine will have a facility for running systems once
     //       which will be used with a canonical "AddEntities" system
-    scene.runSystems(Resources(), listOf(AddTestEntities()))
+    scene.runSystems(ResourcesView(), listOf(AddTestEntities()))
 
     scene.defaultSystems.add(MouseMovementSystem())
     scene.defaultSystems.add(KeyboardMovementSystem())
@@ -51,7 +51,7 @@ class AddTestEntities : System {
         return emptySet()
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val shape = Shape(
             arrayOf(
                 Vector2f(0f, 0f), Vector2f(0f, 50f), Vector2f(50f, 50f), Vector2f(50f, 0f)
@@ -103,7 +103,7 @@ class MouseMovementSystem : System {
         return setOf(MousePlayer::class, Transform::class)
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         resources.get<EventQueue>().iterate<MousePositionEvent>().forEach { event ->
             entities.forEach { entity ->
                 val mousePlayer = entity.component<MousePlayer>().get()
@@ -140,7 +140,7 @@ class KeyboardMovementSystem : System {
         return setOf(KeyboardPlayer::class, Transform::class)
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTime = resources.get<DeltaTime>().deltaTime
 

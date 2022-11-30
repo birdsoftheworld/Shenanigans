@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.glClearColor
 import shenanigans.engine.ecs.Resources
+import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachineResource
@@ -23,8 +24,8 @@ import shenanigans.engine.window.events.MouseState
 class Engine(initScene: Scene) {
     private lateinit var window: Window
 
+    internal val engineResources = Resources()
     private var scene: Scene = initScene
-    private val resources = Resources()
     private val client = Client()
 
     private var unprocessedEvents = mutableListOf<Event>();
@@ -44,15 +45,15 @@ class Engine(initScene: Scene) {
         window = Window("game", 700, 500)
 
         window.onEvent(::queueEvent)
-        resources.set(WindowResource(window))
+        engineResources.set(WindowResource(window))
 
-        resources.set(KeyboardState())
-        resources.set(MouseState())
+        engineResources.set(KeyboardState())
+        engineResources.set(MouseState())
     }
 
     private fun loop() {
         GL.createCapabilities()
-        Renderer.init()
+        Renderer.init(this)
 
         glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         var previousTime = glfwGetTime()
@@ -82,21 +83,21 @@ class Engine(initScene: Scene) {
                 break
             }
 
-            resources.set(eventQueue)
+            engineResources.set(eventQueue)
 
-            resources.resources.forEach { (_, value) ->
+            engineResources.resources.forEach { (_, value) ->
                 if (value is StateMachineResource) {
                     value.transition(eventQueue)
                 }
             }
 
             val currentTime = glfwGetTime()
-            resources.set(DeltaTime(currentTime - previousTime))
+            engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(resources)
+            scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
 
-            Renderer.renderGame(window, scene)
+            Renderer.renderGame(window, scene, engineResources)
         }
 
         Renderer.discard()
