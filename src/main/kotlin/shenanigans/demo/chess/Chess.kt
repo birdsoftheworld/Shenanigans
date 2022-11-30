@@ -43,7 +43,7 @@ class AddTiles : System {
                                 Vector2f(tileSize, tileSize),
                                 Vector2f(tileSize, 0f),
                             ),
-                            if (i + j % 2 == 0) {
+                            if ((i + j) % 2 == 0) {
                                 Color(0f, 0f, 0f)
                             } else {
                                 Color(1f, 1f, 1f)
