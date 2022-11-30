@@ -2,6 +2,7 @@ package shenanigans.game.network
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryonet.EndPoint
+import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import java.awt.Component
@@ -15,4 +16,5 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(Collider::class.java)
     kryo.register(Transform::class.java)
     kryo.register(Map::class.java)
+    kryo.register(EntityView::class.java)
 }
