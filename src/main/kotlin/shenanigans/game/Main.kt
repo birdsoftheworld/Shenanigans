@@ -1,6 +1,7 @@
 package shenanigans.game
 
 import org.joml.Vector2f
+import shenanigans.engine.ClientEngine
 import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
@@ -20,11 +21,14 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MousePositionEvent
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.network.Client
+import shenanigans.game.network.NetworkSystem
+import shenanigans.game.network.Sendable
 import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
-    Engine(testScene()).run()
+    ClientEngine(testScene()).run()
 }
 
 fun testScene(): Scene {
@@ -39,6 +43,7 @@ fun testScene(): Scene {
     scene.defaultSystems.add(KeyboardMovementSystem())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(ButtonSystem())
+    scene.defaultSystems.add(NetworkSystem())
 
     return scene
 }
@@ -82,6 +87,7 @@ class AddTestEntities : System {
                 shape2,
                 Collider(shape2, false),
                 KeyboardPlayer(500f),
+                Sendable(),
             )
         )
 

@@ -20,85 +20,23 @@ import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 
-class Engine(initScene: Scene) {
-    private lateinit var window: Window
+abstract class Engine(initScene: Scene) {
+    protected var scene: Scene = initScene
+    protected val resources = Resources()
 
-    private var scene: Scene = initScene
-    private val resources = Resources()
-    private val client = Client()
-
-    private var unprocessedEvents = mutableListOf<Event>();
+    protected var unprocessedEvents = mutableListOf<Event>();
 
     fun run() {
         init()
-        client.sendTCP("GIMME")
         loop()
         glfwTerminate()
     }
+
+    abstract fun init()
 
     fun queueEvent(event: Event) {
         unprocessedEvents.add(event)
     }
 
-    private fun init() {
-        window = Window("game", 640, 640)
-
-        window.onEvent(::queueEvent)
-        resources.set(WindowResource(window))
-
-        resources.set(KeyboardState())
-        resources.set(MouseState())
-    }
-
-    private fun loop() {
-        GL.createCapabilities()
-        Renderer.init()
-
-        glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
-        var previousTime = glfwGetTime()
-
-        while (!window.shouldClose) {
-            glfwPollEvents()
-
-            // shhhhh just pretend this is atomic
-            val events = unprocessedEvents
-            unprocessedEvents = mutableListOf()
-            val eventQueue = EventQueue(events, ::queueEvent)
-
-            val exit = eventQueue.iterate<ControlEvent>().any { e ->
-                when (e) {
-                    is ExitEvent -> true
-                    is SceneChangeEvent -> {
-                        scene = e.scene
-                        false
-                    }
-                    is UpdateDefaultSystemsEvent -> {
-                        e.update(scene.defaultSystems)
-                        false
-                    }
-                }
-            }
-            if (exit) {
-                break
-            }
-
-            resources.set(eventQueue)
-
-            resources.resources.forEach { (_, value) ->
-                if (value is StateMachineResource) {
-                    value.transition(eventQueue)
-                }
-            }
-
-            val currentTime = glfwGetTime()
-            resources.set(DeltaTime(currentTime - previousTime))
-            previousTime = currentTime
-
-            scene.runSystems(resources)
-
-            Renderer.renderGame(window, scene)
-        }
-
-        Renderer.discard()
-    }
+    abstract fun loop()
 }
