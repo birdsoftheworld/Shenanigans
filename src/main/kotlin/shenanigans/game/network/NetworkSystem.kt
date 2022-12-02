@@ -3,12 +3,12 @@ package shenanigans.game.network
 import shenanigans.engine.ecs.*
 import kotlin.reflect.KClass
 
-class Sendable : Component {}
+class Sendable : Component
 
 class NetworkSystem : System{
-    val client : Client = Client
+    private val client : Client = Client
 
-    override fun query(): Iterable<KClass<out shenanigans.engine.ecs.Component>> {
+    override fun query(): Iterable<KClass<out Component>> {
         return setOf(Sendable::class)
     }
 

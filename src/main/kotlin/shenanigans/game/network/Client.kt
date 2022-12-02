@@ -3,6 +3,7 @@ package shenanigans.game.network
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
+import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntityView
 import java.io.IOException
 
@@ -28,7 +29,11 @@ object Client {
         addListeners()
     }
 
-    fun sendEntity(entity : EntityView) {
+    fun sendEntity(entityView: EntityView) {
+        val entity = mutableListOf<Component>()
+        entityView.components.values.forEach {
+            entity.add(it.component)
+        }
         client.sendTCP(entity)
     }
 

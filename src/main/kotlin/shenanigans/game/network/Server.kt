@@ -2,15 +2,14 @@ package shenanigans.game.network
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import com.esotericsoftware.kryonet.Server
+import shenanigans.engine.HeadlessEngine
 import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.scene.Scene
 
 object Server {
-    val server : Server = Server()
+    private val server : Server = Server()
 
-    var scene : Scene = Scene()
-
-    private var running: Boolean = true
+    val engine: HeadlessEngine = HeadlessEngine(Scene())
 
     init {
         server.start()
@@ -31,7 +30,7 @@ object Server {
     }
 
     fun stop() {
-        running = false
+        engine.running = false
         server.stop()
     }
 }
