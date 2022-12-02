@@ -39,7 +39,6 @@ class Window(title: String, width: Int, height: Int) {
         get() = size.y
 
     init {
-        check(glfwInit()) { "Failed to initialize GLFW" }
         glfwDefaultWindowHints()
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)

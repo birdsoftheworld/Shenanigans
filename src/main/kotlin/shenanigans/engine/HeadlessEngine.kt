@@ -1,6 +1,7 @@
 package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
+import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachineResource
 import shenanigans.engine.events.control.ControlEvent
@@ -14,7 +15,6 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
     var running = true
 
     override fun init() {
-
     }
 
     override fun loop() {
@@ -56,7 +56,7 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
             engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(engineResources)
+            scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
         }
     }
 
