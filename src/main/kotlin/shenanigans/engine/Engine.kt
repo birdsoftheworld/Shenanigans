@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C.glClearColor
 import shenanigans.engine.ecs.Resources
+import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachineResource
@@ -22,7 +23,7 @@ import shenanigans.engine.window.events.MouseState
 
 abstract class Engine(initScene: Scene) {
     protected var scene: Scene = initScene
-    protected val resources = Resources()
+    internal val engineResources = Resources()
 
     protected var unprocessedEvents = mutableListOf<Event>();
 
