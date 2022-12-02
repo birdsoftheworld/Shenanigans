@@ -20,6 +20,8 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MousePositionEvent
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.player.Player
+import shenanigans.game.player.PlayerController
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -36,7 +38,7 @@ fun testScene(): Scene {
     scene.runSystems(Resources(), listOf(AddTestEntities()))
 
     scene.defaultSystems.add(MouseMovementSystem())
-    scene.defaultSystems.add(KeyboardMovementSystem())
+    scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(ButtonSystem())
 
@@ -44,7 +46,7 @@ fun testScene(): Scene {
 }
 
 class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{fun grab(){this.grabbed=true}fun drop(){this.grabbed=false}}
-data class KeyboardPlayer(val speed: Float) : Component
+
 
 class AddTestEntities : System {
     override fun query(): Iterable<KClass<out Component>> {
@@ -81,7 +83,7 @@ class AddTestEntities : System {
                 ),
                 shape2,
                 Collider(shape2, false),
-                KeyboardPlayer(500f),
+                Player(500f),
             )
         )
 
@@ -135,37 +137,3 @@ class MouseMovementSystem : System {
     }
 }
 
-class KeyboardMovementSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(KeyboardPlayer::class, Transform::class)
-    }
-
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        val keyboard = resources.get<KeyboardState>()
-        val deltaTime = resources.get<DeltaTime>().deltaTime
-
-        entities.forEach { entity ->
-            val velocity = Vector2f()
-            if (keyboard.isPressed(Key.W)) {
-                velocity.add(Vector2f(0f, -1f))
-            }
-            if (keyboard.isPressed(Key.A)) {
-                velocity.add(Vector2f(-1f, 0f))
-            }
-            if (keyboard.isPressed(Key.S)) {
-                velocity.add(Vector2f(0f, 1f))
-            }
-            if (keyboard.isPressed(Key.D)) {
-                velocity.add(Vector2f(1f, 0f))
-            }
-
-            if (velocity.length() > 0) {
-                velocity.normalize((entity.component<KeyboardPlayer>().get().speed * deltaTime).toFloat())
-
-                val transform = entity.component<Transform>()
-                transform.get().position.add(velocity)
-                transform.mutate()
-            }
-        }
-    }
-}
