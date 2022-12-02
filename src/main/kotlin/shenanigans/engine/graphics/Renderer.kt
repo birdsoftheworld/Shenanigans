@@ -2,9 +2,9 @@ package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
-import shenanigans.engine.Engine
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.graphics.api.CameraResource
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.OrthoCamera
@@ -20,7 +20,7 @@ object Renderer {
 
     private lateinit var renderResources: Resources
 
-    fun init(engine: Engine) {
+    fun init() {
         renderResources = Resources()
         renderResources.set(CameraResource(orthoCamera))
 
