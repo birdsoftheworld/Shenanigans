@@ -44,19 +44,19 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
                 break
             }
 
-            resources.set(eventQueue)
+            engineResources.set(eventQueue)
 
-            resources.resources.forEach { (_, value) ->
+            engineResources.resources.forEach { (_, value) ->
                 if (value is StateMachineResource) {
                     value.transition(eventQueue)
                 }
             }
 
             val currentTime = GLFW.glfwGetTime()
-            resources.set(DeltaTime(currentTime - previousTime))
+            engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(resources)
+            scene.runSystems(engineResources)
         }
     }
 

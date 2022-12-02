@@ -4,6 +4,7 @@ import com.esotericsoftware.kryonet.Client
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C
+import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachineResource
 import shenanigans.engine.events.control.ControlEvent
@@ -27,10 +28,10 @@ class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
         window = Window("game", 640, 640)
 
         window.onEvent(::queueEvent)
-        resources.set(WindowResource(window))
+        engineResources.set(WindowResource(window))
 
-        resources.set(KeyboardState())
-        resources.set(MouseState())
+        engineResources.set(KeyboardState())
+        engineResources.set(MouseState())
     }
 
     override fun loop() {
@@ -65,21 +66,21 @@ class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
                 break
             }
 
-            resources.set(eventQueue)
+            engineResources.set(eventQueue)
 
-            resources.resources.forEach { (_, value) ->
+            engineResources.resources.forEach { (_, value) ->
                 if (value is StateMachineResource) {
                     value.transition(eventQueue)
                 }
             }
 
             val currentTime = GLFW.glfwGetTime()
-            resources.set(DeltaTime(currentTime - previousTime))
+            engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(resources)
+            scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
 
-            Renderer.renderGame(window, scene)
+            Renderer.renderGame(window, scene, engineResources)
         }
 
         Renderer.discard()
