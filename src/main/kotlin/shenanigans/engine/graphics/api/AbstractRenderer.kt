@@ -17,6 +17,7 @@ abstract class AbstractRenderer(attribs: Set<VertexAttribute>, val vertexCapacit
 
     protected val mesh = Mesh(vertexCapacity, indicesCapacity, attribs)
     protected var started = false
+
     protected val indices = ArrayList<Int>(vertexCapacity)
     protected val positions = ArrayList<Float>(indicesCapacity * 3)
     protected var lowestIndex = 0
