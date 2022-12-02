@@ -59,19 +59,12 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         shader.createUniform("projectionMatrix")
     }
 
-    private fun renderCurrent() {
-        if(lowestIndex != 0) {
-            this.writeToMesh()
-            this.render()
-        }
-
-        this.clear()
-    }
-
     fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) {
         if(this.texture != texture.getKey() && this.texture != null) {
-            this.renderCurrent()
+            this.flush()
         }
+        flushIfFull(4, 6)
+
         this.texture = texture.getKey()
         addIndex(0)
         addIndex(2)
