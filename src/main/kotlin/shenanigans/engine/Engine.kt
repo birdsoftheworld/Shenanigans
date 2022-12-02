@@ -28,7 +28,7 @@ class Engine(initScene: Scene) {
     private var scene: Scene = initScene
     private val client = Client()
 
-    private var unprocessedEvents = mutableListOf<Event>();
+    private var unprocessedEvents = mutableListOf<Event>()
 
     fun run() {
         init()
@@ -85,7 +85,7 @@ class Engine(initScene: Scene) {
 
             engineResources.set(eventQueue)
 
-            engineResources.resources.forEach { (_, value) ->
+            ResourcesView(engineResources, scene.sceneResources).asSequence().forEach { (_, value) ->
                 if (value is StateMachineResource) {
                     value.transition(eventQueue)
                 }
