@@ -2,7 +2,7 @@ package shenanigans.game
 
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
-import shenanigans.engine.Engine
+import shenanigans.engine.ClientOnly
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.graphics.api.Color
@@ -21,7 +21,6 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MousePositionEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.Client
 import shenanigans.game.network.NetworkSystem
 import shenanigans.game.network.Sendable
 import kotlin.math.round
@@ -48,8 +47,8 @@ fun testScene(): Scene {
     return scene
 }
 
-class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{fun grab(){this.grabbed=true}fun drop(){this.grabbed=false}}
-data class KeyboardPlayer(val speed: Float) : Component
+@ClientOnly class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{fun grab(){this.grabbed=true}fun drop(){this.grabbed=false}}
+@ClientOnly data class KeyboardPlayer(val speed: Float) : Component
 
 class AddTestEntities : System {
     override fun query(): Iterable<KClass<out Component>> {

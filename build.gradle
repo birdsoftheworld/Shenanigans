@@ -28,6 +28,8 @@ dependencies {
 
 	api 'com.github.crykn:kryonet:2.22.7'
 
+	implementation("com.google.guava:guava:31.1-jre")
+
 	implementation "org.lwjgl:lwjgl"
 	implementation "org.lwjgl:lwjgl-assimp"
 	implementation "org.lwjgl:lwjgl-bgfx"

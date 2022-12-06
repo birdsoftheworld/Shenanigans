@@ -85,3 +85,5 @@ class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
         Renderer.discard()
     }
 }
+
+annotation class ClientOnly
