@@ -1,4 +1,4 @@
-package shenanigans.engine.util
+package shenanigans.engine.util.camera
 
 import org.joml.Matrix4f
 

@@ -2,7 +2,7 @@ package shenanigans.engine.graphics.api
 
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachineResource
-import shenanigans.engine.util.Camera
+import shenanigans.engine.util.camera.Camera
 
 class CameraResource(camera: Camera? = null) : StateMachineResource {
     var camera: Camera? = camera

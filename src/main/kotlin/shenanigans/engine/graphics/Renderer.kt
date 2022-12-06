@@ -2,27 +2,28 @@ package shenanigans.engine.graphics
 
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
-import shenanigans.engine.ecs.Resources
-import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.CameraResource
+import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
-import shenanigans.engine.util.OrthoCamera
+import shenanigans.engine.util.camera.OrthoCamera
 import shenanigans.engine.window.Window
+import shenanigans.engine.window.WindowResource
+import java.lang.System
+import kotlin.reflect.KClass
 
 object Renderer {
-    private val orthoCamera = OrthoCamera()
-
+    private val syncCameraSystem = SyncCameraSystem()
     private val shapeSystem = ShapeSystem()
     private val spriteSystem = SpriteSystem()
 
-    private val renderSystems = listOf(shapeSystem, spriteSystem)
+    private val renderSystems = listOf(syncCameraSystem, shapeSystem, spriteSystem)
 
     private lateinit var renderResources: Resources
 
     fun init() {
         renderResources = Resources()
-        renderResources.set(CameraResource(orthoCamera))
 
         GlobalRendererState.initialize()
         if(System.getProperty("render_debug") != null) {
@@ -45,7 +46,6 @@ object Renderer {
         val width = window.width
         val height = window.height
         glViewport(0, 0, width, height)
-        orthoCamera.setScreenSize(width, height)
 
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
@@ -53,5 +53,20 @@ object Renderer {
         scene.runSystems(resources, renderSystems)
 
         window.swapBuffers()
+    }
+}
+
+private class SyncCameraSystem : RenderSystem {
+    override fun discard() {
+
+    }
+
+    override fun query(): Iterable<KClass<out Component>> {
+        return emptySet()
+    }
+
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        val window = resources.get<WindowResource>()
+        resources.get<CameraResource>().camera?.setScreenSize(window.window.width, window.window.height)
     }
 }

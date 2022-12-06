@@ -5,7 +5,7 @@ import shenanigans.engine.ecs.Resources
 import shenanigans.engine.events.Event
 import shenanigans.engine.graphics.api.CameraResource
 import shenanigans.engine.scene.Scene
-import shenanigans.engine.util.OrthoCamera
+import shenanigans.engine.util.camera.OrthoCamera
 
 abstract class Engine(initScene: Scene) {
     protected var scene: Scene = initScene
