@@ -165,6 +165,7 @@ class KeyboardMovementSystem : System {
             }
 
             if (velocity.length() > 0) {
+                println(velocity.length())
                 velocity.normalize((entity.component<KeyboardPlayer>().get().speed * deltaTime).toFloat())
 
                 val transform = entity.component<Transform>()

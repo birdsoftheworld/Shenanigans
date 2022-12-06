@@ -3,6 +3,7 @@ package shenanigans.game.network
 import com.google.common.collect.BiMap
 import shenanigans.engine.ClientOnly
 import shenanigans.engine.ecs.*
+import shenanigans.game.network.client.Client
 import kotlin.reflect.KClass
 
 @ClientOnly

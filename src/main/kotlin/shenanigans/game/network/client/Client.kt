@@ -1,11 +1,11 @@
-package shenanigans.game.network
+package shenanigans.game.network.client
 
 import com.esotericsoftware.kryonet.Client
-import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.ClientOnly
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntityView
+import shenanigans.game.network.registerClasses
 import java.io.IOException
 
 object Client {

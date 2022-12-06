@@ -1,13 +1,11 @@
-package shenanigans.game.network
+package shenanigans.game.network.server
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import com.esotericsoftware.kryonet.Server
-import com.esotericsoftware.minlog.Log
 import shenanigans.engine.HeadlessEngine
 import shenanigans.engine.ecs.Component
-import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.scene.Scene
-import java.util.logging.Level
+import shenanigans.game.network.registerClasses
 
 object Server {
     private val server : Server = Server()
