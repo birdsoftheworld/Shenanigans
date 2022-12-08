@@ -2,10 +2,9 @@ package shenanigans.game
 
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
-import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.graphics.api.CameraResource
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
@@ -20,10 +19,7 @@ import shenanigans.engine.window.Key
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
-import shenanigans.engine.window.events.MousePositionEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.Client
-import shenanigans.game.network.NetworkSystem
 import shenanigans.game.network.Sendable
 import kotlin.math.round
 import kotlin.reflect.KClass
@@ -44,9 +40,23 @@ fun testScene(): Scene {
     scene.defaultSystems.add(KeyboardMovementSystem())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(ButtonSystem())
+    scene.defaultSystems.add(FollowCameraSystem())
 //    scene.defaultSystems.add(NetworkSystem())
 
     return scene
+}
+
+class FollowCameraSystem : System {
+    override fun query(): Iterable<KClass<out Component>> {
+        return setOf(KeyboardPlayer::class, Transform::class)
+    }
+
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        val first = entities.first()
+        val transform = first.component<Transform>().get()
+        val camera = resources.get<CameraResource>().camera!!
+        camera.reset().translate(transform.position.x - camera.screenWidth / 2 + 50, transform.position.y - camera.screenHeight / 2 + 50)
+    }
 }
 
 class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{

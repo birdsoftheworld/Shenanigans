@@ -1,7 +1,8 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.VertexAttribute
+import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.graphics.shader.Shader

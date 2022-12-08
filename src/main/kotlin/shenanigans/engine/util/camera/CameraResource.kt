@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.util.camera
 
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachineResource

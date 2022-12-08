@@ -1,11 +1,18 @@
 package shenanigans.engine.graphics
 
+import org.joml.Vector2i
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
-import shenanigans.engine.graphics.api.CameraResource
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.RenderSystem
-import shenanigans.engine.graphics.api.TextureRenderer
+import shenanigans.engine.graphics.api.renderer.AbstractRenderer
+import shenanigans.engine.graphics.api.renderer.FontRenderer
+import shenanigans.engine.graphics.api.renderer.ShapeRenderer
+import shenanigans.engine.graphics.api.renderer.TextureRenderer
+import shenanigans.engine.graphics.api.resource.FontRendererResource
+import shenanigans.engine.graphics.api.resource.ShapeRendererResource
+import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.window.Window
@@ -23,8 +30,20 @@ object Renderer {
 
     private lateinit var renderResources: Resources
 
+    private lateinit var textureRenderer: TextureRenderer
+    private lateinit var shapeRenderer: ShapeRenderer
+    private lateinit var fontRenderer: FontRenderer
+
     fun init() {
         renderResources = Resources()
+
+        textureRenderer = TextureRenderer()
+        shapeRenderer = ShapeRenderer()
+        fontRenderer = FontRenderer()
+
+        renderResources.set(TextureRendererResource(textureRenderer))
+        renderResources.set(ShapeRendererResource(shapeRenderer))
+        renderResources.set(FontRendererResource(fontRenderer))
 
         GlobalRendererState.initialize()
         if(System.getProperty("render_debug") != null) {
@@ -44,6 +63,9 @@ object Renderer {
     }
 
     fun discard() {
+        textureRenderer.discard()
+        shapeRenderer.discard()
+        fontRenderer.discard()
         for (renderSystem in renderSystems) {
             renderSystem.discard()
         }
@@ -65,14 +87,11 @@ object Renderer {
 }
 
 private class DrawBackgroundSystem : RenderSystem {
-    val background = TextureManager.createTexture("/sprite.png")
-    val textureRenderer = TextureRenderer()
+    val background = TextureManager.createTexture("/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
+    val imageSize = Vector2i(400, 400)
 
     init {
 
-    }
-
-    override fun discard() {
     }
 
     override fun query(): Iterable<KClass<out Component>> {
@@ -80,21 +99,25 @@ private class DrawBackgroundSystem : RenderSystem {
     }
 
     override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
         val size = resources.get<WindowResource>().window.size
+        val camera = resources.get<CameraResource>().camera!!
+        val translation = camera.translation
 
+        val view = camera.computeViewMatrix()
+        textureRenderer.projection = camera.computeProjectionMatrix()
         textureRenderer.start()
 
-        textureRenderer.textureRect(0f, 0f, size.x.toFloat(), size.y.toFloat(), background.getRegion())
+        textureRenderer.transformation = view
+        textureRenderer.textureRect(translation.x, translation.y, size.x.toFloat(), size.y.toFloat(), background.getRegion(
+            translation.x / imageSize.x, translation.y / imageSize.y, size.x.toFloat() / imageSize.x, size.y.toFloat() / imageSize.y
+        ))
 
         textureRenderer.end()
     }
 }
 
 private class SyncCameraSystem : RenderSystem {
-    override fun discard() {
-
-    }
-
     override fun query(): Iterable<KClass<out Component>> {
         return emptySet()
     }

@@ -8,13 +8,12 @@ import shenanigans.engine.graphics.TextureOptions
 import java.nio.ByteBuffer
 
 object TextureManager {
-    private val queuedTextures = mutableListOf<Pair<TextureKey, String>>()
-    private val queuedRawTextures = mutableListOf<Pair<TextureKey, Triple<ByteBuffer, Vector2i, TextureOptions>>>()
+    private val queuedTextures = mutableListOf<Pair<TextureKey, TextureCreatable>>()
     private val keyedTextures = mutableMapOf<TextureKey, GlTexture>()
 
-    fun createTexture(path: String) : Texture {
+    fun createTexture(path: String, options: TextureOptions = TextureOptions()) : Texture {
         val key = TextureKey()
-        queuedTextures.add(Pair(key, path))
+        queuedTextures.add(Pair(key, PathTexture(options, path)))
         if(GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
         }
@@ -23,7 +22,7 @@ object TextureManager {
 
     fun createTextureFromData(data: ByteBuffer, width: Int, height: Int, options: TextureOptions = TextureOptions()) : Texture {
         val key = TextureKey()
-        queuedRawTextures.add(Pair(key, Triple(data, Vector2i(width, height), options)))
+        queuedTextures.add(Pair(key, RawTexture(options, data, Vector2i(width, height))))
         if(GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
         }
@@ -32,16 +31,7 @@ object TextureManager {
 
     internal fun dequeue() {
         for (queuedTexture in queuedTextures) {
-            createTexture(queuedTexture.second, queuedTexture.first)
-        }
-        for (queuedRawTexture in queuedRawTextures) {
-            createRawTexture(
-                queuedRawTexture.second.first,
-                queuedRawTexture.second.second.x,
-                queuedRawTexture.second.second.y,
-                queuedRawTexture.second.third,
-                queuedRawTexture.first
-            )
+            keyedTextures[queuedTexture.first] = queuedTexture.second.create()
         }
         queuedTextures.clear()
     }
@@ -54,22 +44,26 @@ object TextureManager {
         return keyedTextures[key]!!
     }
 
-    private fun createTexture(path: String, key: TextureKey) {
-        val glTexture = GlTexture.create(
-            path
-        )
-        keyedTextures[key] = glTexture
-    }
-
-    private fun createRawTexture(data: ByteBuffer, width: Int, height: Int, options: TextureOptions, key: TextureKey) {
-        val glTexture = GlTexture(width, height, data, options)
-        keyedTextures[key] = glTexture
-    }
-
     fun discard() {
         for (texture in keyedTextures.values) {
             texture.discard()
         }
         keyedTextures.clear()
+    }
+}
+
+private abstract class TextureCreatable(val options: TextureOptions) {
+    abstract fun create() : GlTexture
+}
+
+private class PathTexture(options: TextureOptions, val path: String) : TextureCreatable(options) {
+    override fun create(): GlTexture {
+        return GlTexture.create(path, options)
+    }
+}
+
+private class RawTexture(options: TextureOptions, val data: ByteBuffer, val size: Vector2i) : TextureCreatable(options) {
+    override fun create(): GlTexture {
+        return GlTexture(size.x, size.y, data, options)
     }
 }

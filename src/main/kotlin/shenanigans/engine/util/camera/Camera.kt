@@ -10,11 +10,13 @@ abstract class Camera {
     protected val viewMatrix = Matrix4f()
     protected val modelViewMatrix = Matrix4f()
 
-    protected val translation = Vector2f()
-    protected var rotation = 0f
+    val translation = Vector2f()
+    var rotation = 0f
 
-    protected var screenWidth = -1
-    protected var screenHeight = -1
+    var screenWidth = -1
+        protected set
+    var screenHeight = -1
+        protected set
 
     private val _tempVec = Vector4f()
     private val _tempMat = Matrix4f()

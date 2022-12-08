@@ -8,7 +8,7 @@ import org.lwjgl.stb.STBTTPackedchar
 import org.lwjgl.stb.STBTruetype.*
 import org.lwjgl.system.MemoryStack.stackPush
 import shenanigans.engine.graphics.TextureOptions
-import shenanigans.engine.graphics.api.FontRenderer
+import shenanigans.engine.graphics.api.renderer.FontRenderer
 import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.graphics.api.texture.TextureManager
 import java.nio.ByteBuffer

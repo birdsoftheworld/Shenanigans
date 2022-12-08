@@ -1,11 +1,12 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import org.joml.Vector2f
 import shenanigans.engine.graphics.VertexAttribute
+import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.shader.Shader
 
-private val ATTRIBUTES = setOf(VertexAttribute.POSITION, VertexAttribute.COLOR)
-class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(ATTRIBUTES, vertexCapacity, indicesCapacity) {
+class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(
+    setOf(VertexAttribute.COLOR, VertexAttribute.POSITION), vertexCapacity, indicesCapacity) {
 
     override val shader = Shader(
         """

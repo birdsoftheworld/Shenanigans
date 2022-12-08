@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import org.joml.Matrix4f
 import org.joml.Vector4f

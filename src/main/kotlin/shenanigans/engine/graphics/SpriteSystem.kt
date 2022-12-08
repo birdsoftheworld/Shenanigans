@@ -4,21 +4,20 @@ import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntitiesLifecycle
 import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.ecs.ResourcesView
-import shenanigans.engine.graphics.api.CameraResource
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.RenderSystem
-import shenanigans.engine.graphics.api.TextureRenderer
 import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 class SpriteSystem : RenderSystem {
-    private val renderer = TextureRenderer()
-
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Sprite::class)
     }
 
     override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        val renderer = resources.get<TextureRendererResource>().textureRenderer
         val camera = resources.get<CameraResource>().camera
         renderer.projection = camera!!.computeProjectionMatrix()
         renderer.start()
@@ -32,9 +31,5 @@ class SpriteSystem : RenderSystem {
         }
 
         renderer.end()
-    }
-
-    override fun discard() {
-        renderer.discard()
     }
 }
