@@ -12,8 +12,9 @@ class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, op
         glTexImage2D(GL_TEXTURE_2D, 0, options.textureType.glId, width, height, 0, options.textureType.glId, GL_UNSIGNED_BYTE, buf)
 
         // wrapping
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, options.wrapping.glId)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, options.wrapping.glId)
+        println(options.wrapping)
 
         // filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, options.filterType.glId)
@@ -35,14 +36,13 @@ class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, op
     }
 
     companion object {
-        fun create(path: String): GlTexture {
+        fun create(path: String, options: TextureOptions = TextureOptions()): GlTexture {
             val decoder = PNGDecoder(GlTexture::class.java.getResourceAsStream(path))
             val buf = ByteBuffer.allocateDirect(4 * decoder.width * decoder.height)
             decoder.decode(buf, decoder.width * 4, PNGDecoder.Format.RGBA)
             buf.flip()
 
-            return GlTexture(decoder.width, decoder.height, buf)
+            return GlTexture(decoder.width, decoder.height, buf, options)
         }
     }
-
 }

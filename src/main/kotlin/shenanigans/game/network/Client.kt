@@ -3,6 +3,7 @@ package shenanigans.game.network
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
+import shenanigans.engine.ecs.EntityView
 import java.io.IOException
 
 object Client {
@@ -10,6 +11,7 @@ object Client {
 
     init {
         client.start()
+
         try {
             val addresses = client.discoverHosts(40506, 500)
             if (addresses.size == 0) {
@@ -20,11 +22,14 @@ object Client {
         } catch (e: IOException) {
             e.printStackTrace()
         }
+
+        registerClasses(client)
+
         addListeners()
     }
 
-    fun sendObj(msg : String){
-        client.sendTCP(msg)
+    fun sendEntity(entity : EntityView) {
+        client.sendTCP(entity)
     }
 
     private fun addListeners() {

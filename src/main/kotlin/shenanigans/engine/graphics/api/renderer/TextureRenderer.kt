@@ -1,7 +1,8 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.VertexAttribute
+import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.graphics.shader.Shader
@@ -59,19 +60,12 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         shader.createUniform("projectionMatrix")
     }
 
-    private fun renderCurrent() {
-        if(lowestIndex != 0) {
-            this.writeToMesh()
-            this.render()
-        }
-
-        this.clear()
-    }
-
     fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) {
         if(this.texture != texture.getKey() && this.texture != null) {
-            this.renderCurrent()
+            this.flush()
         }
+        flushIfFull(4, 6)
+
         this.texture = texture.getKey()
         addIndex(0)
         addIndex(2)

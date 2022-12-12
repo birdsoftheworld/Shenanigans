@@ -1,9 +1,10 @@
 package shenanigans.game
 
 import org.joml.Vector2f
-import shenanigans.engine.Engine
+import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
@@ -18,13 +19,13 @@ import shenanigans.engine.window.Key
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
-import shenanigans.engine.window.events.MousePositionEvent
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.network.Sendable
 import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
-    Engine(testScene()).run()
+    ClientEngine(testScene()).run()
 }
 
 fun testScene(): Scene {
@@ -39,11 +40,29 @@ fun testScene(): Scene {
     scene.defaultSystems.add(KeyboardMovementSystem())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(ButtonSystem())
+    scene.defaultSystems.add(FollowCameraSystem())
+//    scene.defaultSystems.add(NetworkSystem())
 
     return scene
 }
 
-class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{fun grab(){this.grabbed=true}fun drop(){this.grabbed=false}}
+class FollowCameraSystem : System {
+    override fun query(): Iterable<KClass<out Component>> {
+        return setOf(KeyboardPlayer::class, Transform::class)
+    }
+
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        val first = entities.first()
+        val transform = first.component<Transform>().get()
+        val camera = resources.get<CameraResource>().camera!!
+        camera.reset().translate(transform.position.x - camera.screenWidth / 2 + 50, transform.position.y - camera.screenHeight / 2 + 50)
+    }
+}
+
+class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{
+    fun grab(){this.grabbed=true}
+    fun drop(){this.grabbed=false}
+}
 data class KeyboardPlayer(val speed: Float) : Component
 
 class AddTestEntities : System {
@@ -82,6 +101,7 @@ class AddTestEntities : System {
                 shape2,
                 Collider(shape2, false),
                 KeyboardPlayer(500f),
+                Sendable(),
             )
         )
 
@@ -104,14 +124,14 @@ class MouseMovementSystem : System {
     }
 
     override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        resources.get<EventQueue>().iterate<MousePositionEvent>().forEach { event ->
-            entities.forEach { entity ->
-                val mousePlayer = entity.component<MousePlayer>().get()
+        entities.forEach { entity ->
+            val mousePlayer = entity.component<MousePlayer>().get()
+            if(mousePlayer.grabbed){
                 val transform = entity.component<Transform>().get()
-                if(mousePlayer.grabbed){
-                    transform.position.set(event.position.x() + mousePlayer.dragOffset.x(), event.position.y() + mousePlayer.dragOffset.y())
-                    entity.component<Transform>().mutate()
-                }
+                val position = resources.get<MouseState>().position()
+                val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(position))
+                transform.position.set(transformedPosition.x() + mousePlayer.dragOffset.x(), transformedPosition.y() + mousePlayer.dragOffset.y())
+                entity.component<Transform>().mutate()
             }
         }
 
@@ -119,10 +139,11 @@ class MouseMovementSystem : System {
             entities.forEach { entity ->
                 val transform = entity.component<Transform>().get()
                 val mousePosition = resources.get<MouseState>().position()
+                val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(mousePosition))
                 val mousePlayer = entity.component<MousePlayer>().get()
-                if(event.action == MouseButtonAction.PRESS && entity.component<Shape>().get().isPointInside(mousePosition, transform)){
-                    mousePlayer.dragOffset.x = transform.position.x - mousePosition.x()
-                    mousePlayer.dragOffset.y = transform.position.y - mousePosition.y()
+                if(event.action == MouseButtonAction.PRESS && entity.component<Shape>().get().isPointInside(transformedPosition, transform)){
+                    mousePlayer.dragOffset.x = transform.position.x - transformedPosition.x()
+                    mousePlayer.dragOffset.y = transform.position.y - transformedPosition.y()
                     mousePlayer.grab()
                 }
                 if(event.action == MouseButtonAction.RELEASE){

@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import shenanigans.engine.graphics.api.font.BitmapFont
 

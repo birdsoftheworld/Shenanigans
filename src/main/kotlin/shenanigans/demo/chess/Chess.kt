@@ -1,6 +1,7 @@
 package shenanigans.demo.chess
 
 import org.joml.Vector2f
+import shenanigans.engine.ClientEngine
 import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.Color
@@ -12,7 +13,7 @@ import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 fun main() {
-    Engine(makeScene()).run()
+    ClientEngine(makeScene()).run()
 }
 
 fun makeScene(): Scene {
