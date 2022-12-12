@@ -5,6 +5,7 @@ import com.esotericsoftware.kryonet.Server
 import shenanigans.engine.HeadlessEngine
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.scene.Scene
+import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.registerClasses
 
 object Server {
@@ -25,8 +26,8 @@ object Server {
     private fun addListeners() {
         server.addListener(object : Listener {
             override fun received(connection: Connection?, thing: Any) {
-                if (thing is Array<*> && thing.firstOrNull() is Component) {
-
+                if (thing is EntityPacket) {
+                    println("Got Thing!!!")
                 }
             }
         })

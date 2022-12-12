@@ -1,10 +1,13 @@
 package shenanigans.game.network.client
 
 import com.esotericsoftware.kryonet.Client
+import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
+import com.esotericsoftware.kryonet.Listener.ThreadedListener
 import shenanigans.engine.ClientOnly
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntityView
+import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.registerClasses
 import java.io.IOException
 
@@ -30,20 +33,20 @@ object Client {
         addListeners()
     }
 
-    fun sendEntity(entityView: EntityView) {
-        val entity = mutableListOf<Component>()
-        entityView.components.values.forEach {
-            if(!it.component.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
-                entity.add(it.component)
-            }
-        }
-        client.sendTCP(entity.toTypedArray())
+    fun sendEntity(entityView: EntityView, id: Int) {
+        client.sendTCP(EntityPacket(id, entityView, 0))
     }
 
     private fun addListeners() {
         client.addListener(object : Listener {
+            override fun received(connection: Connection?, thing: Any?) {
 
+            }
         })
+
     }
 
+    fun createNetworkedEntity(entityView: EntityView) {
+
+    }
 }
