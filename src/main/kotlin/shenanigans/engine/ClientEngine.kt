@@ -12,14 +12,17 @@ import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.graphics.Renderer
+import shenanigans.engine.init.client.ClientEngineOptions
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.util.camera.CameraResource
+import shenanigans.engine.util.camera.OrthoCamera
 import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 
-class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
+class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngineOptions()) : Engine(initScene = initScene, options) {
     private lateinit var window: Window
 
     private val client = Client()
@@ -28,15 +31,17 @@ class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
         window = Window("game", 640, 640)
 
         window.onEvent(::queueEvent)
-        engineResources.set(WindowResource(window))
 
+        engineResources.set(WindowResource(window))
         engineResources.set(KeyboardState())
         engineResources.set(MouseState())
+
+        engineResources.set(CameraResource(OrthoCamera()))
     }
 
     override fun loop() {
         GL.createCapabilities()
-        Renderer.init()
+        Renderer.init((options as ClientEngineOptions).renderSystems)
 
         GL30C.glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         var previousTime = GLFW.glfwGetTime()

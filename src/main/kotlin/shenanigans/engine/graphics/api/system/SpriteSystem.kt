@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics
+package shenanigans.engine.graphics.api.system
 
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntitiesLifecycle

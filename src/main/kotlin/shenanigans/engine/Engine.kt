@@ -3,20 +3,18 @@ package shenanigans.engine
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.events.Event
-import shenanigans.engine.util.camera.CameraResource
+import shenanigans.engine.init.EngineOptions
 import shenanigans.engine.scene.Scene
-import shenanigans.engine.util.camera.OrthoCamera
 
-abstract class Engine(initScene: Scene) {
+abstract class Engine(initScene: Scene, val options: EngineOptions = EngineOptions()) {
     protected var scene: Scene = initScene
     internal val engineResources = Resources()
 
-    protected var unprocessedEvents = mutableListOf<Event>();
+    protected var unprocessedEvents = mutableListOf<Event>()
 
     fun run() {
         if(!GLFW.glfwInit()) throw RuntimeException("Failed to initialize GLFW")
         init()
-        scene.sceneResources.set(CameraResource(OrthoCamera()))
         loop()
         GLFW.glfwTerminate()
     }

@@ -1,12 +1,10 @@
 package shenanigans.engine.graphics
 
-import org.joml.Vector2i
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.RenderSystem
-import shenanigans.engine.graphics.api.renderer.AbstractRenderer
 import shenanigans.engine.graphics.api.renderer.FontRenderer
 import shenanigans.engine.graphics.api.renderer.ShapeRenderer
 import shenanigans.engine.graphics.api.renderer.TextureRenderer
@@ -14,18 +12,12 @@ import shenanigans.engine.graphics.api.resource.FontRendererResource
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.init.SystemList
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.window.Window
-import shenanigans.engine.window.WindowResource
 import java.lang.System
-import kotlin.reflect.KClass
 
 object Renderer {
-    private lateinit var syncCameraSystem: SyncCameraSystem
-    private lateinit var drawBackgroundSystem: DrawBackgroundSystem
-    private lateinit var shapeSystem: ShapeSystem
-    private lateinit var spriteSystem: SpriteSystem
-
     private lateinit var renderSystems: List<RenderSystem>
 
     private lateinit var renderResources: Resources
@@ -34,7 +26,7 @@ object Renderer {
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var fontRenderer: FontRenderer
 
-    fun init() {
+    fun init(systems: SystemList<RenderSystem>) {
         renderResources = Resources()
 
         textureRenderer = TextureRenderer()
@@ -54,12 +46,7 @@ object Renderer {
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        syncCameraSystem = SyncCameraSystem()
-        drawBackgroundSystem = DrawBackgroundSystem()
-        shapeSystem = ShapeSystem()
-        spriteSystem = SpriteSystem()
-
-        renderSystems = listOf(syncCameraSystem, drawBackgroundSystem, shapeSystem, spriteSystem)
+        renderSystems = systems.build()
     }
 
     fun discard() {
@@ -76,6 +63,7 @@ object Renderer {
         val width = window.width
         val height = window.height
         glViewport(0, 0, width, height)
+        engineResources.get<CameraResource>().camera?.setScreenSize(width, height)
 
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
@@ -83,47 +71,5 @@ object Renderer {
         scene.runSystems(resources, renderSystems)
 
         window.swapBuffers()
-    }
-}
-
-private class DrawBackgroundSystem : RenderSystem {
-    val background = TextureManager.createTexture("/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
-    val imageSize = Vector2i(400, 400)
-
-    init {
-
-    }
-
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
-
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
-        val size = resources.get<WindowResource>().window.size
-        val camera = resources.get<CameraResource>().camera!!
-        val translation = camera.translation
-
-        val view = camera.computeViewMatrix()
-        textureRenderer.projection = camera.computeProjectionMatrix()
-        textureRenderer.start()
-
-        textureRenderer.transformation = view
-        textureRenderer.textureRect(translation.x, translation.y, size.x.toFloat(), size.y.toFloat(), background.getRegion(
-            translation.x / imageSize.x, translation.y / imageSize.y, size.x.toFloat() / imageSize.x, size.y.toFloat() / imageSize.y
-        ))
-
-        textureRenderer.end()
-    }
-}
-
-private class SyncCameraSystem : RenderSystem {
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
-
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        val window = resources.get<WindowResource>()
-        resources.get<CameraResource>().camera?.setScreenSize(window.window.width, window.window.height)
     }
 }
