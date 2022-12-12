@@ -56,14 +56,15 @@ class AddTestEntities : System {
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val shape = Shape(
             arrayOf(
-                Vector2f(0f, 0f), Vector2f(0f, 50f), Vector2f(50f, 50f), Vector2f(50f, 0f)
+                Vector2f(0f, 0f), Vector2f(0f, 50f), Vector2f(600f, 50f), Vector2f(600f, 0f)
             ), Color(1f, 0f, 0f)
         )
+
 
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector2f(0f, 0f)
+                    Vector2f(0f, 600f)
                 ),
                 shape,
                 Collider(shape, true),
@@ -73,13 +74,13 @@ class AddTestEntities : System {
 
         val shape2 = Shape(
             arrayOf(
-                Vector2f(0f, 0f), Vector2f(0f, 100f), Vector2f(100f, 100f), Vector2f(100f, 0f)
+                Vector2f(0f, 0f), Vector2f(0f, 30f), Vector2f(30f, 30f), Vector2f(30f, 0f)
             ), Color(0f, 0f, 1f)
         )
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector2f(200f, 200f)
+                    Vector2f(200f, 600f)
                 ),
                 shape2,
                 Collider(shape2, false),
@@ -87,16 +88,27 @@ class AddTestEntities : System {
             )
         )
 
-        lifecycle.add(
+        lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector2f(200f, 200f)
+                    Vector2f(600f, 700f)
                 ),
                 shape,
-                Button(),
-                Collider(shape, false)
-            )
-        )
+                Collider(shape, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                )
+        ))
+
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(800f, 600f)
+                ),
+                shape,
+                Collider(shape, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                )
+        ))
     }
 }
 

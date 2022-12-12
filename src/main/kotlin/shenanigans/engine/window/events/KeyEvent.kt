@@ -36,4 +36,5 @@ class KeyboardState : Resource, StateMachineResource {
     fun isPressed(key: Key): Boolean {
         return pressed[key] ?: false
     }
+
 }
