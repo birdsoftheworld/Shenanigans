@@ -1,9 +1,15 @@
 package shenanigans.engine.ui.elements
 
+import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
+import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.graphics.api.Color
+import shenanigans.engine.graphics.api.renderer.ShapeRenderer
+import shenanigans.engine.graphics.api.resource.ShapeRendererResource
+import shenanigans.engine.window.WindowResource
 
-class Box(private val children: List<Box>) : AutoCloseable {
+open class Box(private val children: List<Box>) : AutoCloseable {
     protected val node = Yoga.YGNodeNew()
 
     init {
@@ -15,6 +21,26 @@ class Box(private val children: List<Box>) : AutoCloseable {
     override fun close() {
         Yoga.YGNodeFree(node)
         children.forEach { child -> Yoga.YGNodeFree(child.node) }
+    }
+
+    open fun render(resources: ResourcesView) {
+        computeLayout(resources)
+        children.forEach { child -> child.render(resources) }
+    }
+
+    data class Layout(val position: Vector2fc, val size: Vector2fc)
+
+    protected fun computeLayout(width: Float, height: Float): Layout {
+        Yoga.YGNodeCalculateLayout(node, width, height, Yoga.YGDirectionLTR)
+        return Layout(
+            Vector2f(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node)),
+            Vector2f(Yoga.YGNodeLayoutGetWidth(node), Yoga.YGNodeLayoutGetHeight(node))
+        )
+    }
+
+    protected fun computeLayout(resources: ResourcesView): Layout {
+        val window = resources.get<WindowResource>().window
+        return computeLayout(window.width.toFloat(), window.height.toFloat())
     }
 
     fun setSize(size: Vector2fc) {
