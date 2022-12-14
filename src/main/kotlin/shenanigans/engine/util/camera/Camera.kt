@@ -1,6 +1,7 @@
 package shenanigans.engine.util.camera
 
 import org.joml.Matrix4f
+import org.joml.Quaternionf
 import org.joml.Vector2f
 import org.joml.Vector4f
 import shenanigans.engine.util.setToTransform
@@ -11,6 +12,7 @@ abstract class Camera {
     protected val modelViewMatrix = Matrix4f()
 
     val translation = Vector2f()
+    val scaling = Vector2f()
     var rotation = 0f
 
     var screenWidth = -1
@@ -20,6 +22,7 @@ abstract class Camera {
 
     private val _tempVec = Vector4f()
     private val _tempMat = Matrix4f()
+    private val _tempQua = Quaternionf()
 
     fun setScreenSize(w: Int, h: Int) {
         screenWidth = w
@@ -29,11 +32,17 @@ abstract class Camera {
     fun reset() : Camera {
         translation.set(0f, 0f)
         rotation = 0f
+        scaling.set(1f, 1f)
         return this
     }
 
     fun rotate(rotation: Float) : Camera {
         this.rotation += rotation
+        return this
+    }
+
+    fun scale(vector2f: Vector2f) : Camera {
+        scaling.mul(vector2f)
         return this
     }
 
@@ -55,10 +64,13 @@ abstract class Camera {
 
     abstract fun computeProjectionMatrix() : Matrix4f
 
-    fun computeViewMatrix(): Matrix4f {
+    fun computeViewMatrix() : Matrix4f {
+        _tempQua.rotationZ(rotation)
         return viewMatrix
-            .translationRotate(
-                -translation.x, -translation.y, 0f, 0f, 0f, rotation, 1f
+            .translationRotateScale(
+                -translation.x, -translation.y, 0f,
+                _tempQua.x, _tempQua.y, _tempQua.z, _tempQua.w,
+                scaling.x, scaling.y, 1f
             )
     }
 

@@ -1,5 +1,6 @@
 package shenanigans.engine.graphics.api.system
 
+import org.joml.Vector2f
 import org.joml.Vector2i
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntitiesLifecycle
@@ -25,7 +26,7 @@ class DrawBackgroundSystem : RenderSystem {
         val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
         val size = resources.get<WindowResource>().window.size
         val camera = resources.get<CameraResource>().camera!!
-        val translation = camera.translation
+        val translation = camera.untransformPoint(Vector2f())
 
         val view = camera.computeViewMatrix()
         textureRenderer.projection = camera.computeProjectionMatrix()
