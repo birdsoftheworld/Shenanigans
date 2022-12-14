@@ -8,6 +8,7 @@ import shenanigans.engine.ClientOnly
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntityView
 import shenanigans.game.network.EntityPacket
+import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.registerClasses
 import java.io.IOException
 
@@ -47,6 +48,6 @@ object Client {
     }
 
     fun createNetworkedEntity(entityView: EntityView) {
-
+        client.sendTCP(EntityRegistrationPacket(entityView, 0))
     }
 }

@@ -1,3 +1,5 @@
 package shenanigans.game.network
 
-abstract class Packet (protected val serverTimeMillis: Int){}
+import shenanigans.engine.events.Event
+
+abstract class Packet (protected val serverTimeMillis: Int) : Event
