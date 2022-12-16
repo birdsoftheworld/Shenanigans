@@ -20,13 +20,23 @@ fun main() {
 fun makeScene(): Scene {
     val scene = Scene()
 
-    val centered = ColoredBox(listOf(), Color(1f, 0f, 0f))
-    val root = Box(listOf(centered))
+    val child1 = ColoredBox(listOf(), Color(1f, 0f, 0f))
+    val child2 = ColoredBox(listOf(), Color(0f, 1f, 0f))
+    val child3 = ColoredBox(listOf(), Color(0f, 0f, 1f))
+    val root = Box(listOf(child1, child2, child3))
 
-    root.setJustifyContent(Box.JustifyContent.Center)
-    root.setAlignItems(Box.AlignItems.Center)
+    root.setFlexDirection(Box.FlexDirection.Column)
+    root.setJustifyContent(Box.JustifyContent.FlexStart)
 
-    centered.setSize(Vector2f(200f, 100f))
+    child1.setSize(Vector2f(200f, 100f))
+
+    child2.setGrow()
+
+    child2.setFlexDirection(Box.FlexDirection.Row)
+    child2.setFlexWrap(Box.FlexWrap.Wrap)
+
+    child3.setSize(Vector2f(200f, 100f))
+    child3.setAlignSelf(Box.Align.FlexEnd)
 
     scene.runSystems(
         ResourcesView(), listOf(

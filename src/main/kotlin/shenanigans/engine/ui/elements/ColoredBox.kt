@@ -7,7 +7,7 @@ import shenanigans.engine.util.camera.CameraResource
 
 class ColoredBox(children: List<Box>, val color: Color) : Box(children) {
     override fun render(resources: ResourcesView) {
-        val layout = computeLayout(resources)
+        val layout = getLayout()
         val shapeRenderer = resources.get<ShapeRendererResource>().shapeRenderer
         val camera = resources.get<CameraResource>().camera!!
 
@@ -15,7 +15,5 @@ class ColoredBox(children: List<Box>, val color: Color) : Box(children) {
         shapeRenderer.projection = camera.computeProjectionMatrix()
         shapeRenderer.rect(layout.position.x(), layout.position.y(), layout.size.x(), layout.size.y(), color)
         shapeRenderer.end()
-
-        super.render(resources)
     }
 }

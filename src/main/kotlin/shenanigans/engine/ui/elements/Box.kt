@@ -4,13 +4,10 @@ import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
-import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.graphics.api.renderer.ShapeRenderer
-import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.window.WindowResource
 
 open class Box(private val children: List<Box>) : AutoCloseable {
-    protected val node = Yoga.YGNodeNew()
+    private val node = Yoga.YGNodeNew()
 
     init {
         children.forEachIndexed { index, child ->
@@ -23,29 +20,37 @@ open class Box(private val children: List<Box>) : AutoCloseable {
         children.forEach { child -> Yoga.YGNodeFree(child.node) }
     }
 
-    open fun render(resources: ResourcesView) {
-        computeLayout(resources)
-        children.forEach { child -> child.render(resources) }
+    fun renderRecursive(resources: ResourcesView) {
+        render(resources)
+        children.forEach { child -> child.renderRecursive(resources) }
     }
+
+    open fun render(resources: ResourcesView) {}
 
     data class Layout(val position: Vector2fc, val size: Vector2fc)
 
-    protected fun computeLayout(width: Float, height: Float): Layout {
-        Yoga.YGNodeCalculateLayout(node, width, height, Yoga.YGDirectionLTR)
+    fun getLayout(): Layout {
         return Layout(
             Vector2f(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node)),
             Vector2f(Yoga.YGNodeLayoutGetWidth(node), Yoga.YGNodeLayoutGetHeight(node))
         )
     }
 
-    protected fun computeLayout(resources: ResourcesView): Layout {
-        val window = resources.get<WindowResource>().window
-        return computeLayout(window.width.toFloat(), window.height.toFloat())
+    fun computeLayout(width: Float, height: Float) {
+        Yoga.YGNodeCalculateLayout(node, width, height, Yoga.YGDirectionLTR)
     }
 
     fun setSize(size: Vector2fc) {
         Yoga.YGNodeStyleSetWidth(node, size.x())
         Yoga.YGNodeStyleSetHeight(node, size.y())
+    }
+
+    fun setGrow(grow: Float) {
+        Yoga.YGNodeStyleSetFlexGrow(node, grow)
+    }
+
+    fun setGrow() {
+        setGrow(1f)
     }
 
     fun setMinSize(size: Vector2fc) {
@@ -152,23 +157,33 @@ open class Box(private val children: List<Box>) : AutoCloseable {
         )
     }
 
-    enum class AlignItems {
+    enum class Align {
         Center,
         FlexStart,
         FlexEnd,
         Stretch,
-        Baseline,
+        Baseline;
+
+        fun toYoga(): Int {
+            return when (this) {
+                Center -> Yoga.YGAlignCenter
+                FlexStart -> Yoga.YGAlignFlexStart
+                FlexEnd -> Yoga.YGAlignFlexEnd
+                Stretch -> Yoga.YGAlignStretch
+                Baseline -> Yoga.YGAlignBaseline
+            }
+        }
     }
 
-    fun setAlignItems(ai: AlignItems) {
+    fun setAlignItems(align: Align) {
         Yoga.YGNodeStyleSetAlignItems(
-            node, when (ai) {
-                AlignItems.Center -> Yoga.YGAlignCenter
-                AlignItems.FlexStart -> Yoga.YGAlignFlexStart
-                AlignItems.FlexEnd -> Yoga.YGAlignFlexEnd
-                AlignItems.Stretch -> Yoga.YGAlignStretch
-                AlignItems.Baseline -> Yoga.YGAlignBaseline
-            }
+            node, align.toYoga()
+        )
+    }
+
+    fun setAlignSelf(align: Align) {
+        Yoga.YGNodeStyleSetAlignSelf(
+            node, align.toYoga()
         )
     }
 }
