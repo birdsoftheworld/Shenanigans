@@ -6,6 +6,9 @@ import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
+import shenanigans.game.player.Player
+import shenanigans.game.player.PlayerColliding
+import shenanigans.game.player.PlayerController
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -42,6 +45,9 @@ class CollisionSystem : System {
             else if(!pair.second.component<Collider>().get().static) {
                 transform2.get().position.add(collision.negate())
                 transform2.mutate()
+            }
+            if(collision.length() >= 0){
+
             }
         }
         return

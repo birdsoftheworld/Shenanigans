@@ -1,5 +1,7 @@
 package shenanigans.game.player
 
+import com.sun.org.apache.xpath.internal.operations.Bool
+import javafx.print.PageLayout
 import org.joml.Vector2f
 import org.lwjgl.openxr.FBKeyboardTracking
 import shenanigans.engine.ecs.*
@@ -17,25 +19,37 @@ import kotlin.reflect.KClass
 data class Player(val xVel: Float,
                   val xAccel: Float = 5f,
                   val xMax : Float = .15f,
-                  val jumpHeight: Float = 1f,
                   val jumpSpeed: Float = .2f,
-                  val timeToJump: Float = 1f,
                   val friction : Float = 8f,
                   val turnSpeed: Float = 20f,
                   val drag : Float = 8f,
-                  var airTurnSpeed : Float = 5f) : Component
+                  var airTurnSpeed : Float = 5f,
+                  var onGround :Boolean= false) : Component{
+    fun touchGrass(){
+        onGround = true
+    }
+
+    fun loseGrass(){
+        onGround = false
+    }
+}
 
 class PlayerController : System {
-    val gravity : Float = .5f;
+    val gravity : Float = .5f
     var velocity = Vector2f()
+
+
 
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Player::class, Transform::class)
     }
 
+
+
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTime = resources.get<DeltaTime>().deltaTime
+
 
         entities.forEach { entity ->
 
@@ -46,18 +60,17 @@ class PlayerController : System {
             val friction = entity.component<Player>().get().friction
             val turnSpeed = entity.component<Player>().get().turnSpeed
             val airTurnSpeed = entity.component<Player>().get().airTurnSpeed
-            val jumpHeight: Float = entity.component<Player>().get().jumpHeight
-            val timeToJump = entity.component<Player>().get().timeToJump
             var desiredVelocity = Vector2f(0f, 0f)
-            val onGround = true
             var deccel = 1f
             val xAccel = entity.component<Player>().get().xAccel
             var turnAccel = 0f
             var maxSpeedChange = 0f
             var wantToJump = false
             val jumpSpeed = entity.component<Player>().get().jumpSpeed
+            val onGround = entity.component<Player>().get().onGround
 
 
+            println(onGround)
             //left
             if (keyboard.isPressed(Key.A)) {
                 desiredVelocity.add(Vector2f(-xMax, 0f))
@@ -89,7 +102,7 @@ class PlayerController : System {
                 wantToJump = false
             }
 
-            if (wantToJump && abs(pos.y-570) < .01) {
+            if (wantToJump && abs(pos.y-570) < .0000001) {
                 jump()
             }
             if(pos.y < 570){
@@ -110,7 +123,6 @@ class PlayerController : System {
                 maxSpeedChange = deccel * deltaTime.toFloat()
             }
             velocity.x = velocity.x + (desiredVelocity.x - velocity.x) * maxSpeedChange
-
             pos.add(velocity)
             println(pos.y)
             println(velocity.y)
