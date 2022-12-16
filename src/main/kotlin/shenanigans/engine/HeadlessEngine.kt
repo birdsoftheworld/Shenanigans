@@ -3,7 +3,7 @@ package shenanigans.engine
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.StateMachineResource
+import shenanigans.engine.events.StateMachine
 import shenanigans.engine.events.control.ControlEvent
 import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
@@ -47,7 +47,7 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
             engineResources.set(eventQueue)
 
             engineResources.resources.forEach { (_, value) ->
-                if (value is StateMachineResource) {
+                if (value is StateMachine) {
                     value.transition(eventQueue)
                 }
             }
