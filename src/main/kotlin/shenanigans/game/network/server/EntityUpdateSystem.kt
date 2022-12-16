@@ -3,6 +3,8 @@ package shenanigans.game.network.server
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.util.Transform
+import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.Synchronized
 import kotlin.reflect.KClass
@@ -24,14 +26,21 @@ class EntityRegistrationSystem : System{
     }
 
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        val events = resources.get<EventQueue>()
+        val eventQueue = resources.get<EventQueue>()
 
-        events.events.forEach {
-            if (it is EntityRegistrationPacket) {
+        eventQueue.events.forEach {event ->
+            if (event is EntityRegistrationPacket) {
                 lifecycle.add(
                     it.components.asSequence()
                 )
+            }
 
+            if (event is EntityPacket) {
+                entities.forEach {entity ->
+                    if(entity.id == event.id) {
+                        entity.component<Transform>().get().position = event.components
+                    }
+                }
             }
         }
     }

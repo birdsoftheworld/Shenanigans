@@ -12,7 +12,8 @@ class Synchronized : Component
 class NetworkSystem : System{
     private val client : Client = Client
 
-    private val ids : BiMap<Int, Int> = HashBiMap.create()
+    private val clientIds : HashMap<Int, Int?> = HashMap()
+    private val serverIds : HashMap<Int, Int> = HashMap()
 
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Synchronized::class)
@@ -20,11 +21,17 @@ class NetworkSystem : System{
 
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         for (entity in entities) {
-            if(!ids.containsKey(entity.id)) {
+            if(!clientIds.containsKey(entity.id)) {
                 client.createNetworkedEntity(entity)
+                clientIds[entity.id] = null
+                continue
             }
 
-            client.sendEntity(entity, ids[entity.id]!!)
+            if(clientIds[entity.id] == null) {
+                continue
+            }
+
+            client.sendEntity(entity, clientIds[entity.id]!!)
         }
     }
 }
