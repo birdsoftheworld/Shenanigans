@@ -14,7 +14,6 @@ class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, op
         // wrapping
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, options.wrapping.glId)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, options.wrapping.glId)
-        println(options.wrapping)
 
         // filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, options.filterType.glId)
