@@ -2,10 +2,11 @@ package shenanigans.game.network
 
 import shenanigans.engine.ClientOnly
 import shenanigans.engine.ecs.Component
+import shenanigans.engine.ecs.EntityId
 import shenanigans.engine.ecs.EntityView
 import kotlin.reflect.KClass
 
-class EntityPacket (val id: Int, entityView: EntityView, serverTimeMillis : Int): Packet(serverTimeMillis) {
+class EntityPacket (val id: EntityId, entityView: EntityView, serverTimeMillis: Int): Packet(serverTimeMillis) {
     val components: MutableMap<KClass<out Component>, Component> = mutableMapOf()
 
     init {
@@ -19,8 +20,8 @@ class EntityPacket (val id: Int, entityView: EntityView, serverTimeMillis : Int)
 
 class EntityRegistrationPacket(entityView: EntityView, val clientId: Int, serverTimeMillis : Int): Packet(serverTimeMillis) {
     val components: MutableList<Component> = mutableListOf()
-    val clientEntityId: Int
-    var serverEntityId: Int? = null
+    val clientEntityId: EntityId
+    var serverEntityId: EntityId? = null
 
     init {
         entityView.components.values.forEach {
