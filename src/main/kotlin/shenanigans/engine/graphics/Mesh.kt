@@ -72,7 +72,7 @@ class Mesh(nVertices: Int, nIndices: Int, private val vertexAttribs: Set<VertexA
     private fun createBuffer(size: Int, type: Int, name: String): Int {
         val vboId = glGenBuffers()
         glBindBuffer(type, vboId)
-        glBufferData(type, size.toLong(), GL_DYNAMIC_DRAW)
+        glBufferData(type, size.toLong(), GL_STREAM_DRAW)
         vboIds[name] = vboId
         // buffer is not unbound, because it needs to be bound later in defineVertexAttrib
         return vboId

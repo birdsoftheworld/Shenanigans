@@ -17,7 +17,7 @@ class ButtonSystem : System {
         return listOf(Button::class, Shape::class, Transform::class)
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
             if(event.action == MouseButtonAction.PRESS) {
                 val mousePos = resources.get<MouseState>().position()

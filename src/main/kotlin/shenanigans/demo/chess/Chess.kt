@@ -19,7 +19,7 @@ fun main() {
 fun makeScene(): Scene {
     val scene = Scene()
 
-    scene.runSystems(Resources(), listOf(AddTiles()))
+    scene.runSystems(ResourcesView(), listOf(AddTiles()))
 
     return scene
 }
@@ -29,7 +29,7 @@ class AddTiles : System {
         return emptySet()
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val tileSize = 20f
 
         for (i in 0..7) {
@@ -44,7 +44,7 @@ class AddTiles : System {
                                 Vector2f(tileSize, tileSize),
                                 Vector2f(tileSize, 0f),
                             ),
-                            if (i + j % 2 == 0) {
+                            if ((i + j) % 2 == 0) {
                                 Color(0f, 0f, 0f)
                             } else {
                                 Color(1f, 1f, 1f)

@@ -1,11 +1,12 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import org.joml.Vector2f
 import shenanigans.engine.graphics.VertexAttribute
+import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.shader.Shader
 
-private val ATTRIBUTES = setOf(VertexAttribute.POSITION, VertexAttribute.COLOR)
-class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(ATTRIBUTES, vertexCapacity, indicesCapacity) {
+class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(
+    setOf(VertexAttribute.COLOR, VertexAttribute.POSITION), vertexCapacity, indicesCapacity) {
 
     override val shader = Shader(
         """
@@ -45,6 +46,8 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
      * draw a rectangle at `x`, `y` with size `w`, `h` of the given color, transformed by this renderer's transformation
      */
     fun rect(x: Float, y: Float, w: Float, h: Float, color: Color) {
+        flushIfFull(4, 6)
+
         addIndex(0)
         addIndex(2)
         addIndex(1)
@@ -78,6 +81,8 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
      * draw a convex polygon with the given vertices, transformed by this renderer's transformation
      */
     fun polygon(vertices: Array<Vector2f>, color: Color) {
+        flushIfFull(vertices.size, 3 * (vertices.size - 2))
+
         for (i in 1..vertices.size - 2) {
             addIndex(i)
             addIndex(i + 1)
