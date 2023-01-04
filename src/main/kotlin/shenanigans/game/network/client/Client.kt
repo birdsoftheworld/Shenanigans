@@ -48,6 +48,6 @@ object Client {
     }
 
     fun createNetworkedEntity(entityView: EntityView) {
-        client.sendTCP(EntityRegistrationPacket(entityView, 0))
+        client.sendTCP(EntityRegistrationPacket(entityView, client.id, 0))
     }
 }

@@ -15,7 +15,18 @@ class EntityUpdateSystem : System{
     }
 
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        TODO("Not yet implemented")
+        val eventQueue = resources.get<EventQueue>()
+
+        eventQueue.events.forEach {event ->
+
+            if (event is EntityPacket) {
+                entities.forEach {entity ->
+                    if(entity.id == event.id) {
+                        entity.component<Transform>().get().position = (event.components[Transform::class]!! as Transform).position
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -28,20 +39,14 @@ class EntityRegistrationSystem : System{
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
-        eventQueue.events.forEach {event ->
-            if (event is EntityRegistrationPacket) {
-                lifecycle.add(
-                    it.components.asSequence()
-                )
-            }
+        eventQueue.iterate<EntityRegistrationPacket>().forEach {entityRegistrationPacket ->
+            lifecycle.add(
+                entityRegistrationPacket.components.asSequence()
+            )
+            // TODO Get new entity ID
 
-            if (event is EntityPacket) {
-                entities.forEach {entity ->
-                    if(entity.id == event.id) {
-                        entity.component<Transform>().get().position = event.components
-                    }
-                }
-            }
+            resources.get<Server>().registerEntity(entityRegistrationPacket)
+
         }
     }
 

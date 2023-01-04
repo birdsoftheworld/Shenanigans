@@ -3,7 +3,6 @@ import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import com.esotericsoftware.kryonet.Server
 import shenanigans.engine.HeadlessEngine
-import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.scene.Scene
 import shenanigans.game.network.EntityPacket
@@ -37,6 +36,10 @@ object Server : Resource {
                 }
             }
         })
+    }
+
+    fun registerEntity(entityRegistrationPacket: EntityRegistrationPacket) {
+        server.sendToTCP(entityRegistrationPacket.clientId, entityRegistrationPacket)
     }
 
     fun stop() {

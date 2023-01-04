@@ -19,6 +19,8 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(Collider::class.java).setInstantiator { Collider(arrayOf(), static = false, triggerCollider = false) }
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
+    kryo.register(EntityRegistrationPacket::class.java)
+    kryo.register(EntityPacket::class.java)
 
     // Utils
     kryo.register(Map::class.java)
