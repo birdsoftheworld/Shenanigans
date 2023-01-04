@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 
 class CollisionSystem : System {
 
-    private val radii = hashMapOf<Int, Pair<Float, Int>>()
+    private val radii = hashMapOf<EntityId, Pair<Float, Int>>()
 
     private val transformMatrix = Matrix4f()
 
