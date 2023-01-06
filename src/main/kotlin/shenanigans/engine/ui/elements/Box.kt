@@ -6,7 +6,7 @@ import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.window.WindowResource
 
-open class Box(private val children: List<Box>) : AutoCloseable {
+open class Box(val children: List<Box>) : AutoCloseable {
     private val node = Yoga.YGNodeNew()
 
     init {
@@ -15,29 +15,38 @@ open class Box(private val children: List<Box>) : AutoCloseable {
         }
     }
 
+    open fun render(resources: ResourcesView, layout: Layout) {}
+
     override fun close() {
         Yoga.YGNodeFree(node)
         children.forEach { child -> Yoga.YGNodeFree(child.node) }
     }
 
-    fun renderRecursive(resources: ResourcesView) {
-        render(resources)
-        children.forEach { child -> child.renderRecursive(resources) }
+
+    fun renderRecursive(resources: ResourcesView, parentLayout: Layout) {
+        val layout = getLayout(parentLayout)
+        render(resources, layout)
+        children.forEach { child -> child.renderRecursive(resources, layout) }
     }
 
-    open fun render(resources: ResourcesView) {}
+    data class Layout(val position: Vector2f, val size: Vector2f)
 
-    data class Layout(val position: Vector2fc, val size: Vector2fc)
-
-    fun getLayout(): Layout {
+    private fun getLayoutAsRoot(): Layout {
         return Layout(
             Vector2f(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node)),
             Vector2f(Yoga.YGNodeLayoutGetWidth(node), Yoga.YGNodeLayoutGetHeight(node))
         )
     }
 
-    fun computeLayout(width: Float, height: Float) {
-        Yoga.YGNodeCalculateLayout(node, width, height, Yoga.YGDirectionLTR)
+    private fun getLayout(parent: Layout): Layout {
+        val ret = getLayoutAsRoot()
+        ret.position.add(parent.position)
+        return ret
+    }
+
+
+    fun computeLayout(size: Vector2fc) {
+        Yoga.YGNodeCalculateLayout(node, size.x(), size.y(), Yoga.YGDirectionLTR)
     }
 
     fun setSize(size: Vector2fc) {
