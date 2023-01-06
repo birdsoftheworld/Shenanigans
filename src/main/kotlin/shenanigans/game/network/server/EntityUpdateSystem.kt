@@ -1,7 +1,6 @@
 package shenanigans.game.network.server
 
 import shenanigans.engine.ecs.*
-import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.util.Transform
 import shenanigans.game.network.EntityPacket
@@ -14,7 +13,7 @@ class EntityUpdateSystem : System{
         return setOf(Synchronized::class)
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
         eventQueue.events.forEach {event ->
@@ -36,7 +35,7 @@ class EntityRegistrationSystem : System{
         return setOf()
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
         eventQueue.iterate<EntityRegistrationPacket>().forEach {entityRegistrationPacket ->

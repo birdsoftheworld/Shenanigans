@@ -3,6 +3,7 @@ package shenanigans.game.network.client
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
+import shenanigans.engine.ecs.EntityId
 import shenanigans.engine.ecs.EntityView
 import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.EntityRegistrationPacket
@@ -31,7 +32,7 @@ object Client {
         addListeners()
     }
 
-    fun sendEntity(entityView: EntityView, id: Int) {
+    fun sendEntity(entityView: EntityView, id: EntityId) {
         client.sendTCP(EntityPacket(id, entityView, 0))
     }
 
