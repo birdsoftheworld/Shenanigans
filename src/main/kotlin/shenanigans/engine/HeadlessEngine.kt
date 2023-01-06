@@ -59,5 +59,4 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
             scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
         }
     }
-
 }

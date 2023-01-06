@@ -39,13 +39,11 @@ class EntityRegistrationSystem : System{
         val eventQueue = resources.get<EventQueue>()
 
         eventQueue.iterate<EntityRegistrationPacket>().forEach {entityRegistrationPacket ->
-            lifecycle.add(
+            entityRegistrationPacket.serverEntityId = lifecycle.add(
                 entityRegistrationPacket.components.asSequence()
             )
-            // TODO Get new entity ID
 
             resources.get<Server>().registerEntity(entityRegistrationPacket)
-
         }
     }
 
