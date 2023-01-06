@@ -3,9 +3,6 @@ package shenanigans.game.network.client
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
-import com.esotericsoftware.kryonet.Listener.ThreadedListener
-import shenanigans.engine.ClientOnly
-import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntityView
 import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.EntityRegistrationPacket
