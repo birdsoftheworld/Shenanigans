@@ -3,12 +3,13 @@ package shenanigans.engine.physics
 import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector4f
+import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueue
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
 import shenanigans.game.player.Player
-import shenanigans.game.player.PlayerColliding
-import shenanigans.game.player.PlayerController
+import shenanigans.game.player.PlayerOnGroundEvent
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -27,24 +28,36 @@ class CollisionSystem : System {
 
         val collisionPairs = getCollisionPairs(entities)
 
+
         collisionPairs.forEach { pair ->
             val collision = testCollision(pair)
             val transform1 = pair.first.component<Transform>()
             val transform2 = pair.second.component<Transform>()
+
             if(!pair.first.component<Collider>().get().static && !pair.second.component<Collider>().get().static) {
                 collision.mul(0.5f)
                 transform1.get().position.add(collision)
                 transform1.mutate()
                 transform2.get().position.add(collision.negate())
                 transform2.mutate()
+
+
             }
             else if(!pair.first.component<Collider>().get().static) {
+                if (pair.first.componentOpt<Player>() != null && collision.length() > 0){
+                    resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
+                }
                 transform1.get().position.add(collision)
                 transform1.mutate()
             }
             else if(!pair.second.component<Collider>().get().static) {
+                if (pair.second.componentOpt<Player>() != null && collision.length() > 0){
+                    resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
+                }
                 transform2.get().position.add(collision.negate())
                 transform2.mutate()
+
+
             }
             if(collision.length() >= 0){
 

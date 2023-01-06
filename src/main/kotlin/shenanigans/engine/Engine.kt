@@ -25,13 +25,11 @@ class Engine(initScene: Scene) {
 
     private var scene: Scene = initScene
     private val resources = Resources()
-    private val client = Client()
 
     private var unprocessedEvents = mutableListOf<Event>();
 
     fun run() {
         init()
-        client.sendTCP("GIMME")
         loop()
         glfwTerminate()
     }
