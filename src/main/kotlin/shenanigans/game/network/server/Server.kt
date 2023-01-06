@@ -5,16 +5,18 @@ import com.esotericsoftware.kryonet.Server
 import shenanigans.engine.HeadlessEngine
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.scene.Scene
-import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.EntityRegistrationPacket
+import shenanigans.game.network.Packet
 import shenanigans.game.network.registerClasses
 
 object Server : Resource {
     private val server : Server = Server()
 
-    val engine: HeadlessEngine = HeadlessEngine(Scene())
+    val engine: HeadlessEngine
 
     init {
+        engine = HeadlessEngine(makeScene())
+
         server.start()
 
         registerClasses(server)
@@ -24,15 +26,20 @@ object Server : Resource {
         addListeners()
     }
 
+    private fun makeScene(): Scene {
+        val scene = Scene()
+
+        scene.defaultSystems.add(EntityUpdateSystem())
+        scene.defaultSystems.add(EntityRegistrationSystem())
+
+        return scene
+    }
+
     private fun addListeners() {
         server.addListener(object : Listener {
             override fun received(connection: Connection?, thing: Any) {
-                if (thing is EntityPacket) {
-                    println("Got Thing!!!")
-                }
-
-                if (thing is EntityRegistrationPacket) {
-
+                if (thing is Packet) {
+                    engine.queueEvent(thing)
                 }
             }
         })
