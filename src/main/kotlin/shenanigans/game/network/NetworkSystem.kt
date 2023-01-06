@@ -1,6 +1,7 @@
 package shenanigans.game.network
 
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueue
 import shenanigans.game.network.client.Client
 import kotlin.reflect.KClass
 
@@ -17,6 +18,8 @@ class NetworkSystem : System{
     }
 
     override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        resources.get<EventQueue>().iterate<EntityRegistrationPacket>()
+
         for (entity in entities) {
             if(!clientIds.containsKey(entity.id)) {
                 client.createNetworkedEntity(entity)

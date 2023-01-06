@@ -16,13 +16,10 @@ class EntityUpdateSystem : System{
     override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
-        eventQueue.events.forEach {event ->
-
-            if (event is EntityPacket) {
-                entities.forEach {entity ->
-                    if(entity.id == event.id) {
-                        entity.component<Transform>().get().position = (event.components[Transform::class]!! as Transform).position
-                    }
+        eventQueue.iterate<EntityPacket>().forEach {event ->
+            entities.forEach {entity ->
+                if(entity.id == event.id) {
+                    entity.component<Transform>().get().position = (event.components[Transform::class]!! as Transform).position
                 }
             }
         }

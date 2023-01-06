@@ -1,6 +1,5 @@
 package shenanigans.engine
 
-import com.esotericsoftware.kryonet.Client
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C
@@ -21,11 +20,10 @@ import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.network.client.Client
 
 class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngineOptions()) : Engine(initScene = initScene, options) {
     private lateinit var window: Window
-
-    private val client = Client()
 
     override fun init() {
         window = Window("game", 640, 640)
@@ -37,6 +35,8 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
         engineResources.set(MouseState())
 
         engineResources.set(CameraResource(OrthoCamera()))
+
+        Client.engine = this
     }
 
     override fun loop() {
