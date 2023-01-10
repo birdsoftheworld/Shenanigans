@@ -10,6 +10,7 @@ import shenanigans.engine.init.client.ClientEngineOptions
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UIComponent
 import shenanigans.engine.ui.UISystem
+import shenanigans.engine.ui.dsl.buildUI
 import shenanigans.engine.ui.elements.Box
 import shenanigans.engine.ui.elements.ColoredBox
 
@@ -20,20 +21,40 @@ fun main() {
 fun makeScene(): Scene {
     val scene = Scene()
 
-    val child1 = ColoredBox(listOf(), Color(0.5f, 0.5f, 0.5f))
-    val child2 = makeComplexElement()
-    val root = Box(listOf(child1, child2))
-
-    child1.setMinSize(Vector2f(100f, 100f))
-    child2.setGrow()
-
     scene.runSystems(
         ResourcesView(), listOf(
             AddEntitiesSystem(
                 sequenceOf(
                     sequenceOf(
                         UIComponent(
-                            root
+                            buildUI {
+                                box {
+                                    minSize = Vector2f(100f, 100f)
+                                    color = Color(0.5f, 0.5f, 0.5f)
+                                }
+
+                                box {
+                                    flexGrow = 1f
+                                    flexDirection = Box.FlexDirection.Column
+                                    justifyContent = Box.JustifyContent.FlexStart
+
+                                    box {
+                                        color = Color(1f, 0f, 0f)
+                                        size = Vector2f(200f, 100f)
+                                    }
+
+                                    box {
+                                        color = Color(0f, 1f, 0f)
+                                        flexGrow = 1f
+                                    }
+
+                                    box {
+                                        color = Color(0f, 0f, 1f)
+                                        size = Vector2f(200f, 300f)
+                                        alignSelf = Box.Align.FlexEnd
+                                    }
+                                }
+                            }
                         )
                     )
                 )
@@ -42,26 +63,4 @@ fun makeScene(): Scene {
     )
 
     return scene
-}
-
-fun makeComplexElement(): Box {
-    val child1 = ColoredBox(listOf(), Color(1f, 0f, 0f))
-    val child2 = ColoredBox(listOf(), Color(0f, 1f, 0f))
-    val child3 = ColoredBox(listOf(), Color(0f, 0f, 1f))
-    val root = Box(listOf(child1, child2, child3))
-
-    root.setFlexDirection(Box.FlexDirection.Column)
-    root.setJustifyContent(Box.JustifyContent.FlexStart)
-
-    child1.setSize(Vector2f(200f, 100f))
-
-    child2.setGrow()
-
-    child2.setFlexDirection(Box.FlexDirection.Row)
-    child2.setFlexWrap(Box.FlexWrap.Wrap)
-
-    child3.setSize(Vector2f(200f, 100f))
-    child3.setAlignSelf(Box.Align.FlexEnd)
-
-    return root
 }

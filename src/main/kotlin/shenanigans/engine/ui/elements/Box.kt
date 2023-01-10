@@ -15,13 +15,13 @@ open class Box(val children: List<Box>) : AutoCloseable {
         }
     }
 
-    open fun render(resources: ResourcesView, layout: Layout) {}
 
     override fun close() {
         Yoga.YGNodeFree(node)
         children.forEach { child -> Yoga.YGNodeFree(child.node) }
     }
 
+    open fun render(resources: ResourcesView, layout: Layout) {}
 
     fun renderRecursive(resources: ResourcesView, parentLayout: Layout) {
         val layout = getLayout(parentLayout)
