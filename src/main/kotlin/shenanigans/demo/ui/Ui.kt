@@ -12,7 +12,6 @@ import shenanigans.engine.ui.UIComponent
 import shenanigans.engine.ui.UISystem
 import shenanigans.engine.ui.dsl.buildUI
 import shenanigans.engine.ui.elements.Box
-import shenanigans.engine.ui.elements.ColoredBox
 
 fun main() {
     ClientEngine(makeScene(), ClientEngineOptions(SystemList(listOf { UISystem() }))).run()

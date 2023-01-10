@@ -4,24 +4,42 @@ import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
-import shenanigans.engine.window.WindowResource
+import shenanigans.engine.graphics.api.Color
+import shenanigans.engine.graphics.api.resource.ShapeRendererResource
+import shenanigans.engine.util.camera.CameraResource
 
-open class Box(val children: List<Box>) : AutoCloseable {
+open class Box(val children: List<Box>, var color: Color? = null) : AutoCloseable {
     private val node = Yoga.YGNodeNew()
 
     init {
+        setChildren(children)
+    }
+
+    fun setChildren(children: List<Box>) {
+        Yoga.YGNodeRemoveAllChildren(node)
+
         children.forEachIndexed { index, child ->
             Yoga.YGNodeInsertChild(node, child.node, index)
         }
     }
-
 
     override fun close() {
         Yoga.YGNodeFree(node)
         children.forEach { child -> Yoga.YGNodeFree(child.node) }
     }
 
-    open fun render(resources: ResourcesView, layout: Layout) {}
+
+    fun render(resources: ResourcesView, layout: Layout) {
+        if (color != null) {
+            val shapeRenderer = resources.get<ShapeRendererResource>().shapeRenderer
+            val camera = resources.get<CameraResource>().camera!!
+
+            shapeRenderer.start()
+            shapeRenderer.projection = camera.computeProjectionMatrix()
+            shapeRenderer.rect(layout.position.x(), layout.position.y(), layout.size.x(), layout.size.y(), color!!)
+            shapeRenderer.end()
+        }
+    }
 
     fun renderRecursive(resources: ResourcesView, parentLayout: Layout) {
         val layout = getLayout(parentLayout)
