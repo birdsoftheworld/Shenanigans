@@ -35,10 +35,16 @@ class EntityRegistrationSystem : System{
     override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
+//        if(Server.packet) {
+//            println("WAHOOO")
+//        }
+
         eventQueue.iterate<EntityRegistrationPacket>().forEach {entityRegistrationPacket ->
             entityRegistrationPacket.serverEntityId = lifecycle.add(
                 entityRegistrationPacket.components.asSequence()
             )
+
+            println("registered")
 
             resources.get<Server>().registerEntity(entityRegistrationPacket)
         }

@@ -4,7 +4,6 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryonet.EndPoint
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
-import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.ecs.EntityId
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
@@ -30,5 +29,5 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(Vector2f::class.java)
     kryo.register(Array<Vector2f>::class.java)
     kryo.register(Array<Component>::class.java)
-    kryo.register(EntityId::class.java)
+    kryo.register(EntityId::class.java).setInstantiator { EntityId(-1) }
 }
