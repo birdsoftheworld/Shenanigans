@@ -18,7 +18,7 @@ class EntityUpdateSystem : System{
 
         eventQueue.iterate<EntityPacket>().forEach {event ->
             entities.forEach {entity ->
-                if(entity.id == event.id) {
+                if(entity.id == event.serverEntityId) {
                     entity.component<Transform>().get().position = (event.components[Transform::class]!! as Transform).position
                 }
             }
@@ -27,7 +27,7 @@ class EntityUpdateSystem : System{
 }
 
 
-class EntityRegistrationSystem : System{
+class ServerRegistrationSystem : System{
     override fun query(): Iterable<KClass<out Component>> {
         return setOf()
     }
@@ -39,8 +39,6 @@ class EntityRegistrationSystem : System{
             entityRegistrationPacket.serverEntityId = lifecycle.add(
                 entityRegistrationPacket.components.asSequence()
             )
-
-            println("registered")
 
             resources.get<Server>().registerEntity(entityRegistrationPacket)
         }

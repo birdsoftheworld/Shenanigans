@@ -9,6 +9,7 @@ import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
+import kotlin.jvm.internal.ClassReference
 
 
 fun registerClasses(endpoint: EndPoint){
@@ -21,7 +22,7 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
     kryo.register(EntityRegistrationPacket::class.java).setInstantiator {EntityRegistrationPacket(-1, -1)}
-    kryo.register(EntityPacket::class.java)
+    kryo.register(EntityPacket::class.java).setInstantiator { EntityPacket(EntityId(-1), -1) }
 
     // Utils
     kryo.register(Map::class.java)
@@ -29,5 +30,8 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(Vector2f::class.java)
     kryo.register(Array<Vector2f>::class.java)
     kryo.register(Array<Component>::class.java)
-    kryo.register(EntityId::class.java).setInstantiator { EntityId(-1) }
+    kryo.register(EntityId::class.java).setInstantiator { EntityId(-1)}
+    kryo.register(LinkedHashMap::class.java)
+    kryo.register(ClassReference::class.java).setInstantiator { ClassReference(Void::class.java) }
+    kryo.register(Class::class.java)
 }

@@ -55,4 +55,8 @@ object Client {
     fun createNetworkedEntity(entityView: EntityView) {
         client.sendTCP(EntityRegistrationPacket(entityView, client.id, 0))
     }
+
+    fun getId() : Int{
+        return client.id
+    }
 }

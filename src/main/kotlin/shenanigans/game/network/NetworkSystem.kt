@@ -8,7 +8,6 @@ import kotlin.reflect.KClass
 class Synchronized : Component
 
 class NetworkSystem : System{
-    private val client : Client = Client
 
     private val clientIds : HashMap<EntityId, EntityId?> = HashMap()
     private val serverIds : HashMap<EntityId, EntityId> = HashMap()
@@ -18,11 +17,27 @@ class NetworkSystem : System{
     }
 
     override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
-        resources.get<EventQueue>().iterate<EntityRegistrationPacket>()
+        resources.get<EventQueue>().iterate<EntityRegistrationPacket>().forEach { packet ->
+            if(packet.clientId == Client.getId()) {
+                clientIds[packet.clientEntityId] = packet.serverEntityId
+                serverIds[packet.serverEntityId!!] = packet.clientEntityId
+                println("WHaHOOO")
+                return
+            }
+
+            val newId = lifecycle.add(
+                packet.components.asSequence()
+            )
+
+            clientIds[newId] = packet.serverEntityId
+            serverIds[packet.serverEntityId!!] = newId
+
+            println("REGISTERED")
+        }
 
         for (entity in entities) {
             if(!clientIds.containsKey(entity.id)) {
-                client.createNetworkedEntity(entity)
+                Client.createNetworkedEntity(entity)
                 clientIds[entity.id] = null
                 continue
             }
@@ -31,7 +46,7 @@ class NetworkSystem : System{
                 continue
             }
 
-            client.sendEntity(entity, clientIds[entity.id]!!)
+            Client.sendEntity(entity, clientIds[entity.id]!!)
         }
     }
 }

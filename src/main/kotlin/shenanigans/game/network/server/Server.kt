@@ -35,7 +35,7 @@ object Server : Resource {
         val scene = Scene()
 
         scene.defaultSystems.add(EntityUpdateSystem())
-        scene.defaultSystems.add(EntityRegistrationSystem())
+        scene.defaultSystems.add(ServerRegistrationSystem())
 
         return scene
     }
@@ -51,8 +51,7 @@ object Server : Resource {
     }
 
     fun registerEntity(entityRegistrationPacket: EntityRegistrationPacket) {
-        kServer.sendToTCP(entityRegistrationPacket.clientId, entityRegistrationPacket)
-        println("return registration packet")
+        kServer.sendToAllTCP(entityRegistrationPacket)
     }
 
     fun stop() {
