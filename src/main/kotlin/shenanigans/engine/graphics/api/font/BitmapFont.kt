@@ -98,6 +98,36 @@ class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics:
         return 1
     }
 
+    fun measureText(text: String): Float {
+        var width = 0f
+
+        stackPush().use { stack ->
+            val codepointBuf = stack.mallocInt(1)
+            val advance = stack.mallocInt(1)
+            val bearing = stack.mallocInt(1)
+
+            var charIndex = 0
+            val length: Int = text.length
+            while (charIndex < length) {
+                charIndex += getNextCodepoint(text, length, charIndex, codepointBuf)
+                val codepoint: Int = codepointBuf.get(0)
+                if (codepoint < FIRST_CHAR || FIRST_CHAR + NUM_CHARS <= codepoint) {
+                    continue
+                }
+
+                stbtt_GetCodepointHMetrics(info, codepoint, advance, bearing)
+                width += advance.get(0)
+
+                if (charIndex < length) {
+                    getNextCodepoint(text, length, charIndex, codepointBuf)
+                    width += stbtt_GetCodepointKernAdvance(info, codepoint, codepointBuf.get(0))
+                }
+            }
+        }
+
+        return width * stbtt_ScaleForPixelHeight(info, height)
+    }
+
     fun discard() {
 
     }
