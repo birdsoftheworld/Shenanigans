@@ -20,6 +20,10 @@ class ResourcesView(private vararg val children: Resources) {
     internal fun getOptByClass(kclass: KClass<out Resource>): Resource? {
         return children.firstNotNullOfOrNull { it.getOptByClass(kclass) }
     }
+
+    fun asSequence(): Sequence<Map.Entry<KClass<out Resource>, Resource>> {
+        return children.asSequence().flatMap { it.resources.asSequence() }
+    }
 }
 
 class Resources {
