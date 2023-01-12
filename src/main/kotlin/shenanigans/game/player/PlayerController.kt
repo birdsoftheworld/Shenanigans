@@ -11,25 +11,32 @@ import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.round
+import shenanigans.engine.events.Event
 import kotlin.math.sign
 import kotlin.reflect.KClass
 
 data class Player(
-                  val xAccel: Float = 5f,
+                  val xAccel: Float = .01f,
                   val xMax : Float = .15f,
                   val jumpSpeed: Float = .2f,
-                  val friction : Float = 8f,
+                  val friction : Float = 15f,
                   val turnSpeed: Float = 20f,
-                  val drag : Float = 8f,
+                  val drag : Float = 15f,
+                  var tempPos : Vector2f = Vector2f(),
                   var airTurnSpeed : Float = 5f,
-                  var onGround : Boolean = false) : Component{
+                  var onGround : Boolean = false,
+                  var onRoof : Boolean = false,
+                  var onWall : Boolean = false) : Component{
 }
 
+class PlayerOnWallEvent : Event
+class PlayerOnGroundEvent : Event
+class PlayerOnRoofEvent : Event
 class PlayerController : System {
     val gravity : Float = .5f
     var velocity = Vector2f()
-    var oldPos = Vector2f()
-
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Player::class, Transform::class)
     }
@@ -43,6 +50,13 @@ class PlayerController : System {
             val player = entity.component<Player>()
             resources.get<EventQueue>().iterate<PlayerOnGroundEvent>().forEach { event ->
                 player.get().onGround = true
+                velocity.y = 0f
+            }
+            resources.get<EventQueue>().iterate<PlayerOnWallEvent>().forEach { event ->
+                player.get().onWall = true
+            }
+            resources.get<EventQueue>().iterate<PlayerOnRoofEvent>().forEach { event ->
+                player.get().onRoof = true
             }
             val transform = entity.component<Transform>()
             val pos = transform.get().position
@@ -59,19 +73,10 @@ class PlayerController : System {
             var wantToJump = false
             val jumpSpeed = player.get().jumpSpeed
             var onGround = player.get().onGround
+            var onWall = player.get().onWall
+            var onRoof = player.get().onRoof
 
-
-            //left
-            if (keyboard.isPressed(Key.A)) {
-                desiredVelocity.add(Vector2f(-xMax, 0f))
-            }
-
-            //right
-            if (keyboard.isPressed(Key.D)) {
-                desiredVelocity.add(Vector2f(xMax, 0f))
-            }
-            //jump
-
+            //Deceleration based on whether on ground or in air
             when (onGround) {
                 true -> {
                     deccel = friction; turnAccel = turnSpeed
@@ -83,6 +88,17 @@ class PlayerController : System {
             }
 
 
+            //left
+            if (keyboard.isPressed(Key.A)) {
+                desiredVelocity.add(Vector2f(-xMax, 0f))
+            }
+
+            //right
+            if (keyboard.isPressed(Key.D)) {
+                desiredVelocity.add(Vector2f(xMax, 0f))
+            }
+
+            //jump
             if (keyboard.isPressed(Key.W)) {
                 wantToJump = true
             }
@@ -90,15 +106,16 @@ class PlayerController : System {
             fun jump() {
                 velocity.y = -jumpSpeed
                 wantToJump = false
-                onGround = false
             }
 
+            fun canJump(): Boolean{
+                return (onGround || onWall)
+            }
 
-
-
-            if (wantToJump && onGround) {
+            if (wantToJump && canJump()) {
                 jump()
             }
+
             if(!onGround) {
                 velocity.y += gravity * deltaTime.toFloat()
             }
@@ -113,9 +130,15 @@ class PlayerController : System {
                 maxSpeedChange = deccel * deltaTime.toFloat()
             }
             velocity.x = velocity.x + (desiredVelocity.x - velocity.x) * maxSpeedChange
-            oldPos=pos
+            if(onRoof){
+                velocity.y = .00000001f
+            }
             pos.add(velocity)
             transform.mutate()
+            player.get().onGround = false
+            player.get().onWall = false
+            player.get().onRoof = false
+
         }
     }
 }

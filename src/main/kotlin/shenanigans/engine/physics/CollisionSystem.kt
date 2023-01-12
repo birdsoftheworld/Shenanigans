@@ -6,10 +6,10 @@ import org.joml.Vector4f
 import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
-import shenanigans.game.player.Player
-import shenanigans.game.player.PlayerOnGroundEvent
+import shenanigans.game.player.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -44,15 +44,31 @@ class CollisionSystem : System {
 
             }
             else if(!pair.first.component<Collider>().get().static) {
-                if (pair.first.componentOpt<Player>() != null && collision.length() > 0){
-                    resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
+                if (pair.first.componentOpt<Player>() != null){
+                    if(collision.y < 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
+                    }
+                    if(collision.y > 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnRoofEvent())
+                    }
+                    if(Math.abs(collision.x) > 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnWallEvent())
+                    }
                 }
                 transform1.get().position.add(collision)
                 transform1.mutate()
             }
             else if(!pair.second.component<Collider>().get().static) {
-                if (pair.second.componentOpt<Player>() != null && collision.length() > 0){
-                    resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
+                if (pair.second.componentOpt<Player>() != null){
+                    if(collision.y > 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
+                    }
+                    if(collision.y < 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnRoofEvent())
+                    }
+                    if(Math.abs(collision.x) > 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnWallEvent())
+                    }
                 }
                 transform2.get().position.add(collision.negate())
                 transform2.mutate()

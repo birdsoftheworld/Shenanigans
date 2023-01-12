@@ -1,5 +1,6 @@
 package shenanigans.engine.graphics.api.component
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
@@ -20,6 +21,10 @@ data class Shape(
         if (!vertices.contentEquals(other.vertices)) return false
 
         return true
+    }
+
+    fun width(): Float{
+        return this.vertices[2].x -this.vertices[0].x
     }
 
     override fun hashCode(): Int {

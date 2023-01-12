@@ -80,7 +80,7 @@ class AddTestEntities : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector2f(200f, 600f),
+                    Vector2f(200f, 500f),
                 ),
                 shape2,
                 Collider(shape2, false),
