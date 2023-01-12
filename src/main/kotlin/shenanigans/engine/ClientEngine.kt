@@ -28,7 +28,7 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
     override fun init() {
         window = Window("game", 640, 640)
 
-        window.onEvent(::queueEvent)
+        window.onEvent(::unsafeQueueEvent)
 
         engineResources.set(WindowResource(window))
         engineResources.set(KeyboardState())
@@ -49,10 +49,12 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
         while (!window.shouldClose) {
             GLFW.glfwPollEvents()
 
-            // shhhhh just pretend this is atomic
+            eventLock.lock()
             val events = unprocessedEvents
             unprocessedEvents = mutableListOf()
-            val eventQueue = EventQueue(events, ::queueEvent)
+            eventLock.unlock()
+
+            val eventQueue = EventQueue(events, ::unsafeQueueEvent)
 
             val exit = eventQueue.iterate<ControlEvent>().any { e ->
                 when (e) {

@@ -10,8 +10,6 @@ import shenanigans.game.network.registerClasses
 import com.esotericsoftware.kryonet.Server as KServer
 
 object Server : Resource {
-    var packet = false
-
     private val kServer : KServer = KServer()
 
     val engine: HeadlessEngine
@@ -46,8 +44,6 @@ object Server : Resource {
         kServer.addListener(object : Listener {
             override fun received(connection: Connection?, thing: Any) {
                 if (thing is Packet) {
-                    println(thing.javaClass)
-                    packet = true
                     engine.queueEvent(thing)
                 }
             }

@@ -18,14 +18,15 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
     }
 
     override fun loop() {
-
         var previousTime = GLFW.glfwGetTime()
 
         while (running) {
-            // shhhhh just pretend this is atomic
+            eventLock.lock()
             val events = unprocessedEvents
             unprocessedEvents = mutableListOf()
-            val eventQueue = EventQueue(events, ::queueEvent)
+            eventLock.unlock()
+
+            val eventQueue = EventQueue(events, ::unsafeQueueEvent)
 
             val exit = eventQueue.iterate<ControlEvent>().any { e ->
                 when (e) {
