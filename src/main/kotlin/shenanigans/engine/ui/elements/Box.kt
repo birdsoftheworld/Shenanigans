@@ -8,38 +8,26 @@ import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.util.camera.CameraResource
 
-open class Box(val children: List<Box>, var color: Color? = null) : AutoCloseable {
+open class Box : AutoCloseable {
     private val node = Yoga.YGNodeNew()
 
-    init {
-        setChildren(children)
-    }
+    var children: List<Box> = emptyList()
+        set(value) {
+            Yoga.YGNodeRemoveAllChildren(node)
 
-    fun setChildren(children: List<Box>) {
-        Yoga.YGNodeRemoveAllChildren(node)
+            children.forEachIndexed { index, child ->
+                Yoga.YGNodeInsertChild(node, child.node, index)
+            }
 
-        children.forEachIndexed { index, child ->
-            Yoga.YGNodeInsertChild(node, child.node, index)
+            field = value
         }
-    }
 
     override fun close() {
         Yoga.YGNodeFree(node)
         children.forEach { child -> Yoga.YGNodeFree(child.node) }
     }
 
-
-    fun render(resources: ResourcesView, layout: Layout) {
-        if (color != null) {
-            val shapeRenderer = resources.get<ShapeRendererResource>().shapeRenderer
-            val camera = resources.get<CameraResource>().camera!!
-
-            shapeRenderer.start()
-            shapeRenderer.projection = camera.computeProjectionMatrix()
-            shapeRenderer.rect(layout.position.x(), layout.position.y(), layout.size.x(), layout.size.y(), color!!)
-            shapeRenderer.end()
-        }
-    }
+    open fun render(resources: ResourcesView, layout: Layout) {}
 
     fun renderRecursive(resources: ResourcesView, parentLayout: Layout) {
         val layout = getLayout(parentLayout)
@@ -62,33 +50,43 @@ open class Box(val children: List<Box>, var color: Color? = null) : AutoCloseabl
         return ret
     }
 
-
     fun computeLayout(size: Vector2fc) {
         Yoga.YGNodeCalculateLayout(node, size.x(), size.y(), Yoga.YGDirectionLTR)
     }
 
-    fun setSize(size: Vector2fc) {
-        Yoga.YGNodeStyleSetWidth(node, size.x())
-        Yoga.YGNodeStyleSetHeight(node, size.y())
-    }
 
-    fun setGrow(grow: Float) {
-        Yoga.YGNodeStyleSetFlexGrow(node, grow)
-    }
+    var size: Vector2f? = null
+        set(value) {
+            if (value !== null) {
+                Yoga.YGNodeStyleSetWidth(node, value.x())
+                Yoga.YGNodeStyleSetHeight(node, value.y())
+            }
+            field = value
+        }
 
-    fun setGrow() {
-        setGrow(1f)
-    }
+    var grow: Float = 0f
+        set(value) {
+            Yoga.YGNodeStyleSetFlexGrow(node, value)
+            field = value
+        }
 
-    fun setMinSize(size: Vector2fc) {
-        Yoga.YGNodeStyleSetMinWidth(node, size.x())
-        Yoga.YGNodeStyleSetMinHeight(node, size.y())
-    }
+    var minSize: Vector2f? = null
+        set(value) {
+            if (value !== null) {
+                Yoga.YGNodeStyleSetMinWidth(node, value.x())
+                Yoga.YGNodeStyleSetMinHeight(node, value.y())
+            }
+            field = value
+        }
 
-    fun setMaxSize(size: Vector2fc) {
-        Yoga.YGNodeStyleSetMaxWidth(node, size.x())
-        Yoga.YGNodeStyleSetMaxHeight(node, size.y())
-    }
+    var maxSize: Vector2f? = null
+        set(value) {
+            if (value !== null) {
+                Yoga.YGNodeStyleSetMaxWidth(node, value.x())
+                Yoga.YGNodeStyleSetMaxHeight(node, value.y())
+            }
+            field = value
+        }
 
     enum class Edge {
         All,
@@ -135,16 +133,18 @@ open class Box(val children: List<Box>, var color: Color? = null) : AutoCloseabl
         ColumnReverse,
     }
 
-    fun setFlexDirection(direction: FlexDirection) {
-        Yoga.YGNodeStyleSetDirection(
-            node, when (direction) {
-                FlexDirection.Row -> Yoga.YGFlexDirectionRow
-                FlexDirection.Column -> Yoga.YGFlexDirectionColumn
-                FlexDirection.RowReverse -> Yoga.YGFlexDirectionRowReverse
-                FlexDirection.ColumnReverse -> Yoga.YGFlexDirectionColumnReverse
-            }
-        )
-    }
+    var flexDirection: FlexDirection = FlexDirection.Row
+        set(value) {
+            Yoga.YGNodeStyleSetDirection(
+                node, when (value) {
+                    FlexDirection.Row -> Yoga.YGFlexDirectionRow
+                    FlexDirection.Column -> Yoga.YGFlexDirectionColumn
+                    FlexDirection.RowReverse -> Yoga.YGFlexDirectionRowReverse
+                    FlexDirection.ColumnReverse -> Yoga.YGFlexDirectionColumnReverse
+                }
+            )
+            field = value
+        }
 
     enum class FlexWrap {
         NoWrap,
@@ -152,15 +152,17 @@ open class Box(val children: List<Box>, var color: Color? = null) : AutoCloseabl
         WrapReverse,
     }
 
-    fun setFlexWrap(wrap: FlexWrap) {
-        Yoga.YGNodeStyleSetFlexWrap(
-            node, when (wrap) {
-                FlexWrap.NoWrap -> Yoga.YGWrapNoWrap
-                FlexWrap.Wrap -> Yoga.YGWrapWrap
-                FlexWrap.WrapReverse -> Yoga.YGWrapReverse
-            }
-        )
-    }
+    var wrap: FlexWrap = FlexWrap.NoWrap
+        set(value) {
+            Yoga.YGNodeStyleSetFlexWrap(
+                node, when (value) {
+                    FlexWrap.NoWrap -> Yoga.YGWrapNoWrap
+                    FlexWrap.Wrap -> Yoga.YGWrapWrap
+                    FlexWrap.WrapReverse -> Yoga.YGWrapReverse
+                }
+            )
+            field = value
+        }
 
     enum class JustifyContent {
         Center,
@@ -171,18 +173,20 @@ open class Box(val children: List<Box>, var color: Color? = null) : AutoCloseabl
         SpaceEvenly,
     }
 
-    fun setJustifyContent(jc: JustifyContent) {
-        Yoga.YGNodeStyleSetJustifyContent(
-            node, when (jc) {
-                JustifyContent.Center -> Yoga.YGJustifyCenter
-                JustifyContent.FlexStart -> Yoga.YGJustifyFlexStart
-                JustifyContent.FlexEnd -> Yoga.YGJustifyFlexEnd
-                JustifyContent.SpaceBetween -> Yoga.YGJustifySpaceBetween
-                JustifyContent.SpaceAround -> Yoga.YGJustifySpaceAround
-                JustifyContent.SpaceEvenly -> Yoga.YGJustifySpaceEvenly
-            }
-        )
-    }
+    var justifyContent: JustifyContent = JustifyContent.FlexStart
+        set(value) {
+            Yoga.YGNodeStyleSetJustifyContent(
+                node, when (value) {
+                    JustifyContent.Center -> Yoga.YGJustifyCenter
+                    JustifyContent.FlexStart -> Yoga.YGJustifyFlexStart
+                    JustifyContent.FlexEnd -> Yoga.YGJustifyFlexEnd
+                    JustifyContent.SpaceBetween -> Yoga.YGJustifySpaceBetween
+                    JustifyContent.SpaceAround -> Yoga.YGJustifySpaceAround
+                    JustifyContent.SpaceEvenly -> Yoga.YGJustifySpaceEvenly
+                }
+            )
+            field = value
+        }
 
     enum class Align {
         Center,
@@ -202,15 +206,15 @@ open class Box(val children: List<Box>, var color: Color? = null) : AutoCloseabl
         }
     }
 
-    fun setAlignItems(align: Align) {
-        Yoga.YGNodeStyleSetAlignItems(
-            node, align.toYoga()
-        )
-    }
+    var alignItems: Align = Align.Stretch
+        set(value) {
+            Yoga.YGNodeStyleSetAlignItems(node, value.toYoga())
+            field = value
+        }
 
-    fun setAlignSelf(align: Align) {
-        Yoga.YGNodeStyleSetAlignSelf(
-            node, align.toYoga()
-        )
-    }
+    var alignSelf: Align = Align.Stretch
+        set(value) {
+            Yoga.YGNodeStyleSetAlignItems(node, value.toYoga())
+            field = value
+        }
 }

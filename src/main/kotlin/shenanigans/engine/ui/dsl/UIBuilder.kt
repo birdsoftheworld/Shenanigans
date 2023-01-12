@@ -2,21 +2,19 @@ package shenanigans.engine.ui.dsl
 
 import shenanigans.engine.ui.elements.Box
 
-sealed class UIBuilder {
-    abstract fun build(): Box
+sealed interface UIBuilder<out T> {
+    fun build(): T
 }
 
-sealed class RecursiveUIBuilder : UIBuilder() {
-    private val children = mutableListOf<UIBuilder>()
-
-    abstract fun buildBranch(children: List<Box>): Box
-
-    override fun build(): Box {
-        return buildBranch(children.map { it.build() })
-    }
+sealed interface ParentUIBuilder {
+    fun addChild(child: UIBuilder<Box>)
 
     fun box(init: BoxBuilder.() -> Unit) {
-        children.add(BoxBuilder().apply(init))
+        addChild(BoxBuilder().apply(init))
+    }
+
+    fun coloredBox(init: ColoredBoxBuilder.() -> Unit) {
+        addChild(ColoredBoxBuilder().apply(init))
     }
 }
 

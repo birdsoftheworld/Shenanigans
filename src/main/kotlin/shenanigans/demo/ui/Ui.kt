@@ -20,40 +20,43 @@ fun main() {
 fun makeScene(): Scene {
     val scene = Scene()
 
+    val ui = buildUI {
+        coloredBox {
+            minSize = Vector2f(100f, 100f)
+
+            color = Color(0.5f, 0.5f, 0.5f)
+        }
+
+        box {
+            grow = 1f
+            flexDirection = Box.FlexDirection.Column
+            justifyContent = Box.JustifyContent.FlexStart
+
+            coloredBox {
+                color = Color(1f, 0f, 0f)
+                size = Vector2f(200f, 100f)
+            }
+
+            coloredBox {
+                color = Color(0f, 1f, 0f)
+                grow = 1f
+            }
+
+            coloredBox {
+                color = Color(0f, 0f, 1f)
+                size = Vector2f(200f, 300f)
+                alignSelf = Box.Align.FlexEnd
+            }
+        }
+    }
+
     scene.runSystems(
         ResourcesView(), listOf(
             AddEntitiesSystem(
                 sequenceOf(
                     sequenceOf(
                         UIComponent(
-                            buildUI {
-                                box {
-                                    minSize = Vector2f(100f, 100f)
-                                    color = Color(0.5f, 0.5f, 0.5f)
-                                }
-
-                                box {
-                                    flexGrow = 1f
-                                    flexDirection = Box.FlexDirection.Column
-                                    justifyContent = Box.JustifyContent.FlexStart
-
-                                    box {
-                                        color = Color(1f, 0f, 0f)
-                                        size = Vector2f(200f, 100f)
-                                    }
-
-                                    box {
-                                        color = Color(0f, 1f, 0f)
-                                        flexGrow = 1f
-                                    }
-
-                                    box {
-                                        color = Color(0f, 0f, 1f)
-                                        size = Vector2f(200f, 300f)
-                                        alignSelf = Box.Align.FlexEnd
-                                    }
-                                }
-                            }
+                            ui
                         )
                     )
                 )
