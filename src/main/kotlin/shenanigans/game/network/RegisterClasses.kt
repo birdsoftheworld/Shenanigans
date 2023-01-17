@@ -34,4 +34,5 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(LinkedHashMap::class.java)
     kryo.register(ClassReference::class.java).setInstantiator { ClassReference(Void::class.java) }
     kryo.register(Class::class.java)
+    kryo.register(Color::class.java).setInstantiator { Color(0f, 0f, 0f) }
 }

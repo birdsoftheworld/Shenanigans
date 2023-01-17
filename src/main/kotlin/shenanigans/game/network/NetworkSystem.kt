@@ -31,9 +31,14 @@ class NetworkSystem : System{
 
             clientIds[newId] = packet.serverEntityId
             serverIds[packet.serverEntityId!!] = newId
-
-            println("REGISTERED")
         }
+
+        resources.get<EventQueue>().iterate<EntityPacket>().forEach { packet ->
+            if(!serverIds.containsKey(packet.serverEntityId)) {
+                return
+            }
+        }
+
 
         for (entity in entities) {
             if(!clientIds.containsKey(entity.id)) {

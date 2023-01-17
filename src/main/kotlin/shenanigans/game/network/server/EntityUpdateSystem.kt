@@ -14,16 +14,15 @@ class EntityUpdateSystem : System {
         return setOf(Synchronized::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
-        eventQueue.iterate<EntityPacket>().forEach {event ->
-            entities.forEach {entity ->
-                if(entity.id == event.serverEntityId) {
-                    entity.component<Transform>().get().position = (event.components[Transform::class]!! as Transform).position
-                }
+        eventQueue.iterate<EntityPacket>().forEach {packet ->
+            packet.entities.forEach() { entity ->
+                entities.get(entity.key)?.component<Transform>().get().position = (entity.value[Transform::class]!! as Transform).position
             }
         }
+
     }
 }
 
@@ -33,7 +32,7 @@ class ServerRegistrationSystem : System {
         return setOf()
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
         eventQueue.iterate<EntityRegistrationPacket>().forEach {entityRegistrationPacket ->
