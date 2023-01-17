@@ -3,7 +3,7 @@ package shenanigans.engine.ecs
 import kotlin.reflect.KClass
 
 class Entities {
-    private val entities: MutableList<Pair<EntityId, Map<KClass<out Component>, StoredComponent>>> = arrayListOf()
+    private val entities: MutableList<StoredEntity> = arrayListOf()
     private var nextId: Int = 0
 
     fun runSystem(system: System, resourcesView: ResourcesView) {
@@ -12,22 +12,15 @@ class Entities {
         val lifecycle = EntitiesLifecycle(nextId)
         system.execute(
             resourcesView,
-            entities
-                .asSequence()
-                .withIndex()
-                .filter { (_, value) ->
-                    val (_, components) = value
-                    components.keys.containsAll(query as Collection<KClass<out Component>>)
-                }.map { (_, value) ->
-                    val (id, components) = value
-                    EntityView(id, components)
-                },
+            EntitiesView(query, entities),
             lifecycle
         )
         lifecycle.finish(entities)
         nextId = lifecycle.nextId
     }
 }
+
+typealias StoredEntity = Pair<EntityId, Map<KClass<out Component>, StoredComponent>>
 
 @JvmInline
 value class EntityId(val number: Int)
@@ -75,6 +68,28 @@ class ComponentView<T : Component>(private val stored: StoredComponent) {
     }
 }
 
+class EntitiesView internal constructor(
+    private val query: Iterable<KClass<out Component>>,
+    private val entities: List<StoredEntity>,
+) : Sequence<EntityView> {
+    fun get(id: EntityId): EntityView? {
+        val idx = entities.binarySearch { (sid, _) -> sid.number - id.number }
+        val (foundId, components) = entities[idx]
+
+        return if (foundId == id) {
+            EntityView(foundId, components)
+        } else {
+            null
+        }
+    }
+
+    override fun iterator(): Iterator<EntityView> {
+        return entities.filter { (_, components) ->
+            components.keys.containsAll(query as Collection<KClass<out Component>>)
+        }.map { (id, components) -> EntityView(id, components) }.iterator()
+    }
+}
+
 class EntitiesLifecycle internal constructor(var nextId: Int) {
     private val requests: MutableList<LifecycleRequest> = mutableListOf()
 
@@ -93,7 +108,7 @@ class EntitiesLifecycle internal constructor(var nextId: Int) {
         requests.add(LifecycleRequest.Del(id))
     }
 
-    internal fun finish(entities: MutableList<Pair<EntityId, Map<KClass<out Component>, StoredComponent>>>) {
+    internal fun finish(entities: MutableList<StoredEntity>) {
         requests.forEach { req ->
             when (req) {
                 is LifecycleRequest.Add -> {
@@ -106,7 +121,12 @@ class EntitiesLifecycle internal constructor(var nextId: Int) {
 
                 is LifecycleRequest.Del -> {
                     val idx = entities.binarySearch { (id, _) -> id.number - req.id.number }
-                    entities.removeAt(idx)
+
+                    if (entities[idx].first == req.id) {
+                        entities.removeAt(idx)
+                    } else {
+                        throw IllegalStateException("Entity ${req.id} not found")
+                    }
                 }
             }
         }

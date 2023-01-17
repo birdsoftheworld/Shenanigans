@@ -1,7 +1,6 @@
 package shenanigans.engine.ui
 
 import org.joml.Vector2f
-import org.joml.Vector2fc
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.ui.elements.Box
@@ -14,7 +13,7 @@ class UISystem : RenderSystem {
         return setOf(UIComponent::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val window = resources.get<WindowResource>().window
 
         entities.forEach {

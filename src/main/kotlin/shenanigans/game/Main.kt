@@ -50,7 +50,7 @@ class FollowCameraSystem : System {
         return setOf(KeyboardPlayer::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val first = entities.first()
         val transform = first.component<Transform>().get()
         val camera = resources.get<CameraResource>().camera!!
@@ -69,7 +69,7 @@ class AddTestEntities : System {
         return emptySet()
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val shape = Shape(
             arrayOf(
                 Vector2f(0f, 0f), Vector2f(0f, 50f), Vector2f(50f, 50f), Vector2f(50f, 0f)
@@ -121,7 +121,7 @@ class MouseMovementSystem : System {
         return setOf(MousePlayer::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         entities.forEach { entity ->
             val mousePlayer = entity.component<MousePlayer>().get()
             if(mousePlayer.grabbed){
@@ -159,7 +159,7 @@ class KeyboardMovementSystem : System {
         return setOf(KeyboardPlayer::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTime = resources.get<DeltaTime>().deltaTime
 
