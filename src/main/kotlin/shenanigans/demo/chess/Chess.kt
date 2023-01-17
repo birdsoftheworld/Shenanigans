@@ -2,12 +2,9 @@ package shenanigans.demo.chess
 
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
-import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
-import shenanigans.engine.physics.Collider
-import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
@@ -29,7 +26,7 @@ class AddTiles : System {
         return emptySet()
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val tileSize = 20f
 
         for (i in 0..7) {

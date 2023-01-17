@@ -1,9 +1,6 @@
 package shenanigans.engine.graphics.api.system
 
-import shenanigans.engine.ecs.Component
-import shenanigans.engine.ecs.EntitiesLifecycle
-import shenanigans.engine.ecs.EntityView
-import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.*
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.graphics.api.component.Sprite
@@ -16,7 +13,7 @@ class SpriteSystem : RenderSystem {
         return setOf(Sprite::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val renderer = resources.get<TextureRendererResource>().textureRenderer
         val camera = resources.get<CameraResource>().camera
         renderer.projection = camera!!.computeProjectionMatrix()
