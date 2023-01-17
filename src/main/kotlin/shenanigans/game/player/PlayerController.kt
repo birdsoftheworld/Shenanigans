@@ -17,21 +17,31 @@ import shenanigans.engine.events.Event
 import kotlin.math.sign
 import kotlin.reflect.KClass
 
-data class Player(
-                  val xAccel: Float = .01f,
-                  val xMax : Float = .15f,
-                  val jumpSpeed: Float = .2f,
-                  val friction : Float = 15f,
-                  val turnSpeed: Float = 20f,
-                  val drag : Float = 15f,
-                  var tempPos : Vector2f = Vector2f(),
-                  var airTurnSpeed : Float = 5f,
-                  var onGround : Boolean = false,
-                  var onRoof : Boolean = false,
-                  var onWall : Boolean = false) : Component{
+
+enum class WallStatus{
+    Off,
+    Left,
+    Right
 }
 
-class PlayerOnWallEvent : Event
+data class Player(
+  val groundAccel: Float = .01f,
+  val airAccelRatio: Float = .02f,
+  val xMax : Float = .15f,
+  val jumpSpeed: Float = .2f,
+  val friction : Float = 15f,
+  val turnSpeed: Float = 20f,
+  val drag : Float = 15f,
+  var tempPos : Vector2f = Vector2f(),
+  var airTurnSpeed : Float = 3f,
+  var onGround : Boolean = false,
+  var onRoof : Boolean = false,
+  var wall : WallStatus = WallStatus.Off
+) : Component{
+}
+
+class PlayerOnWallLeftEvent : Event
+class PlayerOnWallRightEvent : Event
 class PlayerOnGroundEvent : Event
 class PlayerOnRoofEvent : Event
 class PlayerController : System {
@@ -44,16 +54,23 @@ class PlayerController : System {
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTime = resources.get<DeltaTime>().deltaTime
-
+        val L = WallStatus.Left
+        val R = WallStatus.Right
+        val O = WallStatus.Off
 
         entities.forEach { entity ->
             val player = entity.component<Player>()
             resources.get<EventQueue>().iterate<PlayerOnGroundEvent>().forEach { event ->
                 player.get().onGround = true
-                velocity.y = 0f
+                if(velocity.y > 0f){
+                    velocity.y = 0f
+                }
             }
-            resources.get<EventQueue>().iterate<PlayerOnWallEvent>().forEach { event ->
-                player.get().onWall = true
+            resources.get<EventQueue>().iterate<PlayerOnWallRightEvent>().forEach { event ->
+                player.get().wall = R
+            }
+            resources.get<EventQueue>().iterate<PlayerOnWallLeftEvent>().forEach { event ->
+                player.get().wall = L
             }
             resources.get<EventQueue>().iterate<PlayerOnRoofEvent>().forEach { event ->
                 player.get().onRoof = true
@@ -67,23 +84,28 @@ class PlayerController : System {
             val airTurnSpeed = player.get().airTurnSpeed
             var desiredVelocity = Vector2f(0f, 0f)
             var deccel = 1f
-            val xAccel = player.get().xAccel
             var turnAccel = 0f
             var maxSpeedChange = 0f
             var wantToJump = false
             val jumpSpeed = player.get().jumpSpeed
             var onGround = player.get().onGround
-            var onWall = player.get().onWall
+            var wall = player.get().wall
             var onRoof = player.get().onRoof
+            var xAccel = player.get().groundAccel
+            if(!onGround){
+                xAccel *=player.get().airAccelRatio
+            }
 
             //Deceleration based on whether on ground or in air
             when (onGround) {
                 true -> {
-                    deccel = friction; turnAccel = turnSpeed
+                    deccel = friction;
+                    turnAccel = turnSpeed
                 }
 
                 false -> {
-                    deccel = drag; turnAccel = airTurnSpeed
+                    deccel = drag;
+                    turnAccel = airTurnSpeed
                 }
             }
 
@@ -105,11 +127,21 @@ class PlayerController : System {
 
             fun jump() {
                 velocity.y = -jumpSpeed
+                if(wall == R){
+                    println("LEFT")
+                    velocity.y = -jumpSpeed
+                    velocity.x -=  jumpSpeed
+                }
+                if(wall == L){
+                    println("RIGHT")
+                    velocity.y = -jumpSpeed
+                    velocity.x +=  jumpSpeed
+                }
                 wantToJump = false
             }
 
             fun canJump(): Boolean{
-                return (onGround || onWall)
+                return (onGround || wall != WallStatus.Off)
             }
 
             if (wantToJump && canJump()) {
@@ -117,7 +149,12 @@ class PlayerController : System {
             }
 
             if(!onGround) {
-                velocity.y += gravity * deltaTime.toFloat()
+                if(wall != O && velocity.y > 0){
+                    velocity.y += gravity/4 * deltaTime.toFloat()
+                }
+                else{
+                    velocity.y += gravity * deltaTime.toFloat()
+                }
             }
 
             if (desiredVelocity.x != 0f) {
@@ -136,7 +173,7 @@ class PlayerController : System {
             pos.add(velocity)
             transform.mutate()
             player.get().onGround = false
-            player.get().onWall = false
+            player.get().wall = O
             player.get().onRoof = false
 
         }

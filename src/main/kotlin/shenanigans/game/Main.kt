@@ -56,7 +56,10 @@ class AddTestEntities : System {
     override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
         val shape = Shape(
             arrayOf(
-                Vector2f(0f, 0f), Vector2f(0f, 50f), Vector2f(600f, 50f), Vector2f(600f, 0f)
+                Vector2f(0f, 0f),
+                Vector2f(0f, 50f),
+                Vector2f(600f, 50f),
+                Vector2f(600f, 0f)
             ), Color(1f, 0f, 0f)
         )
 
@@ -109,6 +112,26 @@ class AddTestEntities : System {
                 MousePlayer(false, Vector2f(0f,0f)),
                 )
         ))
+        val shape3 = Shape(
+            arrayOf(
+                Vector2f(0f, 0f),
+                Vector2f(0f, 600f),
+                Vector2f(50f, 600f),
+                Vector2f(50f, 0f)
+            ), Color(0f, 1f, 1f)
+        )
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(400f, 400f)
+                ),
+                shape3,
+                Collider(shape3, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        ))
+
+
     }
 }
 

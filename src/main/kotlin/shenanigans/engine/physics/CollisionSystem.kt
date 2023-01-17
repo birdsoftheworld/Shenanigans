@@ -51,9 +51,6 @@ class CollisionSystem : System {
                     if(collision.y > 0){
                         resources.get<EventQueue>().queueLater(PlayerOnRoofEvent())
                     }
-                    if(Math.abs(collision.x) > 0){
-                        resources.get<EventQueue>().queueLater(PlayerOnWallEvent())
-                    }
                 }
                 transform1.get().position.add(collision)
                 transform1.mutate()
@@ -66,8 +63,11 @@ class CollisionSystem : System {
                     if(collision.y < 0){
                         resources.get<EventQueue>().queueLater(PlayerOnRoofEvent())
                     }
-                    if(Math.abs(collision.x) > 0){
-                        resources.get<EventQueue>().queueLater(PlayerOnWallEvent())
+                    if(collision.x > 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnWallRightEvent())
+                    }
+                    if(collision.x < 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnWallLeftEvent())
                     }
                 }
                 transform2.get().position.add(collision.negate())

@@ -39,7 +39,7 @@ class Engine(initScene: Scene) {
     }
 
     private fun init() {
-        window = Window("game", 640, 640)
+        window = Window("game", 1920, 1080)
 
         window.onEvent(::queueEvent)
         resources.set(WindowResource(window))
