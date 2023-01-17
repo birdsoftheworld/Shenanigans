@@ -39,6 +39,7 @@ fun makeScene(): Scene {
 
             coloredBox {
                 color = Color(0f, 1f, 0f)
+                minSize = Vector2f(100f, 100f)
                 grow = 1f
             }
 

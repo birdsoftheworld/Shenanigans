@@ -11,20 +11,27 @@ import shenanigans.engine.util.camera.CameraResource
 open class Box : AutoCloseable {
     private val node = Yoga.YGNodeNew()
 
-    var children: List<Box> = emptyList()
+    private var _children = mutableListOf<Box>()
+    var children: List<Box>
+        get() = _children
         set(value) {
             Yoga.YGNodeRemoveAllChildren(node)
 
-            children.forEachIndexed { index, child ->
+            value.forEachIndexed { index, child ->
                 Yoga.YGNodeInsertChild(node, child.node, index)
             }
 
-            field = value
+            _children = value.toMutableList()
         }
+
+    fun addChild(child: Box) {
+        Yoga.YGNodeInsertChild(node, child.node, _children.size)
+        _children.add(child)
+    }
 
     override fun close() {
         Yoga.YGNodeFree(node)
-        children.forEach { child -> Yoga.YGNodeFree(child.node) }
+        _children.forEach { child -> Yoga.YGNodeFree(child.node) }
     }
 
     open fun render(resources: ResourcesView, layout: Layout) {}
@@ -32,7 +39,7 @@ open class Box : AutoCloseable {
     fun renderRecursive(resources: ResourcesView, parentLayout: Layout) {
         val layout = getLayout(parentLayout)
         render(resources, layout)
-        children.forEach { child -> child.renderRecursive(resources, layout) }
+        _children.forEach { child -> child.renderRecursive(resources, layout) }
     }
 
     data class Layout(val position: Vector2f, val size: Vector2f)
@@ -214,7 +221,7 @@ open class Box : AutoCloseable {
 
     var alignSelf: Align = Align.Stretch
         set(value) {
-            Yoga.YGNodeStyleSetAlignItems(node, value.toYoga())
+            Yoga.YGNodeStyleSetAlignSelf(node, value.toYoga())
             field = value
         }
 }
