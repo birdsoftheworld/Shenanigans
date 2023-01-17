@@ -12,7 +12,7 @@ abstract class Camera {
     protected val modelViewMatrix = Matrix4f()
 
     val translation = Vector2f()
-    val scaling = Vector2f()
+    val scaling = Vector2f(1f, 1f)
     var rotation = 0f
 
     var screenWidth = -1

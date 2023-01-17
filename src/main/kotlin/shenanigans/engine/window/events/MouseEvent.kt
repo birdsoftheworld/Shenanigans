@@ -5,7 +5,7 @@ import org.joml.Vector2fc
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.StateMachineResource
+import shenanigans.engine.events.StateMachine
 import shenanigans.engine.window.KeyModifier
 import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.MouseButtonAction
@@ -71,7 +71,7 @@ data class MouseScrollEvent(val offset: Vector2fc) : MouseEvent() {
     }
 }
 
-class MouseState : Resource, StateMachineResource {
+class MouseState : Resource, StateMachine {
     private val position = Vector2f()
     private var cursorPresent = false
     private val pressed = mutableMapOf<MouseButton, Boolean>()
