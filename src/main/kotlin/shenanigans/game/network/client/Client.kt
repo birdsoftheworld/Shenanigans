@@ -18,6 +18,8 @@ object Client {
     var engine : Engine? = null
 
     init {
+        registerClasses(client)
+
         client.start()
 
         try {
@@ -30,8 +32,6 @@ object Client {
         } catch (e: IOException) {
             e.printStackTrace()
         }
-
-        registerClasses(client)
 
         addListeners()
     }
@@ -53,7 +53,9 @@ object Client {
     }
 
     fun createNetworkedEntity(entityView: EntityView) {
-        client.sendTCP(EntityRegistrationPacket(entityView, client.id, 0))
+        val packet = EntityRegistrationPacket(entityView, client.id, 0)
+        packet.clientEntityId = entityView.id
+        client.sendTCP(packet)
     }
 
     fun getId() : Int{

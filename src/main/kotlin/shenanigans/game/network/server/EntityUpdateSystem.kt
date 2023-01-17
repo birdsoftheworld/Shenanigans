@@ -3,12 +3,13 @@ package shenanigans.game.network.server
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.util.Transform
+import shenanigans.game.network.ConnectionEvent
 import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.Synchronized
 import kotlin.reflect.KClass
 
-class EntityUpdateSystem : System{
+class EntityUpdateSystem : System {
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Synchronized::class)
     }
@@ -27,7 +28,7 @@ class EntityUpdateSystem : System{
 }
 
 
-class ServerRegistrationSystem : System{
+class ServerRegistrationSystem : System {
     override fun query(): Iterable<KClass<out Component>> {
         return setOf()
     }
@@ -41,6 +42,25 @@ class ServerRegistrationSystem : System{
             )
 
             resources.get<Server>().registerEntity(entityRegistrationPacket)
+        }
+    }
+}
+
+
+class FullEntitySyncSystem : System {
+    override fun query(): Iterable<KClass<out Component>> = setOf()
+
+    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        val eventQueue = resources.get<EventQueue>()
+        val server = resources.get<Server>()
+
+        eventQueue.iterate<ConnectionEvent>().forEach { connectionEvent ->
+            val connection = connectionEvent.connection
+            entities.forEach {
+                val packet = EntityRegistrationPacket(it, -1, -1)
+                packet.serverEntityId = it.id
+                server.registerEntityTo(connection.id, packet)
+            }
         }
     }
 }

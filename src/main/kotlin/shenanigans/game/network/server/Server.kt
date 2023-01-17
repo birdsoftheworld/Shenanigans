@@ -4,6 +4,7 @@ import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.HeadlessEngine
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.scene.Scene
+import shenanigans.game.network.ConnectionEvent
 import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.Packet
 import shenanigans.game.network.registerClasses
@@ -36,6 +37,7 @@ object Server : Resource {
 
         scene.defaultSystems.add(EntityUpdateSystem())
         scene.defaultSystems.add(ServerRegistrationSystem())
+        scene.defaultSystems.add(FullEntitySyncSystem())
 
         return scene
     }
@@ -47,11 +49,21 @@ object Server : Resource {
                     engine.queueEvent(thing)
                 }
             }
+
+            override fun connected(connection: Connection?) {
+                if (connection != null) {
+                    engine.queueEvent(ConnectionEvent(connection))
+                }
+            }
         })
     }
 
     fun registerEntity(entityRegistrationPacket: EntityRegistrationPacket) {
         kServer.sendToAllTCP(entityRegistrationPacket)
+    }
+
+    fun registerEntityTo(client: Int, entityRegistrationPacket: EntityRegistrationPacket) {
+        kServer.sendToTCP(client, entityRegistrationPacket)
     }
 
     fun stop() {

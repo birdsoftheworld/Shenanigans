@@ -19,7 +19,6 @@ class EntityPacket (val serverEntityId: EntityId, serverTimeMillis: Int): Packet
 }
 
 class EntityRegistrationPacket (val clientId: Int, serverTimeMillis : Int): Packet(serverTimeMillis) {
-
     val components: MutableList<Component> = mutableListOf()
     var clientEntityId: EntityId = EntityId(-1)
     var serverEntityId: EntityId? = null
@@ -30,7 +29,5 @@ class EntityRegistrationPacket (val clientId: Int, serverTimeMillis : Int): Pack
                 components.add(it.component)
             }
         }
-
-        clientEntityId = entityView.id
     }
 }
