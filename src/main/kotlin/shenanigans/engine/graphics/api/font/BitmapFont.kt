@@ -15,7 +15,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics: VerticalMetrics, val info: STBTTFontinfo, val height: Float) {
+class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: VerticalMetrics, val info: STBTTFontinfo, val height: Float) {
     private var bmpTexture: Texture
 
     private var context: STBTTPackContext
