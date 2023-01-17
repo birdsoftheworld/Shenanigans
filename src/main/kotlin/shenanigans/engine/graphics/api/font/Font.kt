@@ -23,7 +23,7 @@ class Font(val data: ByteBuffer) {
             val lineGap = it.mallocInt(1)
 
             stbtt_GetFontVMetrics(info, ascent, descent, lineGap)
-            verticalMetrics = VerticalMetrics(ascent.get(0), ascent.get(0), ascent.get(0))
+            verticalMetrics = VerticalMetrics(ascent.get(0).toFloat(), descent.get(0).toFloat(), lineGap.get(0).toFloat())
         }
     }
 

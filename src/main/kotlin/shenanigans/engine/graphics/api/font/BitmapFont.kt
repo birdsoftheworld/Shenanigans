@@ -20,6 +20,7 @@ class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics:
 
     private var context: STBTTPackContext
     private var characterData: STBTTPackedchar.Buffer
+    val verticalMetrics: VerticalMetrics
 
     private val BITMAP_W = 512
     private val BITMAP_H = 512
@@ -30,6 +31,9 @@ class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics:
     val quad: STBTTAlignedQuad = STBTTAlignedQuad.create()
 
     init {
+        val scale = stbtt_ScaleForPixelHeight(info, height)
+        this.verticalMetrics = VerticalMetrics(verticalMetrics.ascent * scale, verticalMetrics.descent * scale, verticalMetrics.lineGap * scale)
+
         val bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H)
         characterData = STBTTPackedchar.create(NUM_CHARS)
 
