@@ -7,12 +7,7 @@ import shenanigans.engine.events.EventQueue
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
 import shenanigans.engine.window.Key
-import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.engine.window.events.MouseState
-import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.round
 import shenanigans.engine.events.Event
 import kotlin.math.sign
 import kotlin.reflect.KClass
@@ -31,7 +26,7 @@ data class Player(
   val jumpSpeed: Float = .2f,
   val friction : Float = 15f,
   val turnSpeed: Float = 20f,
-  val drag : Float = 15f,
+  val drag : Float = 3f,
   var tempPos : Vector2f = Vector2f(),
   var airTurnSpeed : Float = 3f,
   var onGround : Boolean = false,
@@ -109,7 +104,7 @@ class PlayerController : System {
                 }
             }
 
-
+//            println("####//^\\\\####\n######|######\n//#########\\\\\n<-#########->\n\\\\#########//\n######|######\n####\\\\˅//####\n")
             //left
             if (keyboard.isPressed(Key.A)) {
                 desiredVelocity.add(Vector2f(-xMax, 0f))
@@ -128,12 +123,10 @@ class PlayerController : System {
             fun jump() {
                 velocity.y = -jumpSpeed
                 if(wall == R){
-                    println("LEFT")
                     velocity.y = -jumpSpeed
                     velocity.x -=  jumpSpeed
                 }
                 if(wall == L){
-                    println("RIGHT")
                     velocity.y = -jumpSpeed
                     velocity.x +=  jumpSpeed
                 }

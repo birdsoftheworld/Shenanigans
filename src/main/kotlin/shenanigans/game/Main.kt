@@ -38,6 +38,7 @@ fun testScene(): Scene {
     scene.runSystems(Resources(), listOf(AddTestEntities()))
 
     scene.defaultSystems.add(MouseMovementSystem())
+    scene.defaultSystems.add(InsertEntitiesOngoing())
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(ButtonSystem())
@@ -132,9 +133,43 @@ class AddTestEntities : System {
         ))
 
 
+
     }
 }
 
+
+class InsertEntitiesOngoing : System{
+    override fun query(): Iterable<KClass<out Component>> {
+        return setOf(Shape::class,Transform::class)
+    }
+
+    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+        val mousePos = resources.get<MouseState>().position()
+        val keyboard = resources.get<KeyboardState>()
+        val ShapeI = Shape(
+            arrayOf(
+                Vector2f(0f, 0f),
+                Vector2f(0f, 50f),
+                Vector2f(50f, 50f),
+                Vector2f(50f, 0f)
+            ), Color(.5f, .5f, .5f)
+        )
+        resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
+            if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.RELEASE) {
+                lifecycle.add(
+                    sequenceOf(
+                        Transform(
+                            Vector2f(round((mousePos.x()-25f)/50)*50, round((mousePos.y()-25f)/50)*50)
+                        ),
+                        ShapeI,
+                        Collider(ShapeI, false),
+                        MousePlayer(false, Vector2f(0f, 0f)),
+                    )
+                )
+            }
+        }
+    }
+}
 class MouseMovementSystem : System {
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(MousePlayer::class, Transform::class)

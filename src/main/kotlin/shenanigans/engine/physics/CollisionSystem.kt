@@ -41,10 +41,23 @@ class CollisionSystem : System {
                 transform2.get().position.add(collision.negate())
                 transform2.mutate()
 
-
+                if (pair.second.componentOpt<Player>() != null || pair.first.componentOpt<Player>() != null){
+                    if(collision.y > 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
+                    }
+                    if(collision.y < 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnRoofEvent())
+                    }
+                    if(collision.x < 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnWallRightEvent())
+                    }
+                    if(collision.x > 0){
+                        resources.get<EventQueue>().queueLater(PlayerOnWallLeftEvent())
+                    }
+                }
             }
             else if(!pair.first.component<Collider>().get().static) {
-                if (pair.first.componentOpt<Player>() != null){
+                if (pair.first.componentOpt<Player>() != null ||  pair.second.componentOpt<Player>() != null){
                     if(collision.y < 0){
                         resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
                     }
@@ -56,7 +69,7 @@ class CollisionSystem : System {
                 transform1.mutate()
             }
             else if(!pair.second.component<Collider>().get().static) {
-                if (pair.second.componentOpt<Player>() != null){
+                if (pair.second.componentOpt<Player>() != null || pair.first.componentOpt<Player>() != null){
                     if(collision.y > 0){
                         resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
                     }
