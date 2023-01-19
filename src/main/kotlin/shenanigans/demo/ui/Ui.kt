@@ -41,6 +41,14 @@ fun makeScene(): Scene {
                 color = Color(0f, 1f, 0f)
                 minSize = Vector2f(100f, 100f)
                 grow = 1f
+
+                flexDirection = Box.FlexDirection.Row
+                justifyContent = Box.JustifyContent.Center
+                alignItems = Box.Align.Center
+
+                text {
+                    text = "Hello, world!"
+                }
             }
 
             coloredBox {

@@ -16,6 +16,17 @@ sealed interface ParentUIBuilder {
     fun coloredBox(init: ColoredBoxBuilder.() -> Unit) {
         addChild(ColoredBoxBuilder().apply(init))
     }
+
+    fun text(init: TextBuilder.() -> Unit) {
+        addChild(TextBuilder().apply(init))
+    }
+
+    fun text(text: String, init: TextBuilder.() -> Unit = {}) {
+        addChild(TextBuilder().apply {
+            this.text = text
+            init()
+        })
+    }
 }
 
 fun buildUI(init: BoxBuilder.() -> Unit): Box {
