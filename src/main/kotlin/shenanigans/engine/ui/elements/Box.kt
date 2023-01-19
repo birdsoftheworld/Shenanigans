@@ -2,8 +2,7 @@ package shenanigans.engine.ui.elements
 
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
-import shenanigans.engine.ui.dsl.Fragment
-import shenanigans.engine.ui.dsl.ParentUIBuilder
+import shenanigans.engine.ui.api.ParentUIBuilder
 
 open class Box : ColoredNode(), ParentUIBuilder {
     /* Child Management */

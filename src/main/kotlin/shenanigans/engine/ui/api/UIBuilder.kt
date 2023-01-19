@@ -1,4 +1,4 @@
-package shenanigans.engine.ui.dsl
+package shenanigans.engine.ui.api
 
 import shenanigans.engine.ui.elements.Box
 import shenanigans.engine.ui.elements.Node
@@ -32,8 +32,4 @@ fun ParentUIBuilder.text(text: String, init: Text.() -> Unit = {}) {
         this.text = text
         init()
     })
-}
-
-fun buildUI(init: Fragment.() -> Unit): Node {
-    return Fragment().apply(init).build()
 }

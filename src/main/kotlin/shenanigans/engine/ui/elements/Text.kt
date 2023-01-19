@@ -27,7 +27,9 @@ open class Text : Node() {
     }
 
     private fun updateLayout() {
-        bmFont = notoSans.createSized(fontSize)
+        bmFont = bitmapFontCache.getOrPut(fontSize) {
+            notoSans.createSized(fontSize)
+        }
         size = Vector2f(
             bmFont.measureText(text),
             bmFont.verticalMetrics.ascent + bmFont.verticalMetrics.descent
@@ -64,5 +66,6 @@ open class Text : Node() {
 
     companion object {
         private val notoSans = Font.fromFile("/NotoSans-Medium.ttf")
+        private val bitmapFontCache = mutableMapOf<Float, BitmapFont>()
     }
 }

@@ -1,4 +1,4 @@
-package shenanigans.engine.ui.dsl
+package shenanigans.engine.ui.api
 
 import shenanigans.engine.ui.elements.Box
 import shenanigans.engine.ui.elements.Node
