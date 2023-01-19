@@ -1,5 +1,6 @@
 package shenanigans.game.network
 
+import com.google.common.collect.BiMap
 import shenanigans.engine.ClientOnly
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntitiesView
@@ -10,11 +11,32 @@ import kotlin.reflect.KClass
 class EntityPacket (serverTimeMillis: Int): Packet(serverTimeMillis) {
     val entities: MutableMap<EntityId, MutableMap<KClass<out Component>, Component>> = mutableMapOf()
 
-    constructor (entities: EntitiesView, clientIds : HashMap<EntityId, EntityId?>, serverTimeMillis : Int) : this(serverTimeMillis) {
+    constructor (entities: Sequence<EntityView>, clientIds : BiMap<EntityId, EntityId>, serverTimeMillis : Int) : this(serverTimeMillis) {
         entities.forEach { entity ->
-            entity.components.forEach() {component ->
-                if (!component.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
-                    entities[serverEntityId]?.set(it.component::class, it.component)
+            entity.components.forEach() {componentMap ->
+                if (!componentMap.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
+                    try {
+                        if(this.entities[clientIds[entity.id]!!] == null) {
+                            this.entities[clientIds[entity.id]!!] = mutableMapOf()
+                        }
+                        this.entities[clientIds[entity.id]!!]!![componentMap.value.component::class] =
+                            componentMap.value.component
+                    } catch (e : NullPointerException) {
+                        e.printStackTrace()
+                        println(entity.id)
+                        println(clientIds[entity.id])
+                        throw(e)
+                    }
+                }
+            }
+        }
+    }
+
+    constructor (entities: EntitiesView, serverTimeMillis : Int) : this(serverTimeMillis) {
+        entities.forEach { entity ->
+            entity.components.forEach() {componentMap ->
+                if (!componentMap.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
+                    this.entities[entity.id]!![componentMap.value.component::class] = componentMap.value.component
                 }
             }
         }

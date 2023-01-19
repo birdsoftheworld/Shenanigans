@@ -19,10 +19,14 @@ class EntityUpdateSystem : System {
 
         eventQueue.iterate<EntityPacket>().forEach {packet ->
             packet.entities.forEach() { entity ->
-                entities.get(entity.key)?.component<Transform>().get().position = (entity.value[Transform::class]!! as Transform).position
+                if(entities[entity.key]?.component<Transform>() == null) {
+                    println("entity does not have a transform!")
+                }
+                entities[entity.key]?.component<Transform>()!!.get().position = (entity.value[Transform::class]!! as Transform).position
             }
         }
 
+        resources.get<Server>().updateEntities(EntityPacket(entities, -1))
     }
 }
 
@@ -49,7 +53,7 @@ class ServerRegistrationSystem : System {
 class FullEntitySyncSystem : System {
     override fun query(): Iterable<KClass<out Component>> = setOf()
 
-    override fun execute(resources: ResourcesView, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
         val server = resources.get<Server>()
 

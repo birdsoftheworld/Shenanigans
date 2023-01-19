@@ -4,7 +4,6 @@ import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.Engine
-import shenanigans.engine.ecs.EntityId
 import shenanigans.engine.ecs.EntityView
 import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.EntityRegistrationPacket
@@ -36,15 +35,14 @@ object Client {
         addListeners()
     }
 
-    fun sendEntity(entityView: EntityView, id: EntityId) {
-        client.sendTCP(EntityPacket(id, entityView, 0))
+    fun updateEntities(entityPacket: EntityPacket) {
+        client.sendTCP(entityPacket)
     }
 
     private fun addListeners() {
         client.addListener(object : Listener {
             override fun received(connection: Connection?, thing: Any?) {
                 if (thing is Packet) {
-                    println("Got thing !!!!! :) !!!!!")
                     engine!!.queueEvent(thing)
                 }
             }

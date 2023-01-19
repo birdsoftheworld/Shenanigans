@@ -44,6 +44,10 @@ class EntityView internal constructor(
             null
         }
     }
+
+    operator fun set(kClass: KClass<Map.Entry<KClass<out Component>, StoredComponent>>, value: Map.Entry<KClass<out Component>, StoredComponent>) {
+
+    }
 }
 
 class ComponentView<T : Component>(private val stored: StoredComponent) {
@@ -72,7 +76,7 @@ class EntitiesView internal constructor(
     private val query: Iterable<KClass<out Component>>,
     private val entities: List<StoredEntity>,
 ) : Sequence<EntityView> {
-    fun get(id: EntityId): EntityView? {
+    operator fun get(id: EntityId): EntityView? {
         val idx = entities.binarySearch { (sid, _) -> sid.number - id.number }
         val (foundId, components) = entities[idx]
 
