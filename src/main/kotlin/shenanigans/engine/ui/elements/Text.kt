@@ -9,7 +9,7 @@ import shenanigans.engine.graphics.api.resource.FontRendererResource
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.util.camera.CameraResource
 
-open class Text : ColoredBox() {
+open class Text : Node() {
     var text: String = ""
         set(value) {
             field = value
@@ -20,6 +20,7 @@ open class Text : ColoredBox() {
     private lateinit var bmFont: BitmapFont
 
     var backgroundColor: Color? = null
+    var color: Color = Color(0f, 0f, 0f)
 
     init {
         updateLayout()
@@ -41,7 +42,7 @@ open class Text : ColoredBox() {
 
             shapeRenderer.start()
             shapeRenderer.projection = camera.computeProjectionMatrix()
-            shapeRenderer.rect(layout.position.x(), layout.position.y(), layout.size.x(), layout.size.y(), color!!)
+            shapeRenderer.rect(layout.position.x(), layout.position.y(), layout.size.x(), layout.size.y(), color)
             shapeRenderer.end()
         }
 
@@ -50,7 +51,7 @@ open class Text : ColoredBox() {
 
             fontRenderer.start()
             fontRenderer.projection = camera.computeProjectionMatrix()
-            fontRenderer.tint = color ?: Color(0f, 0f, 0f)
+            fontRenderer.tint = color
             fontRenderer.drawText(
                 bmFont,
                 text,

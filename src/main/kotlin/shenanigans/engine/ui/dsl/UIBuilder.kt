@@ -1,21 +1,18 @@
 package shenanigans.engine.ui.dsl
 
 import shenanigans.engine.ui.elements.Box
+import shenanigans.engine.ui.elements.Node
 
 sealed interface UIBuilder<out T> {
     fun build(): T
 }
 
 sealed interface ParentUIBuilder {
-    fun addChild(child: UIBuilder<Box>)
+    fun addChild(child: UIBuilder<Node>)
 }
 
 fun ParentUIBuilder.box(init: BoxBuilder.() -> Unit) {
     addChild(BoxBuilder().apply(init))
-}
-
-fun ParentUIBuilder.coloredBox(init: ColoredBoxBuilder.() -> Unit) {
-    addChild(ColoredBoxBuilder().apply(init))
 }
 
 fun ParentUIBuilder.text(init: TextBuilder.() -> Unit) {

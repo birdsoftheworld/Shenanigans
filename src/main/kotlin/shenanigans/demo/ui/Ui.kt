@@ -10,7 +10,7 @@ import shenanigans.engine.init.client.ClientEngineOptions
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UIComponent
 import shenanigans.engine.ui.UISystem
-import shenanigans.engine.ui.dsl.buildUI
+import shenanigans.engine.ui.dsl.*
 import shenanigans.engine.ui.elements.Box
 
 fun main() {
@@ -21,7 +21,7 @@ fun makeScene(): Scene {
     val scene = Scene()
 
     val ui = buildUI {
-        coloredBox {
+        box {
             minSize = Vector2f(100f, 100f)
 
             color = Color(0.5f, 0.5f, 0.5f)
@@ -32,12 +32,12 @@ fun makeScene(): Scene {
             flexDirection = Box.FlexDirection.Column
             justifyContent = Box.JustifyContent.FlexStart
 
-            coloredBox {
+            box {
                 color = Color(1f, 0f, 0f)
                 size = Vector2f(200f, 100f)
             }
 
-            coloredBox {
+            box {
                 color = Color(0f, 1f, 0f)
                 minSize = Vector2f(100f, 100f)
                 grow = 1f
@@ -51,7 +51,7 @@ fun makeScene(): Scene {
                 }
             }
 
-            coloredBox {
+            box {
                 color = Color(0f, 0f, 1f)
                 size = Vector2f(200f, 300f)
                 alignSelf = Box.Align.FlexEnd

@@ -1,137 +1,44 @@
 package shenanigans.engine.ui.elements
 
-import org.joml.Vector2f
-import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
-import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.graphics.api.resource.ShapeRendererResource
-import shenanigans.engine.util.camera.CameraResource
 
-open class Box : AutoCloseable {
-    private val node = Yoga.YGNodeNew()
+open class Box : ColoredNode() {
+    /* Child Management */
 
-    private var _children = mutableListOf<Box>()
-    var children: List<Box>
+    private var _children = mutableListOf<Node>()
+
+    var children: List<Node>
         get() = _children
         set(value) {
-            Yoga.YGNodeRemoveAllChildren(node)
+            Yoga.YGNodeRemoveAllChildren(ygNode)
 
             value.forEachIndexed { index, child ->
-                Yoga.YGNodeInsertChild(node, child.node, index)
+                Yoga.YGNodeInsertChild(ygNode, child.ygNode, index)
             }
 
             _children = value.toMutableList()
         }
 
-    fun addChild(child: Box) {
-        Yoga.YGNodeInsertChild(node, child.node, _children.size)
+    fun addChild(child: Node) {
+        Yoga.YGNodeInsertChild(ygNode, child.ygNode, _children.size)
         _children.add(child)
     }
 
     override fun close() {
-        Yoga.YGNodeFree(node)
-        _children.forEach { child -> Yoga.YGNodeFree(child.node) }
+        super.close()
+        _children.forEach { child -> Yoga.YGNodeFree(child.ygNode) }
     }
 
-    open fun render(resources: ResourcesView, layout: Layout) {}
+    /* Rendering */
 
-    fun renderRecursive(resources: ResourcesView, parentLayout: Layout) {
+    override fun renderIntoParent(resources: ResourcesView, parentLayout: Layout) {
         val layout = getLayout(parentLayout)
         render(resources, layout)
-        _children.forEach { child -> child.renderRecursive(resources, layout) }
+        _children.forEach { child -> child.renderIntoParent(resources, layout) }
     }
 
-    data class Layout(val position: Vector2f, val size: Vector2f)
-
-    private fun getLayoutAsRoot(): Layout {
-        return Layout(
-            Vector2f(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node)),
-            Vector2f(Yoga.YGNodeLayoutGetWidth(node), Yoga.YGNodeLayoutGetHeight(node))
-        )
-    }
-
-    private fun getLayout(parent: Layout): Layout {
-        val ret = getLayoutAsRoot()
-        ret.position.add(parent.position)
-        return ret
-    }
-
-    fun computeLayout(size: Vector2fc) {
-        Yoga.YGNodeCalculateLayout(node, size.x(), size.y(), Yoga.YGDirectionLTR)
-    }
-
-
-    var size: Vector2f? = null
-        set(value) {
-            if (value !== null) {
-                Yoga.YGNodeStyleSetWidth(node, value.x())
-                Yoga.YGNodeStyleSetHeight(node, value.y())
-            }
-            field = value
-        }
-
-    var grow: Float = 0f
-        set(value) {
-            Yoga.YGNodeStyleSetFlexGrow(node, value)
-            field = value
-        }
-
-    var minSize: Vector2f? = null
-        set(value) {
-            if (value !== null) {
-                Yoga.YGNodeStyleSetMinWidth(node, value.x())
-                Yoga.YGNodeStyleSetMinHeight(node, value.y())
-            }
-            field = value
-        }
-
-    var maxSize: Vector2f? = null
-        set(value) {
-            if (value !== null) {
-                Yoga.YGNodeStyleSetMaxWidth(node, value.x())
-                Yoga.YGNodeStyleSetMaxHeight(node, value.y())
-            }
-            field = value
-        }
-
-    enum class Edge {
-        All,
-        Horizontal, Vertical,
-        Left, Top, Right, Bottom,
-    }
-
-    fun setMargin(edge: Edge, margin: Float) {
-        Yoga.YGNodeStyleSetMargin(
-            node,
-            when (edge) {
-                Edge.All -> Yoga.YGEdgeAll
-                Edge.Horizontal -> Yoga.YGEdgeHorizontal
-                Edge.Vertical -> Yoga.YGEdgeVertical
-                Edge.Left -> Yoga.YGEdgeLeft
-                Edge.Top -> Yoga.YGEdgeTop
-                Edge.Right -> Yoga.YGEdgeRight
-                Edge.Bottom -> Yoga.YGEdgeBottom
-            },
-            margin
-        )
-    }
-
-    fun setPadding(edge: Edge, padding: Float) {
-        Yoga.YGNodeStyleSetPadding(
-            node,
-            when (edge) {
-                Edge.All -> Yoga.YGEdgeAll
-                Edge.Horizontal -> Yoga.YGEdgeHorizontal
-                Edge.Vertical -> Yoga.YGEdgeVertical
-                Edge.Left -> Yoga.YGEdgeLeft
-                Edge.Top -> Yoga.YGEdgeTop
-                Edge.Right -> Yoga.YGEdgeRight
-                Edge.Bottom -> Yoga.YGEdgeBottom
-            },
-            padding
-        )
-    }
+    /* Layout */
 
     enum class FlexDirection {
         Row,
@@ -143,7 +50,7 @@ open class Box : AutoCloseable {
     var flexDirection: FlexDirection = FlexDirection.Row
         set(value) {
             Yoga.YGNodeStyleSetDirection(
-                node, when (value) {
+                ygNode, when (value) {
                     FlexDirection.Row -> Yoga.YGFlexDirectionRow
                     FlexDirection.Column -> Yoga.YGFlexDirectionColumn
                     FlexDirection.RowReverse -> Yoga.YGFlexDirectionRowReverse
@@ -162,7 +69,7 @@ open class Box : AutoCloseable {
     var wrap: FlexWrap = FlexWrap.NoWrap
         set(value) {
             Yoga.YGNodeStyleSetFlexWrap(
-                node, when (value) {
+                ygNode, when (value) {
                     FlexWrap.NoWrap -> Yoga.YGWrapNoWrap
                     FlexWrap.Wrap -> Yoga.YGWrapWrap
                     FlexWrap.WrapReverse -> Yoga.YGWrapReverse
@@ -183,7 +90,7 @@ open class Box : AutoCloseable {
     var justifyContent: JustifyContent = JustifyContent.FlexStart
         set(value) {
             Yoga.YGNodeStyleSetJustifyContent(
-                node, when (value) {
+                ygNode, when (value) {
                     JustifyContent.Center -> Yoga.YGJustifyCenter
                     JustifyContent.FlexStart -> Yoga.YGJustifyFlexStart
                     JustifyContent.FlexEnd -> Yoga.YGJustifyFlexEnd
@@ -215,13 +122,13 @@ open class Box : AutoCloseable {
 
     var alignItems: Align = Align.Stretch
         set(value) {
-            Yoga.YGNodeStyleSetAlignItems(node, value.toYoga())
+            Yoga.YGNodeStyleSetAlignItems(ygNode, value.toYoga())
             field = value
         }
 
     var alignSelf: Align = Align.Stretch
         set(value) {
-            Yoga.YGNodeStyleSetAlignSelf(node, value.toYoga())
+            Yoga.YGNodeStyleSetAlignSelf(ygNode, value.toYoga())
             field = value
         }
 }

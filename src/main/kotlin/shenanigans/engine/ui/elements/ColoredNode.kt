@@ -5,7 +5,7 @@ import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.util.camera.CameraResource
 
-open class ColoredBox : Box() {
+open class ColoredNode : Node() {
     var color: Color? = null
 
     override fun render(resources: ResourcesView, layout: Layout) {
