@@ -113,4 +113,9 @@ open class Node : AutoCloseable {
             padding
         )
     }
+
+    /* DSL */
+    fun build(): Node {
+        return this
+    }
 }

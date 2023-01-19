@@ -2,8 +2,10 @@ package shenanigans.engine.ui.elements
 
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ui.dsl.Fragment
+import shenanigans.engine.ui.dsl.ParentUIBuilder
 
-open class Box : ColoredNode() {
+open class Box : ColoredNode(), ParentUIBuilder {
     /* Child Management */
 
     private var _children = mutableListOf<Node>()
@@ -20,7 +22,7 @@ open class Box : ColoredNode() {
             _children = value.toMutableList()
         }
 
-    fun addChild(child: Node) {
+    override fun addChild(child: Node) {
         Yoga.YGNodeInsertChild(ygNode, child.ygNode, _children.size)
         _children.add(child)
     }

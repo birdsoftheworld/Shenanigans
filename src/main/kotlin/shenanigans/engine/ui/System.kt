@@ -3,7 +3,6 @@ package shenanigans.engine.ui
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.RenderSystem
-import shenanigans.engine.ui.elements.Box
 import shenanigans.engine.ui.elements.Node
 import shenanigans.engine.util.toFloat
 import shenanigans.engine.window.WindowResource
@@ -25,5 +24,5 @@ class UISystem : RenderSystem {
     }
 }
 
-class UIComponent(var root: Box) : Component
+class UIComponent(var root: Node) : Component
 

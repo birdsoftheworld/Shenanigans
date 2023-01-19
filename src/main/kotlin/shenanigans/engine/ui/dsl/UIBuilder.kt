@@ -2,30 +2,38 @@ package shenanigans.engine.ui.dsl
 
 import shenanigans.engine.ui.elements.Box
 import shenanigans.engine.ui.elements.Node
+import shenanigans.engine.ui.elements.Text
 
-sealed interface UIBuilder<out T> {
-    fun build(): T
+interface UIBuilder {
+    fun build(): Node
 }
 
-sealed interface ParentUIBuilder {
-    fun addChild(child: UIBuilder<Node>)
+interface ParentUIBuilder {
+    fun addChild(child: Node)
+    fun addChild(fragment: Fragment) {
+        fragment.items.forEach(this::addChild)
+    }
 }
 
-fun ParentUIBuilder.box(init: BoxBuilder.() -> Unit) {
-    addChild(BoxBuilder().apply(init))
+fun ParentUIBuilder.fragment(init: Fragment.() -> Unit) {
+    addChild(Fragment().apply(init))
 }
 
-fun ParentUIBuilder.text(init: TextBuilder.() -> Unit) {
-    addChild(TextBuilder().apply(init))
+fun ParentUIBuilder.box(init: Box.() -> Unit) {
+    addChild(Box().apply(init))
 }
 
-fun ParentUIBuilder.text(text: String, init: TextBuilder.() -> Unit = {}) {
-    addChild(TextBuilder().apply {
+fun ParentUIBuilder.text(init: Text.() -> Unit) {
+    addChild(Text().apply(init))
+}
+
+fun ParentUIBuilder.text(text: String, init: Text.() -> Unit = {}) {
+    addChild(Text().apply {
         this.text = text
         init()
     })
 }
 
-fun buildUI(init: BoxBuilder.() -> Unit): Box {
-    return BoxBuilder().apply(init).build()
+fun buildUI(init: Fragment.() -> Unit): Node {
+    return Fragment().apply(init).build()
 }

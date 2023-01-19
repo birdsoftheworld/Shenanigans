@@ -32,29 +32,33 @@ fun makeScene(): Scene {
             flexDirection = Box.FlexDirection.Column
             justifyContent = Box.JustifyContent.FlexStart
 
-            box {
-                color = Color(1f, 0f, 0f)
-                size = Vector2f(200f, 100f)
-            }
-
-            box {
-                color = Color(0f, 1f, 0f)
-                minSize = Vector2f(100f, 100f)
-                grow = 1f
-
-                flexDirection = Box.FlexDirection.Row
-                justifyContent = Box.JustifyContent.Center
-                alignItems = Box.Align.Center
-
-                text {
-                    text = "Hello, world!"
+            fragment {
+                box {
+                    color = Color(1f, 0f, 0f)
+                    size = Vector2f(200f, 100f)
                 }
             }
 
-            box {
-                color = Color(0f, 0f, 1f)
-                size = Vector2f(200f, 300f)
-                alignSelf = Box.Align.FlexEnd
+            fragment {
+                box {
+                    color = Color(0f, 1f, 0f)
+                    minSize = Vector2f(100f, 100f)
+                    grow = 1f
+
+                    flexDirection = Box.FlexDirection.Row
+                    justifyContent = Box.JustifyContent.Center
+                    alignItems = Box.Align.Center
+
+                    text {
+                        text = "Hello, world!"
+                    }
+                }
+
+                box {
+                    color = Color(0f, 0f, 1f)
+                    size = Vector2f(200f, 300f)
+                    alignSelf = Box.Align.FlexEnd
+                }
             }
         }
     }
