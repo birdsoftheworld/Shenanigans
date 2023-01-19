@@ -6,6 +6,7 @@ import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTTPackContext
 import org.lwjgl.stb.STBTTPackedchar
 import org.lwjgl.stb.STBTruetype.*
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
 import shenanigans.engine.graphics.TextureOptions
 import shenanigans.engine.graphics.api.renderer.FontRenderer
@@ -14,8 +15,11 @@ import shenanigans.engine.graphics.api.texture.TextureManager
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
+import java.util.*
 
-class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics: VerticalMetrics, val info: STBTTFontinfo, val height: Float) {
+private typealias CodepointConsumer = (codepoint: Int, nextCodepoint: Int?) -> Unit
+
+class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: VerticalMetrics, private val info: STBTTFontinfo, val height: Float) {
     private var bmpTexture: Texture
 
     private var context: STBTTPackContext
@@ -28,7 +32,9 @@ class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics:
     private val FIRST_CHAR = 32
     private val NUM_CHARS = 96
 
-    val quad: STBTTAlignedQuad = STBTTAlignedQuad.create()
+    private val measuredTextCache = WeakHashMap<String, Float>()
+
+    private val quad: STBTTAlignedQuad = STBTTAlignedQuad.create()
 
     init {
         val scale = stbtt_ScaleForPixelHeight(info, height)
@@ -56,27 +62,37 @@ class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics:
         bmpTexture = TextureManager.createTextureFromData(bitmap, BITMAP_W, BITMAP_H, TextureOptions(TextureOptions.TextureType.RED, TextureOptions.FilterType.LINEAR))
     }
 
+    private fun iterateCodepoints(text: String, stack: MemoryStack, func: CodepointConsumer) {
+        val codepointBuf: IntBuffer = stack.mallocInt(1)
+        var charIndex = 0
+        val length: Int = text.length
+
+        while (charIndex < length) {
+            charIndex += getNextCodepoint(text, length, charIndex, codepointBuf)
+            val codepoint: Int = codepointBuf.get(0)
+            var next: Int? = null
+            if(charIndex < length) {
+                next = getNextCodepoint(text, length, charIndex, codepointBuf)
+            }
+            func(codepoint, next)
+        }
+    }
+
     fun drawToFontRenderer(text: String, posX: Int, posY: Int, renderer: FontRenderer) {
         val scale = stbtt_ScaleForPixelHeight(info, height)
 
         stackPush().use { stack ->
-            val codepointBuf: IntBuffer = stack.mallocInt(1)
             val x: FloatBuffer = stack.floats(0.0f)
             val y: FloatBuffer = stack.floats(0.0f)
             quad.clear()
-            var charIndex = 0
-            val length: Int = text.length
-            while (charIndex < length) {
-                charIndex += getNextCodepoint(text, length, charIndex, codepointBuf)
-                val codepoint: Int = codepointBuf.get(0)
+            iterateCodepoints(text, stack) { codepoint, next ->
                 if (codepoint < FIRST_CHAR || FIRST_CHAR + NUM_CHARS <= codepoint) {
-                    continue
+                    return@iterateCodepoints
                 }
                 stbtt_GetPackedQuad(characterData, BITMAP_W, BITMAP_H, codepoint - FIRST_CHAR, x, y, quad, true)
 
-                if (charIndex < length) {
-                    getNextCodepoint(text, length, charIndex, codepointBuf)
-                    x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(info, codepoint, codepointBuf.get(0)) * scale)
+                if (next != null) {
+                    x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(info, codepoint, next) * scale)
                 }
                 val width = quad.x1() - quad.x0()
                 val height = quad.y1() - quad.y0()
@@ -103,33 +119,33 @@ class BitmapFont internal constructor(val data: ByteBuffer, val verticalMetrics:
     }
 
     fun measureText(text: String): Float {
+        if(measuredTextCache.containsKey(text)) {
+            return measuredTextCache[text]!!
+        }
+
         var width = 0f
 
         stackPush().use { stack ->
-            val codepointBuf = stack.mallocInt(1)
             val advance = stack.mallocInt(1)
             val bearing = stack.mallocInt(1)
-
-            var charIndex = 0
-            val length: Int = text.length
-            while (charIndex < length) {
-                charIndex += getNextCodepoint(text, length, charIndex, codepointBuf)
-                val codepoint: Int = codepointBuf.get(0)
+            iterateCodepoints(text, stack) { codepoint, next ->
                 if (codepoint < FIRST_CHAR || FIRST_CHAR + NUM_CHARS <= codepoint) {
-                    continue
+                    return@iterateCodepoints
                 }
 
                 stbtt_GetCodepointHMetrics(info, codepoint, advance, bearing)
                 width += advance.get(0)
 
-                if (charIndex < length) {
-                    getNextCodepoint(text, length, charIndex, codepointBuf)
-                    width += stbtt_GetCodepointKernAdvance(info, codepoint, codepointBuf.get(0))
+                if (next != null) {
+                    width += stbtt_GetCodepointKernAdvance(info, codepoint, next)
                 }
             }
         }
 
-        return width * stbtt_ScaleForPixelHeight(info, height)
+        val result = width * stbtt_ScaleForPixelHeight(info, height)
+        measuredTextCache[text] = result
+
+        return result
     }
 
     fun discard() {
