@@ -10,14 +10,14 @@ object Ansi {
     const val CYAN = "\u001b[36m"
     const val WHITE = "\u001b[37m"
 
-    const val BRIGHT_BLACK = "\u001b[30;1m"
-    const val BRIGHT_RED = "\u001b[31;1m"
-    const val BRIGHT_GREEN = "\u001b[32;1m"
-    const val BRIGHT_YELLOW = "\u001b[33;1m"
-    const val BRIGHT_BLUE = "\u001b[34;1m"
-    const val BRIGHT_MAGENTA = "\u001b[35;1m"
-    const val BRIGHT_CYAN = "\u001b[36;1m"
-    const val BRIGHT_WHITE = "\u001b[37;1m"
+    const val BRIGHT_BLACK = "\u001b[90m"
+    const val BRIGHT_RED = "\u001b[91m"
+    const val BRIGHT_GREEN = "\u001b[92m"
+    const val BRIGHT_YELLOW = "\u001b[93m"
+    const val BRIGHT_BLUE = "\u001b[94m"
+    const val BRIGHT_MAGENTA = "\u001b[95m"
+    const val BRIGHT_CYAN = "\u001b[96m"
+    const val BRIGHT_WHITE = "\u001b[97m"
 
     const val BACKGROUND_BLACK = "\u001b[40m"
     const val BACKGROUND_RED = "\u001b[41m"
@@ -28,14 +28,14 @@ object Ansi {
     const val BACKGROUND_CYAN = "\u001b[46m"
     const val BACKGROUND_WHITE = "\u001b[47m"
 
-    const val BACKGROUND_BRIGHT_BLACK = "\u001b[40;1m"
-    const val BACKGROUND_BRIGHT_RED = "\u001b[41;1m"
-    const val BACKGROUND_BRIGHT_GREEN = "\u001b[42;1m"
-    const val BACKGROUND_BRIGHT_YELLOW = "\u001b[43;1m"
-    const val BACKGROUND_BRIGHT_BLUE = "\u001b[44;1m"
-    const val BACKGROUND_BRIGHT_MAGENTA = "\u001b[45;1m"
-    const val BACKGROUND_BRIGHT_CYAN = "\u001b[46;1m"
-    const val BACKGROUND_BRIGHT_WHITE = "\u001b[47;1m"
+    const val BACKGROUND_BRIGHT_BLACK = "\u001b[100m"
+    const val BACKGROUND_BRIGHT_RED = "\u001b[101m"
+    const val BACKGROUND_BRIGHT_GREEN = "\u001b[102m"
+    const val BACKGROUND_BRIGHT_YELLOW = "\u001b[103m"
+    const val BACKGROUND_BRIGHT_BLUE = "\u001b[104m"
+    const val BACKGROUND_BRIGHT_MAGENTA = "\u001b[105m"
+    const val BACKGROUND_BRIGHT_CYAN = "\u001b[106m"
+    const val BACKGROUND_BRIGHT_WHITE = "\u001b[107m"
 
     const val BOLD = "\u001b[1m"
     const val UNDERLINE = "\u001b[4m"
@@ -85,15 +85,14 @@ class Formatting private constructor(val ansi: String) {
         val UNDERLINE = Formatting(Ansi.UNDERLINE)
         val REVERSED = Formatting(Ansi.REVERSED)
         // there is no val RESET = Formatting(Ansi.RESET)
-    }
 
-    fun combine(vararg others: Formatting): Formatting {
-        val builder = StringBuilder()
-        builder.append(this.ansi)
-        for (other in others) {
-            builder.append(other.ansi)
+        fun combine(vararg all: Formatting): Formatting {
+            val builder = StringBuilder()
+            for (format in all) {
+                builder.append(format.ansi)
+            }
+            return Formatting(builder.toString())
         }
-        return Formatting(builder.toString())
     }
 
     fun format(text: String): String {
