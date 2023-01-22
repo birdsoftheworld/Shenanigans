@@ -50,6 +50,10 @@ class Layout : UI {
                         text {
                             text = "Hello, world!"
                         }
+
+                        text {
+                            text = "Hello again, world!"
+                        }
                     }
 
                     box {

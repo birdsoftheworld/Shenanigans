@@ -4,8 +4,6 @@ import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
-import shenanigans.engine.window.events.MouseEvent
-import shenanigans.engine.window.events.MouseState
 
 open class Node : AutoCloseable {
     internal val ygNode = Yoga.YGNodeNew()
@@ -16,7 +14,23 @@ open class Node : AutoCloseable {
 
     /* Rendering */
 
-    open fun render(resources: ResourcesView) {}
+    internal open fun render(resources: ResourcesView) {}
+
+    /* Event Handling */
+
+    interface HandlerEnv {
+        val layout: Layout
+    }
+
+    var onEvents: HandlerEnv.(ResourcesView) -> Unit = {}
+
+    internal open fun handleEvents(resources: ResourcesView) {
+        val env = object : HandlerEnv {
+            override val layout = getLayout()
+        }
+
+        onEvents(env, resources)
+    }
 
     /* Layout */
 
@@ -48,7 +62,7 @@ open class Node : AutoCloseable {
 
     fun getLayout() = Layout.fromYoga(ygNode)
 
-    fun computeLayout(size: Vector2fc) {
+    internal fun computeLayout(size: Vector2fc) {
         Yoga.YGNodeCalculateLayout(ygNode, size.x(), size.y(), Yoga.YGDirectionLTR)
     }
 
@@ -122,6 +136,7 @@ open class Node : AutoCloseable {
             padding
         )
     }
+
 
     /* DSL */
     fun build(): Node {

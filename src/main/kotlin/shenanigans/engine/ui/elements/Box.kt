@@ -38,6 +38,13 @@ open class Box : ColoredNode(), ParentUIBuilder {
         _children.forEach { child -> child.render(resources) }
     }
 
+    /* Event Handling */
+
+    override fun handleEvents(resources: ResourcesView) {
+        super.handleEvents(resources)
+        _children.forEach { child -> child.handleEvents(resources) }
+    }
+
     /* Layout */
 
     enum class FlexDirection {
