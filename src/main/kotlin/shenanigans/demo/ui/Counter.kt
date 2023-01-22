@@ -39,8 +39,11 @@ class Counter : UI {
                     setMargin(Node.Edge.All, 20f)
                 }
 
-                button("decrement") { count -= 1; }
-                button("increment") { count += 1; }
+                box {
+                    flexDirection = Box.FlexDirection.Row
+                    button("decrement") { count -= 1; }
+                    button("increment") { count += 1; }
+                }
             }
         }
     }
