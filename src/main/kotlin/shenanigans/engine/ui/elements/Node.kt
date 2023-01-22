@@ -4,10 +4,11 @@ import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.window.events.MouseEvent
+import shenanigans.engine.window.events.MouseState
 
 open class Node : AutoCloseable {
     internal val ygNode = Yoga.YGNodeNew()
-
 
     override fun close() {
         Yoga.YGNodeFree(ygNode)
@@ -15,29 +16,37 @@ open class Node : AutoCloseable {
 
     /* Rendering */
 
-    open fun render(resources: ResourcesView, layout: Layout) {}
-
-    open fun renderIntoParent(resources: ResourcesView, parentLayout: Layout) {
-        val layout = getLayout(parentLayout)
-        render(resources, layout)
-    }
+    open fun render(resources: ResourcesView) {}
 
     /* Layout */
 
-    data class Layout(val position: Vector2f, val size: Vector2f)
+    data class Layout(val position: Vector2f, val size: Vector2f) {
+        fun contains(position: Vector2fc): Boolean {
+            return position.x() >= this.position.x() && position.x() <= this.position.x() + size.x() &&
+                    position.y() >= this.position.y() && position.y() <= this.position.y() + size.y()
+        }
 
-    fun getLayout(parent: Layout): Layout {
-        val ret = getLayoutAsRoot()
-        ret.position.add(parent.position)
-        return ret
+        companion object {
+            internal fun fromYoga(ygNode: Long): Layout {
+                val ret = fromYogaAsRoot(ygNode)
+
+                val parent = Yoga.YGNodeGetParent(ygNode)
+                if (parent != 0L) {
+                    val parentLayout = fromYoga(parent)
+                    ret.position.add(parentLayout.position)
+                }
+
+                return ret
+            }
+
+            private fun fromYogaAsRoot(ygNode: Long) = Layout(
+                Vector2f(Yoga.YGNodeLayoutGetLeft(ygNode), Yoga.YGNodeLayoutGetTop(ygNode)),
+                Vector2f(Yoga.YGNodeLayoutGetWidth(ygNode), Yoga.YGNodeLayoutGetHeight(ygNode))
+            )
+        }
     }
 
-    private fun getLayoutAsRoot(): Layout {
-        return Layout(
-            Vector2f(Yoga.YGNodeLayoutGetLeft(ygNode), Yoga.YGNodeLayoutGetTop(ygNode)),
-            Vector2f(Yoga.YGNodeLayoutGetWidth(ygNode), Yoga.YGNodeLayoutGetHeight(ygNode))
-        )
-    }
+    fun getLayout() = Layout.fromYoga(ygNode)
 
     fun computeLayout(size: Vector2fc) {
         Yoga.YGNodeCalculateLayout(ygNode, size.x(), size.y(), Yoga.YGDirectionLTR)

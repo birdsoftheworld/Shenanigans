@@ -8,7 +8,9 @@ import shenanigans.engine.util.camera.CameraResource
 open class ColoredNode : Node() {
     var color: Color? = null
 
-    override fun render(resources: ResourcesView, layout: Layout) {
+    override fun render(resources: ResourcesView) {
+        val layout = getLayout()
+
         if (color !== null) {
             val shapeRenderer = resources.get<ShapeRendererResource>().shapeRenderer
             val camera = resources.get<CameraResource>().camera!!

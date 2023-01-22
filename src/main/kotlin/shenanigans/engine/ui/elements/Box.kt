@@ -33,10 +33,9 @@ open class Box : ColoredNode(), ParentUIBuilder {
 
     /* Rendering */
 
-    override fun renderIntoParent(resources: ResourcesView, parentLayout: Layout) {
-        val layout = getLayout(parentLayout)
-        render(resources, layout)
-        _children.forEach { child -> child.renderIntoParent(resources, layout) }
+    override fun render(resources: ResourcesView) {
+        super.render(resources)
+        _children.forEach { child -> child.render(resources) }
     }
 
     /* Layout */

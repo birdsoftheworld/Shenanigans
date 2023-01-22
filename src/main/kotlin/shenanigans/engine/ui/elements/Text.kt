@@ -17,6 +17,11 @@ open class Text : Node() {
         }
 
     var fontSize: Float = 16f
+        set(value) {
+            field = value
+            updateLayout()
+        }
+
     private lateinit var bmFont: BitmapFont
 
     var backgroundColor: Color? = null
@@ -36,7 +41,8 @@ open class Text : Node() {
         )
     }
 
-    override fun render(resources: ResourcesView, layout: Layout) {
+    override fun render(resources: ResourcesView) {
+        val layout = getLayout()
         val camera = resources.get<CameraResource>().camera!!
 
         if (backgroundColor !== null) {

@@ -1,5 +1,5 @@
 package shenanigans.engine.ui.api
 
-interface UIComponent {
+interface UI {
     fun render(): Fragment.() -> Unit
 }
