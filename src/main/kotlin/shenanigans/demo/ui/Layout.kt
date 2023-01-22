@@ -44,22 +44,30 @@ class Layout : UI {
                         grow = 1f
 
                         flexDirection = Box.FlexDirection.Row
-                        justifyContent = Box.JustifyContent.Center
-                        alignItems = Box.Align.Center
+                        justifyContent = Box.JustifyContent.SpaceAround
+
+                        setPadding(Node.Edge.All, 15f)
 
                         text {
-                            text = "Hello, world!"
+                            text = "flex-start"
+                            alignSelf = Node.Align.FlexStart
                         }
 
                         text {
-                            text = "Hello again, world!"
+                            text = "center"
+                            alignSelf = Node.Align.Center
+                        }
+
+                        text {
+                            text = "flex-end"
+                            alignSelf = Node.Align.FlexEnd
                         }
                     }
 
                     box {
                         color = Color(0f, 0f, 1f)
                         size = Vector2f(200f, 300f)
-                        alignSelf = Box.Align.FlexEnd
+                        alignSelf = Node.Align.FlexEnd
                     }
                 }
             }

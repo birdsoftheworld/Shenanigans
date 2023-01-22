@@ -99,6 +99,30 @@ open class Node : AutoCloseable {
             field = value
         }
 
+    enum class Align {
+        Center,
+        FlexStart,
+        FlexEnd,
+        Stretch,
+        Baseline;
+
+        internal fun toYoga(): Int {
+            return when (this) {
+                Center -> Yoga.YGAlignCenter
+                FlexStart -> Yoga.YGAlignFlexStart
+                FlexEnd -> Yoga.YGAlignFlexEnd
+                Stretch -> Yoga.YGAlignStretch
+                Baseline -> Yoga.YGAlignBaseline
+            }
+        }
+    }
+
+    var alignSelf: Align = Align.Stretch
+        set(value) {
+            Yoga.YGNodeStyleSetAlignSelf(ygNode, value.toYoga())
+            field = value
+        }
+
     enum class Edge {
         All,
         Horizontal, Vertical,

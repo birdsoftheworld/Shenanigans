@@ -26,7 +26,7 @@ class Counter : UI {
             box {
                 flexDirection = Box.FlexDirection.Column
                 justifyContent = Box.JustifyContent.Center
-                alignItems = Box.Align.Center
+                alignItems = Node.Align.Center
 
                 color = Color(0.1f, 0.1f, 0.1f)
 
@@ -64,7 +64,7 @@ internal fun ParentUIBuilder.button(text: String, onClick: () -> Unit) {
         }
 
         justifyContent = Box.JustifyContent.Center
-        alignItems = Box.Align.Center
+        alignItems = Node.Align.Center
 
         setPadding(Node.Edge.All, 15f)
         setMargin(Node.Edge.All, 10f)

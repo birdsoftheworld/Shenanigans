@@ -56,7 +56,7 @@ open class Box : ColoredNode(), ParentUIBuilder {
 
     var flexDirection: FlexDirection = FlexDirection.Row
         set(value) {
-            Yoga.YGNodeStyleSetDirection(
+            Yoga.YGNodeStyleSetFlexDirection(
                 ygNode, when (value) {
                     FlexDirection.Row -> Yoga.YGFlexDirectionRow
                     FlexDirection.Column -> Yoga.YGFlexDirectionColumn
@@ -109,33 +109,10 @@ open class Box : ColoredNode(), ParentUIBuilder {
             field = value
         }
 
-    enum class Align {
-        Center,
-        FlexStart,
-        FlexEnd,
-        Stretch,
-        Baseline;
-
-        fun toYoga(): Int {
-            return when (this) {
-                Center -> Yoga.YGAlignCenter
-                FlexStart -> Yoga.YGAlignFlexStart
-                FlexEnd -> Yoga.YGAlignFlexEnd
-                Stretch -> Yoga.YGAlignStretch
-                Baseline -> Yoga.YGAlignBaseline
-            }
-        }
-    }
-
     var alignItems: Align = Align.Stretch
         set(value) {
             Yoga.YGNodeStyleSetAlignItems(ygNode, value.toYoga())
             field = value
         }
 
-    var alignSelf: Align = Align.Stretch
-        set(value) {
-            Yoga.YGNodeStyleSetAlignSelf(ygNode, value.toYoga())
-            field = value
-        }
 }
