@@ -44,10 +44,6 @@ class EntityView internal constructor(
             null
         }
     }
-
-    operator fun set(kClass: KClass<Map.Entry<KClass<out Component>, StoredComponent>>, value: Map.Entry<KClass<out Component>, StoredComponent>) {
-
-    }
 }
 
 class ComponentView<T : Component>(private val stored: StoredComponent) {

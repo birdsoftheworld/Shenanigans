@@ -5,11 +5,12 @@ import com.google.common.collect.HashBiMap
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.util.Transform
+import shenanigans.game.KeyboardPlayer
 import shenanigans.game.network.client.Client
 import kotlin.reflect.KClass
 
 class Synchronized : Component {
-    var serverId : Int? = null
+    var serverId : EntityId? = null
 }
 
 class NetworkSystem : System{
@@ -21,39 +22,54 @@ class NetworkSystem : System{
     }
 
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
-        resources.get<EventQueue>().iterate<EntityRegistrationPacket>().forEach { packet ->
+
+        resources.get<EventQueue>().iterate<EntityPacket>().forEach update@{ packet ->
+            packet.entities.forEach() packet@{entity ->
+                if(!clientIds.containsValue(entity.key)) {
+                    return@packet
+                }
+
+                //FIXME
+                if(entities[clientIds.inverse()[entity.key]!!]!!.componentOpt<KeyboardPlayer>() != null) {
+                    return@packet
+                }
+                val position = entities[clientIds.inverse()[entity.key]!!]!!.component<Transform>().get().position
+                position.lerp((entity.value[Transform::class]!! as Transform).position, 1f/7.5f)
+            }
+        }
+
+        resources.get<EventQueue>().iterate<EntityRegistrationPacket>().forEach registration@{ packet ->
+            println(packet.serverEntityId)
             if(packet.clientId == Client.getId()) {
                 clientIds[packet.clientEntityId] = packet.serverEntityId!!
+                entities.get(packet.clientEntityId)!!.component<Synchronized>().get().serverId = packet.serverEntityId
                 println("WHaHOOO")
-                return
+                return@registration
+            }
+
+            packet.components.forEach() {
+                if(it is Synchronized) {
+                    it.serverId = EntityId(-1)
+                }
+                println(it)
             }
 
             val newId = lifecycle.add(
                 packet.components.asSequence()
             )
+            println("WahoOO!")
 
             clientIds[newId] = packet.serverEntityId!!
-        }
-
-        resources.get<EventQueue>().iterate<EntityPacket>().forEach { packet ->
-            packet.entities.forEach() {entity ->
-                if(!clientIds.containsValue(entity.key)) {
-                    return
-                }
-
-                var position = entities[clientIds.inverse()[entity.key]!!]!!.component<Transform>().get().position
-                position.lerp((entity.value[Transform::class]!! as Transform).position, 1f/7.5f)
-            }
         }
 
         for (entity in entities) {
             if(entity.component<Synchronized>().get().serverId == null) {
                 Client.createNetworkedEntity(entity)
-                entity.component<Synchronized>().get().serverId = -1
+                entity.component<Synchronized>().get().serverId = EntityId(-1)
                 continue
             }
         }
 
-        Client.updateEntities(EntityPacket(entities.filter {it.component<Synchronized>().get().serverId == -1}, clientIds, -1))
+        Client.updateEntities(EntityPacket(entities.filter {it.component<Synchronized>().get().serverId != EntityId(-1) }, clientIds, -1))
     }
 }

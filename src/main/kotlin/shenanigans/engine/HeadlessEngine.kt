@@ -26,7 +26,7 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
             unprocessedEvents = mutableListOf()
             eventLock.unlock()
 
-            val eventQueue = EventQueue(events, ::unsafeQueueEvent)
+            val eventQueue = EventQueue(events, ::queueEvent)
 
             val exit = eventQueue.iterate<ControlEvent>().any { e ->
                 when (e) {

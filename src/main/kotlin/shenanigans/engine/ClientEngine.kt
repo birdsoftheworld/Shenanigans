@@ -28,7 +28,7 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
     override fun init() {
         window = Window("game", 640, 640)
 
-        window.onEvent(::unsafeQueueEvent)
+        window.onEvent(::queueEvent)
 
         engineResources.set(WindowResource(window))
         engineResources.set(KeyboardState())
@@ -54,7 +54,7 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
             unprocessedEvents = mutableListOf()
             eventLock.unlock()
 
-            val eventQueue = EventQueue(events, ::unsafeQueueEvent)
+            val eventQueue = EventQueue(events, ::queueEvent)
 
             val exit = eventQueue.iterate<ControlEvent>().any { e ->
                 when (e) {

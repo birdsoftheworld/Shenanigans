@@ -8,7 +8,7 @@ import shenanigans.game.network.*
 import com.esotericsoftware.kryonet.Server as KServer
 
 object Server : Resource {
-    private val kServer : KServer = KServer()
+    private val kServer : KServer = KServer(64 * 1024, 64 * 1024)
 
     val engine: HeadlessEngine
 
@@ -64,7 +64,7 @@ object Server : Resource {
     }
 
     fun updateEntities(entityPacket: EntityPacket) {
-        kServer.sendToAllTCP(entityPacket)
+        kServer.sendToAllUDP(entityPacket) // TCP waits for received message and can crash the server
     }
 
     fun stop() {
