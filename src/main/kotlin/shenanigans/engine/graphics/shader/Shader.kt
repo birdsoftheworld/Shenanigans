@@ -3,6 +3,7 @@ package shenanigans.engine.graphics.shader
 import org.joml.Matrix4f
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.system.MemoryStack
+import shenanigans.engine.term.Logger
 import java.io.File
 
 class Shader(vertexShader: String, fragmentShader: String) {
@@ -35,7 +36,7 @@ class Shader(vertexShader: String, fragmentShader: String) {
             // only necessary for debugging
             glValidateProgram(programId)
             if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
-                System.err.println("Shader validation warning: ${glGetProgramInfoLog(programId, 1024)}")
+                Logger.warn("gfx", "Shader validation warning: ${glGetProgramInfoLog(programId, 1024)}")
             }
         }
     }
