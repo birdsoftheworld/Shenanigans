@@ -79,6 +79,10 @@ class Window(title: String, width: Int, height: Int) {
         glfwSetScrollCallback(windowId, MouseScrollEvent.wrappedGlfwCallback(callback))
     }
 
+    fun onResize(callback: (Int, Int) -> Unit) {
+        glfwSetWindowSizeCallback(windowId) { _, w, h -> callback(w, h) }
+    }
+
     fun discard() {
         Callbacks.glfwFreeCallbacks(windowId)
         glfwDestroyWindow(windowId)

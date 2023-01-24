@@ -46,6 +46,10 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
         GL30C.glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         var previousTime = GLFW.glfwGetTime()
 
+        window.onResize { _, _ ->
+            Renderer.renderGame(window, scene, engineResources)
+        }
+
         while (!window.shouldClose) {
             GLFW.glfwPollEvents()
 
