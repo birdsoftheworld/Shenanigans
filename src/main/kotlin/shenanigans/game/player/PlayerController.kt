@@ -20,15 +20,14 @@ enum class WallStatus{
 }
 
 data class Player(
-  val groundAccel: Float = .01f,
-  val airAccelRatio: Float = .02f,
-  val xMax : Float = .15f,
-  val jumpSpeed: Float = .2f,
+  val groundAccel: Float = .003f,
+  val airAccelRatio: Float = .04f,
+  val xMax : Float = .07f,
+  val jumpSpeed: Float = .15f,
   val friction : Float = 15f,
-  val turnSpeed: Float = 20f,
   val drag : Float = 3f,
-  var tempPos : Vector2f = Vector2f(),
-  var airTurnSpeed : Float = 3f,
+  val turnSpeed: Float = 20f,
+  var airTurnSpeed : Float = 5f,
   var onGround : Boolean = false,
   var onRoof : Boolean = false,
   var wall : WallStatus = WallStatus.Off
@@ -120,6 +119,7 @@ class PlayerController : System {
                 wantToJump = true
             }
 
+
             fun jump() {
                 velocity.y = -jumpSpeed
                 if(wall == R){
@@ -160,10 +160,15 @@ class PlayerController : System {
                 maxSpeedChange = deccel * deltaTime.toFloat()
             }
             velocity.x = velocity.x + (desiredVelocity.x - velocity.x) * maxSpeedChange
+
+
             if(onRoof){
                 velocity.y = .00000001f
             }
             pos.add(velocity)
+            if (keyboard.isPressed(Key.LEFT_SHIFT)){
+                pos.add(velocity.x,0f)
+            }
             transform.mutate()
             player.get().onGround = false
             player.get().wall = O

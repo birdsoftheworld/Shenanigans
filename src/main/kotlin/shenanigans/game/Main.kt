@@ -6,6 +6,8 @@ import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
+import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.physics.DeltaTime
@@ -81,12 +83,13 @@ class AddTestEntities : System {
                 Vector2f(0f, 0f), Vector2f(0f, 30f), Vector2f(30f, 30f), Vector2f(30f, 0f)
             ), Color(0f, 0f, 1f)
         )
+        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(30f,30f))
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector2f(200f, 500f),
                 ),
-                shape2,
+                sprite,
                 Collider(shape2, false),
                 Player(500f),
             )
@@ -155,7 +158,7 @@ class InsertEntitiesOngoing : System{
             ), Color(.5f, .5f, .5f)
         )
         resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
-            if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.RELEASE) {
+            if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.PRESS) {
                 lifecycle.add(
                     sequenceOf(
                         Transform(
