@@ -3,10 +3,8 @@ package shenanigans.engine.physics
 import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector4f
-import shenanigans.engine.Engine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
 import shenanigans.game.player.*
@@ -41,18 +39,17 @@ class CollisionSystem : System {
                 transform2.get().position.add(collision.negate())
                 transform2.mutate()
 
-                if (pair.second.componentOpt<Player>() != null || pair.first.componentOpt<Player>() != null){
-                    if(collision.y > 0){
-                        resources.get<EventQueue>().queueLater(PlayerOnRoofEvent())
+                if (pair.second.componentOpt<Player>() != null || pair.first.componentOpt<Player>() != null) {
+                    val queue = resources.get<EventQueue>()
+                    if(collision.y > 0) {
+                        queue.queueLater(PlayerOnRoofEvent())
+                    } else if(collision.y < 0) {
+                        queue.queueLater(PlayerOnGroundEvent())
                     }
-                    if(collision.y < 0){
-                        resources.get<EventQueue>().queueLater(PlayerOnGroundEvent())
-                    }
-                    if(collision.x < 0){
-                        resources.get<EventQueue>().queueLater(PlayerOnWallRightEvent())
-                    }
-                    if(collision.x > 0){
-                        resources.get<EventQueue>().queueLater(PlayerOnWallLeftEvent())
+                    if(collision.x < 0) {
+                        queue.queueLater(PlayerOnWallRightEvent())
+                    } else if(collision.x > 0) {
+                        queue.queueLater(PlayerOnWallLeftEvent())
                     }
                 }
             }
@@ -92,9 +89,6 @@ class CollisionSystem : System {
                 transform2.get().position.add(collision.negate())
                 transform2.mutate()
 
-
-            }
-            if(collision.length() >= 0){
 
             }
         }

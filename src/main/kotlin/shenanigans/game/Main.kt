@@ -4,25 +4,25 @@ import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
-import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.network.Sendable
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
-import shenanigans.game.network.Sendable
+import shenanigans.game.player.PlayerProperties
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -65,8 +65,6 @@ class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{
     fun grab(){this.grabbed=true}
     fun drop(){this.grabbed=false}
 }
-data class KeyboardPlayer(val speed: Float) : Component
-
 class AddTestEntities : System {
     override fun query(): Iterable<KClass<out Component>> {
         return emptySet()
@@ -107,7 +105,9 @@ class AddTestEntities : System {
                 ),
                 sprite,
                 Collider(shape2, false),
-                Player(500f),
+                Player(
+                    PlayerProperties()
+                ),
                 Sendable(),
             )
         )
