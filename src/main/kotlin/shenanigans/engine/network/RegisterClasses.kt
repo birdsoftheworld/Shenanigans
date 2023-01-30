@@ -22,7 +22,7 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
     kryo.register(EntityRegistrationPacket::class.java).setInstantiator {EntityRegistrationPacket(-1, -1)}
-    kryo.register(EntityPacket::class.java).setInstantiator { EntityPacket(-1) }
+//    kryo.register(EntityPacket::class.java).setInstantiator { EntityPacket() }
 
     // Utils
     kryo.register(Map::class.java)

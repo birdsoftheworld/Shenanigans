@@ -6,14 +6,13 @@ import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntitiesView
 import shenanigans.engine.ecs.EntityId
 import shenanigans.engine.ecs.EntityView
+import shenanigans.engine.events.Event
 import kotlin.reflect.KClass
 
-class EntityPacket(serverTimeMillis: Int) : Packet(serverTimeMillis) {
+class EntityPacket : Event {
     val entities: MutableMap<EntityId, MutableMap<KClass<out Component>, Component>> = mutableMapOf()
 
-    constructor (entities: Sequence<EntityView>, clientIds: BiMap<EntityId, EntityId>, serverTimeMillis: Int) : this(
-        serverTimeMillis
-    ) {
+    constructor (entities: Sequence<EntityView>, clientIds: BiMap<EntityId, EntityId>) {
         entities.forEach { entity ->
             entity.components.forEach() { componentMap ->
                 if (!componentMap.value.component.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
@@ -26,7 +25,7 @@ class EntityPacket(serverTimeMillis: Int) : Packet(serverTimeMillis) {
         }
     }
 
-    constructor (entities: EntitiesView, serverTimeMillis: Int) : this(serverTimeMillis) {
+    constructor (entities: EntitiesView) {
         entities.forEach { entity ->
             entity.components.forEach() { componentMap ->
                 if (!componentMap.value.component.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
@@ -40,12 +39,12 @@ class EntityPacket(serverTimeMillis: Int) : Packet(serverTimeMillis) {
     }
 }
 
-class EntityRegistrationPacket(val clientId: Int, serverTimeMillis: Int) : Packet(serverTimeMillis) {
+class EntityRegistrationPacket(val clientId: Int) : Event{
     val components: MutableList<Component> = mutableListOf()
     var clientEntityId: EntityId = EntityId(-1)
     var serverEntityId: EntityId? = null
 
-    constructor (entityView: EntityView, clientId: Int, serverTimeMillis: Int) : this(clientId, serverTimeMillis) {
+    constructor (entityView: EntityView, clientId: Int) : this(clientId){
         entityView.components.values.forEach {
             if (!it.component.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
                 components.add(it.component)

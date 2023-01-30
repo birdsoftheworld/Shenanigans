@@ -1,4 +1,4 @@
-package shenanigans.game.network.server
+package shenanigans.engine.network.server
 
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
@@ -26,7 +26,7 @@ class EntityUpdateSystem : System {
             }
         }
 
-        resources.get<Server>().updateEntities(EntityPacket(entities, -1))
+        resources.get<Server>().updateEntities(EntityPacket(entities))
     }
 }
 
@@ -60,7 +60,7 @@ class FullEntitySyncSystem : System {
         eventQueue.iterate<ConnectionEvent>().forEach { connectionEvent ->
             val connection = connectionEvent.connection
             entities.forEach {
-                val packet = EntityRegistrationPacket(it, -1, -1)
+                val packet = EntityRegistrationPacket(it, -1)
                 packet.serverEntityId = it.id
                 server.registerEntityTo(connection.id, packet)
             }

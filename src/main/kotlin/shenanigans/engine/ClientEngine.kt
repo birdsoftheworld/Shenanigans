@@ -12,6 +12,7 @@ import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.init.client.ClientEngineOptions
+import shenanigans.engine.network.client.Client
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.camera.CameraResource
@@ -20,7 +21,6 @@ import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.client.Client
 
 class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngineOptions()) : Engine(initScene = initScene, options) {
     private lateinit var window: Window

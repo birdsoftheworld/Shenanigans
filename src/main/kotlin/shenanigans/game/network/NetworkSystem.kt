@@ -4,9 +4,10 @@ import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.network.client.Client
+import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.game.KeyboardPlayer
-import shenanigans.game.network.client.Client
 import kotlin.reflect.KClass
 
 class Synchronized : Component {
@@ -43,7 +44,7 @@ class NetworkSystem : System{
             if(packet.clientId == Client.getId()) {
                 clientIds[packet.clientEntityId] = packet.serverEntityId!!
                 entities.get(packet.clientEntityId)!!.component<Synchronized>().get().serverId = packet.serverEntityId
-                println("WHaHOOO")
+                Logger.log("Network System","WHaHOOO")
                 return@registration
             }
 
@@ -57,7 +58,7 @@ class NetworkSystem : System{
             val newId = lifecycle.add(
                 packet.components.asSequence()
             )
-            println("WahoOO!")
+            Logger.log("Network System", "WahoOO!")
 
             clientIds[newId] = packet.serverEntityId!!
         }
@@ -70,6 +71,6 @@ class NetworkSystem : System{
             }
         }
 
-        Client.updateEntities(EntityPacket(entities.filter {it.component<Synchronized>().get().serverId != EntityId(-1) }, clientIds, -1))
+        Client.updateEntities(EntityPacket(entities.filter {it.component<Synchronized>().get().serverId != EntityId(-1) }, clientIds))
     }
 }

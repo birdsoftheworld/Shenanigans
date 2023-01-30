@@ -1,10 +1,13 @@
-package shenanigans.game.network.server
+package shenanigans.engine.network.server
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.HeadlessEngine
 import shenanigans.engine.ecs.Resource
+import shenanigans.engine.events.Event
 import shenanigans.engine.scene.Scene
-import shenanigans.game.network.*
+import shenanigans.game.network.ConnectionEvent
+import shenanigans.game.network.EntityPacket
+import shenanigans.game.network.registerClasses
 import com.esotericsoftware.kryonet.Server as KServer
 
 object Server : Resource {
@@ -42,7 +45,7 @@ object Server : Resource {
     private fun addListeners() {
         kServer.addListener(object : Listener {
             override fun received(connection: Connection?, thing: Any) {
-                if (thing is Packet) {
+                if (thing is Event) {
                     engine.queueEvent(thing)
                 }
             }
@@ -55,15 +58,11 @@ object Server : Resource {
         })
     }
 
-    fun registerEntity(entityRegistrationPacket: EntityRegistrationPacket) {
-        kServer.sendToAllTCP(entityRegistrationPacket)
+    fun sendReliable(event : Event) {
+        kServer.sendToAllTCP(event)
     }
 
-    fun registerEntityTo(client: Int, entityRegistrationPacket: EntityRegistrationPacket) {
-        kServer.sendToTCP(client, entityRegistrationPacket)
-    }
-
-    fun updateEntities(entityPacket: EntityPacket) {
+    fun sendUnreliable(entityPacket: EntityPacket) {
         kServer.sendToAllUDP(entityPacket) // TCP waits for received message and can crash the server
     }
 

@@ -1,13 +1,13 @@
-package shenanigans.game.network.client
+package shenanigans.engine.network.client
 
 import com.esotericsoftware.kryonet.Client
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.Engine
 import shenanigans.engine.ecs.EntityView
+import shenanigans.engine.events.Event
 import shenanigans.game.network.EntityPacket
 import shenanigans.game.network.EntityRegistrationPacket
-import shenanigans.game.network.Packet
 import shenanigans.game.network.registerClasses
 import java.io.IOException
 
@@ -36,13 +36,13 @@ object Client {
     }
 
     fun updateEntities(entityPacket: EntityPacket) {
-        client.sendTCP(entityPacket)
+        client.sendUDP(entityPacket)
     }
 
     private fun addListeners() {
         client.addListener(object : Listener {
             override fun received(connection: Connection?, thing: Any?) {
-                if (thing is Packet) {
+                if (thing is Event) {
                     engine!!.queueEvent(thing)
                 }
             }
@@ -51,7 +51,7 @@ object Client {
     }
 
     fun createNetworkedEntity(entityView: EntityView) {
-        val packet = EntityRegistrationPacket(entityView, client.id, 0)
+        val packet = EntityRegistrationPacket(entityView, client.id)
         packet.clientEntityId = entityView.id
         client.sendTCP(packet)
     }
