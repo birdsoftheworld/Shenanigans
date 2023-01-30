@@ -50,7 +50,7 @@ fun testScene(): Scene {
 
 class FollowCameraSystem : System {
     override fun query(): Iterable<KClass<out Component>> {
-        return setOf(KeyboardPlayer::class, Transform::class)
+        return setOf(Player::class, Transform::class)
     }
 
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
@@ -163,7 +163,7 @@ class InsertEntitiesOngoing : System{
         return setOf(Shape::class,Transform::class)
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val mousePos = resources.get<MouseState>().position()
         val keyboard = resources.get<KeyboardState>()
         val ShapeI = Shape(

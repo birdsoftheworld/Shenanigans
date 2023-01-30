@@ -45,7 +45,7 @@ class PlayerController : System {
         return setOf(Player::class, Transform::class)
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTime = resources.get<DeltaTime>().deltaTime
         val L = WallStatus.Left
