@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import org.joml.Matrix4f
 import org.joml.Vector4f
@@ -6,20 +6,24 @@ import shenanigans.engine.graphics.Mesh
 import shenanigans.engine.graphics.VertexAttribute
 import shenanigans.engine.graphics.shader.Shader
 
-sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) {
+abstract class AbstractRenderer(attribs: Set<VertexAttribute>, val vertexCapacity: Int = DEFAULT_MAX_VERTICES, val indicesCapacity: Int = DEFAULT_MAX_INDICES) {
 
     protected companion object {
-        const val DEFAULT_MAX_VERTICES = 500
-        const val DEFAULT_MAX_INDICES = 250
+        const val DEFAULT_MAX_VERTICES = 1024
+        const val DEFAULT_MAX_INDICES = 1024
     }
 
     protected abstract val shader: Shader
 
     protected val mesh = Mesh(vertexCapacity, indicesCapacity, attribs)
     protected var started = false
+
     protected val indices = ArrayList<Int>(vertexCapacity)
     protected val positions = ArrayList<Float>(indicesCapacity * 3)
     protected var lowestIndex = 0
+
+    protected var nVertices = 0
+    protected var nIndices = 0
 
     /**
      * the projection matrix, used for projecting all vertices once `end()` is called
@@ -41,6 +45,7 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
 
     protected fun addIndex(index: Int) {
         indices.add(index + lowestIndex)
+        nIndices++
     }
 
     protected fun addVertex(x: Float, y: Float) {
@@ -49,6 +54,7 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
         positions.add(_temp.y / _temp.w)
         positions.add(0f)
         lowestIndex++
+        nVertices++
     }
 
     /**
@@ -88,6 +94,8 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
         this.clearVertexAttributes()
 
         lowestIndex = 0
+        nVertices = 0
+        nIndices = 0
     }
 
     protected abstract fun writeVertexAttributes()
@@ -105,5 +113,20 @@ sealed class AbstractRenderer(attribs: Set<VertexAttribute>, vertexCapacity: Int
         setUniforms()
         mesh.render()
         shader.unbind()
+    }
+
+    protected fun flush() {
+        if(lowestIndex != 0) {
+            this.writeToMesh()
+            this.render()
+        }
+
+        this.clear()
+    }
+
+    protected fun flushIfFull(newVertices: Int, newIndices: Int) {
+        if(newIndices + nIndices >= indicesCapacity || newVertices + nVertices >= vertexCapacity) {
+            flush()
+        }
     }
 }

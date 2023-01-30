@@ -1,24 +1,22 @@
 package shenanigans.demo.chess
 
 import org.joml.Vector2f
-import shenanigans.engine.Engine
+import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
-import shenanigans.engine.physics.Collider
-import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 fun main() {
-    Engine(makeScene()).run()
+    ClientEngine(makeScene()).run()
 }
 
 fun makeScene(): Scene {
     val scene = Scene()
 
-    scene.runSystems(Resources(), listOf(AddTiles()))
+    scene.runSystems(ResourcesView(), listOf(AddTiles()))
 
     return scene
 }
@@ -28,7 +26,7 @@ class AddTiles : System {
         return emptySet()
     }
 
-    override fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle) {
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val tileSize = 20f
 
         for (i in 0..7) {
@@ -43,7 +41,7 @@ class AddTiles : System {
                                 Vector2f(tileSize, tileSize),
                                 Vector2f(tileSize, 0f),
                             ),
-                            if (i + j % 2 == 0) {
+                            if ((i + j) % 2 == 0) {
                                 Color(0f, 0f, 0f)
                             } else {
                                 Color(1f, 1f, 1f)

@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import shenanigans.engine.graphics.api.font.BitmapFont
 
@@ -10,13 +10,13 @@ class FontRenderer : TextureRenderer() {
                 #version 330
 
                 in vec2 outTexCoord;
-                in vec3 outColor;
+                in vec4 outColor;
                 out vec4 fragColor;
 
                 uniform sampler2D textureSampler;
 
                 void main() {
-                    vec4 sampleColor = vec4(outColor.rgb, texture(textureSampler, outTexCoord).r);
+                    vec4 sampleColor = vec4(outColor.rgb, texture(textureSampler, outTexCoord).r * outColor.a);
                     fragColor = sampleColor;
                 }
             """.trimIndent()

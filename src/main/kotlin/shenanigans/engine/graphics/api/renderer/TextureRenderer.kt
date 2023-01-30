@@ -1,13 +1,14 @@
-package shenanigans.engine.graphics.api
+package shenanigans.engine.graphics.api.renderer
 
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.VertexAttribute
+import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.graphics.shader.Shader
 
 open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(setOf(
-    VertexAttribute.POSITION, VertexAttribute.TEX_COORDS, VertexAttribute.COLOR
+    VertexAttribute.POSITION, VertexAttribute.TEX_COORDS, VertexAttribute.COLOR, VertexAttribute.ALPHA
 ), vertexCapacity, indicesCapacity) {
     protected open val vertexShader: String =
         """
@@ -16,16 +17,17 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
             layout (location=0) in vec3 position;
             layout (location=1) in vec2 texCoord;
             layout (location=2) in vec3 color;
+            layout (location=3) in float alpha;
 
             out vec2 outTexCoord;
-            out vec3 outColor;
+            out vec4 outColor;
 
             uniform mat4 projectionMatrix;
 
             void main() {
                 gl_Position = projectionMatrix * vec4(position, 1.0);
                 outTexCoord = texCoord;
-                outColor = color;
+                outColor = vec4(color, alpha);
             }
         """.trimIndent()
 
@@ -34,14 +36,14 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
             #version 330
 
             in vec2 outTexCoord;
-            in vec3 outColor;
+            in vec4 outColor;
             out vec4 fragColor;
 
             uniform sampler2D textureSampler;
 
             void main() {
                 vec4 sample = texture(textureSampler, outTexCoord);
-                fragColor = vec4(sample.rgb * outColor, sample.a);
+                fragColor = vec4(sample.rgb * outColor.rgb, sample.a * outColor.a);
             }
         """.trimIndent()
 
@@ -51,6 +53,7 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
 
     private val texCoords = ArrayList<Float>(DEFAULT_MAX_VERTICES*2)
     private val colors = ArrayList<Float>(DEFAULT_MAX_VERTICES * 3)
+    private val alphas = ArrayList<Float>(DEFAULT_MAX_VERTICES)
     private var texture: TextureKey? = null
     var tint: Color = Color(1f, 1f, 1f)
 
@@ -59,19 +62,12 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         shader.createUniform("projectionMatrix")
     }
 
-    private fun renderCurrent() {
-        if(lowestIndex != 0) {
-            this.writeToMesh()
-            this.render()
-        }
-
-        this.clear()
-    }
-
     fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) {
         if(this.texture != texture.getKey() && this.texture != null) {
-            this.renderCurrent()
+            this.flush()
         }
+        flushIfFull(4, 6)
+
         this.texture = texture.getKey()
         addIndex(0)
         addIndex(2)
@@ -99,6 +95,7 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
+        alphas.add(color.a)
     }
 
     private fun addTexCoord(x: Float, y: Float) {
@@ -109,11 +106,13 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
     override fun writeVertexAttributes() {
         mesh.writeData(VertexAttribute.TEX_COORDS, texCoords.toFloatArray())
         mesh.writeData(VertexAttribute.COLOR, colors.toFloatArray())
+        mesh.writeData(VertexAttribute.ALPHA, alphas.toFloatArray())
     }
 
     override fun clearVertexAttributes() {
         texCoords.clear()
         colors.clear()
+        alphas.clear()
         tint = Color(1f, 1f, 1f)
     }
 

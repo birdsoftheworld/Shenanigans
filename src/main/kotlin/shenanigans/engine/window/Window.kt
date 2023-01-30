@@ -39,7 +39,6 @@ class Window(title: String, width: Int, height: Int) {
         get() = size.y
 
     init {
-        check(glfwInit()) { "Failed to initialize GLFW" }
         glfwDefaultWindowHints()
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
@@ -78,6 +77,10 @@ class Window(title: String, width: Int, height: Int) {
         glfwSetCursorEnterCallback(windowId, CursorPresenceEvent.wrappedGlfwCallback(callback))
         glfwSetMouseButtonCallback(windowId, MouseButtonEvent.wrappedGlfwCallback(callback))
         glfwSetScrollCallback(windowId, MouseScrollEvent.wrappedGlfwCallback(callback))
+    }
+
+    fun onResize(callback: (Int, Int) -> Unit) {
+        glfwSetWindowSizeCallback(windowId) { _, w, h -> callback(w, h) }
     }
 
     fun discard() {

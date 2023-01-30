@@ -11,5 +11,5 @@ interface System {
     /**
      * Execute the system on the entities.
      */
-    fun execute(resources: Resources, entities: Sequence<EntityView>, lifecycle: EntitiesLifecycle)
+    fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle)
 }
