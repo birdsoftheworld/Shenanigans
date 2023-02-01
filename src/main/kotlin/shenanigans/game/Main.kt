@@ -104,7 +104,7 @@ class AddTestEntities : System {
                     Vector2f(200f, 500f),
                 ),
                 sprite,
-                Collider(shape2, false),
+                Collider(shape2, false, tracked = true),
                 Player(
                     PlayerProperties()
                 ),

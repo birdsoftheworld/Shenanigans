@@ -2,18 +2,18 @@ package shenanigans.game.player
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
-import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
-import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
+import kotlin.math.max
 import kotlin.math.sign
 import kotlin.reflect.KClass
 
 
-enum class WallStatus{
+enum class WallStatus {
     Off,
     Left,
     Right
@@ -33,18 +33,13 @@ data class PlayerProperties(
 data class Player(
     val properties: PlayerProperties,
     val velocity: Vector2f = Vector2f(),
-    var onGround : Boolean = false,
-    var onRoof : Boolean = false,
-    var wall : WallStatus = WallStatus.Off
+    var onGround: Boolean = false,
+    var onCeiling: Boolean = false,
+    var wall: WallStatus = WallStatus.Off
 ) : Component
 
-class PlayerOnWallLeftEvent : Event
-class PlayerOnWallRightEvent : Event
-class PlayerOnGroundEvent : Event
-class PlayerOnRoofEvent : Event
-
 class PlayerController : System {
-    val gravity : Float = .5f
+    val gravity: Float = .5f
 
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Player::class, Transform::class)
@@ -60,23 +55,23 @@ class PlayerController : System {
 
             val velocity = player.velocity
 
-            resources.get<EventQueue>().iterate<PlayerOnGroundEvent>().forEach { event ->
-                player.onGround = true
-                if(velocity.y > 0f){
-                    velocity.y = 0f
+            resources.get<EventQueue>().iterate<CollisionEvent>().forEach { event ->
+                if (entity.id == event.target) {
+                    if (event.normal.y < 0) {
+                        player.onGround = true
+                        if (velocity.y > 0f) {
+                            velocity.y = 0f
+                        }
+                    } else if (event.normal.y > 0) {
+                        player.onCeiling = true
+                    }
+                    if (event.normal.x < 0) {
+                        player.wall = WallStatus.Right
+                    } else if (event.normal.x > 0) {
+                        player.wall = WallStatus.Left
+                    }
                 }
             }
-            resources.get<EventQueue>().iterate<PlayerOnWallRightEvent>().forEach { event ->
-                player.wall = WallStatus.Right
-            }
-            resources.get<EventQueue>().iterate<PlayerOnWallLeftEvent>().forEach { event ->
-                player.wall = WallStatus.Left
-            }
-            resources.get<EventQueue>().iterate<PlayerOnRoofEvent>().forEach { event ->
-                player.onRoof = true
-            }
-
-            Logger.log("player", "on ground: ${player.onGround}")
 
             val pos = transform.get().position
 
@@ -87,7 +82,7 @@ class PlayerController : System {
             var turnAcceleration = 0f
             var acceleration = properties.groundAccel
 
-            if(!player.onGround) {
+            if (!player.onGround) {
                 acceleration *= player.properties.airAccelRatio
             }
 
@@ -118,9 +113,9 @@ class PlayerController : System {
                 player.jump()
             }
 
-            if(!player.onGround) {
-                if(player.wall != WallStatus.Off && velocity.y > 0){
-                    velocity.y += gravity/4 * deltaTime.toFloat()
+            if (!player.onGround) {
+                if (player.wall != WallStatus.Off && velocity.y > 0) {
+                    velocity.y += gravity / 4 * deltaTime.toFloat()
                 } else {
                     velocity.y += gravity * deltaTime.toFloat()
                 }
@@ -135,27 +130,28 @@ class PlayerController : System {
             } else {
                 backwardsAcceleration * deltaTime.toFloat()
             }
-            velocity.x = velocity.x + (desiredVelocity.x - velocity.x) * maxSpeedChange
-
-            if(player.onRoof){
-                velocity.y = .00000001f
-            }
 
             if (keyboard.isPressed(Key.LEFT_SHIFT)) {
-                velocity.x *= 2
+                desiredVelocity.x *= 2
+            }
+
+            velocity.x = velocity.x + (desiredVelocity.x - velocity.x) * maxSpeedChange
+
+            if (player.onCeiling) {
+                velocity.y = max(0f, velocity.y)
             }
             pos.add(velocity)
             transform.mutate()
 
             player.onGround = false
             player.wall = WallStatus.Off
-            player.onRoof = false
+            player.onCeiling = false
         }
     }
 
     private fun Player.jump() {
         velocity.y = -properties.jumpSpeed
-        if(!this.onGround) {
+        if (!this.onGround) {
             if (this.wall == WallStatus.Right) {
                 velocity.y = -properties.jumpSpeed
                 velocity.x -= properties.jumpSpeed
