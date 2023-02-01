@@ -6,11 +6,16 @@ import kotlin.reflect.KClass
 class Entities {
     internal val entities: HashMap<UUID, StoredComponents> = hashMapOf()
 
-    fun runSystem(system: System, resourcesView: ResourcesView) {
+    fun <S : System> runSystem(
+        execute: S.(ResourcesView, EntitiesView, EntitiesLifecycle) -> Unit,
+        system: S,
+        resourcesView: ResourcesView
+    ) {
         val query = system.query()
 
         val lifecycle = EntitiesLifecycle()
-        system.execute(
+        execute(
+            system,
             resourcesView,
             EntitiesView(this, query),
             lifecycle

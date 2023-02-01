@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.System
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.events.control.ControlEvent
@@ -12,7 +13,6 @@ import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.graphics.Renderer
-import shenanigans.engine.init.client.ClientEngineOptions
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.camera.CameraResource
@@ -22,7 +22,7 @@ import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 
-class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngineOptions()) : Engine(initScene = initScene, options) {
+class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
     private lateinit var window: Window
 
     private val client = Client()
@@ -41,7 +41,7 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
 
     override fun loop() {
         GL.createCapabilities()
-        Renderer.init((options as ClientEngineOptions).renderSystems)
+        Renderer.init()
 
         GL30C.glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         var previousTime = GLFW.glfwGetTime()
@@ -87,7 +87,8 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
             engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
+            val physicsResources = ResourcesView(scene.sceneResources, engineResources)
+            scene.defaultSystems.forEach(scene.runSystem(System::executePhysics, physicsResources))
 
             Renderer.renderGame(window, scene, engineResources)
         }

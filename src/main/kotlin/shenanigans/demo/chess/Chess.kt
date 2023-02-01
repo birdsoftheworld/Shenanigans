@@ -16,7 +16,7 @@ fun main() {
 fun makeScene(): Scene {
     val scene = Scene()
 
-    scene.runSystems(ResourcesView(), listOf(AddTiles()))
+    scene.entities.runSystem(System::executePhysics, AddTiles(), ResourcesView())
 
     return scene
 }
@@ -26,7 +26,7 @@ class AddTiles : System {
         return emptySet()
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val tileSize = 20f
 
         for (i in 0..7) {

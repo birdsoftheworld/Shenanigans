@@ -3,18 +3,16 @@ package shenanigans.demo.ui
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.System
 import shenanigans.engine.ecs.utils.AddEntitiesSystem
 import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.init.SystemList
-import shenanigans.engine.init.client.ClientEngineOptions
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UIComponent
-import shenanigans.engine.ui.UISystem
 import shenanigans.engine.ui.dsl.buildUI
 import shenanigans.engine.ui.elements.Box
 
 fun main() {
-    ClientEngine(makeScene(), ClientEngineOptions(SystemList(listOf { UISystem() }))).run()
+    ClientEngine(makeScene()).run()
 }
 
 fun makeScene(): Scene {
@@ -59,18 +57,18 @@ fun makeScene(): Scene {
         }
     }
 
-    scene.runSystems(
-        ResourcesView(), listOf(
-            AddEntitiesSystem(
+    scene.entities.runSystem(
+        System::executePhysics,
+        AddEntitiesSystem(
+            sequenceOf(
                 sequenceOf(
-                    sequenceOf(
-                        UIComponent(
-                            ui
-                        )
+                    UIComponent(
+                        ui
                     )
                 )
             )
-        )
+        ),
+        ResourcesView()
     )
 
     return scene
