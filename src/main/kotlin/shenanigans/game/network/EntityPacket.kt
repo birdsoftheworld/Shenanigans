@@ -39,7 +39,7 @@ class EntityPacket : Event {
     }
 }
 
-class EntityRegistrationPacket(val clientId: Int) : Event{
+class EntityRegistrationPacket(val clientId: Int) : Event {
     val components: MutableList<Component> = mutableListOf()
     var clientEntityId: EntityId = EntityId(-1)
     var serverEntityId: EntityId? = null

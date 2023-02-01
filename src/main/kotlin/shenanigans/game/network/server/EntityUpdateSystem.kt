@@ -2,6 +2,7 @@ package shenanigans.engine.network.server
 
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.network.Server
 import shenanigans.engine.util.Transform
 import shenanigans.game.network.ConnectionEvent
 import shenanigans.game.network.EntityPacket

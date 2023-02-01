@@ -1,16 +1,23 @@
 package shenanigans.game.network
 
 import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.EndPoint
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntityId
+import shenanigans.engine.events.Event
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import kotlin.jvm.internal.ClassReference
 
+class Synchronized : Component {
+    var serverId: EntityId? = null
+}
+
+class ConnectionEvent(val connection: Connection) : Event
 
 fun registerClasses(endpoint: EndPoint){
     val kryo: Kryo = endpoint.kryo
@@ -21,8 +28,6 @@ fun registerClasses(endpoint: EndPoint){
     kryo.register(Collider::class.java).setInstantiator {Collider(arrayOf(), static = false, triggerCollider = false)}
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
-    kryo.register(EntityRegistrationPacket::class.java).setInstantiator {EntityRegistrationPacket(-1, -1)}
-//    kryo.register(EntityPacket::class.java).setInstantiator { EntityPacket() }
 
     // Utils
     kryo.register(Map::class.java)

@@ -12,7 +12,7 @@ import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.init.client.ClientEngineOptions
-import shenanigans.engine.network.client.Client
+import shenanigans.engine.network.Client
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.camera.CameraResource
