@@ -15,6 +15,7 @@ import shenanigans.engine.graphics.api.system.ShapeSystem
 import shenanigans.engine.graphics.api.system.SpriteSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.ui.UISystem
 import shenanigans.engine.window.Window
 import java.lang.System as JSystem
 
@@ -29,6 +30,7 @@ object Renderer {
         DrawBackgroundSystem(),
         SpriteSystem(),
         ShapeSystem(),
+        UISystem(),
     )
 
     fun init() {
