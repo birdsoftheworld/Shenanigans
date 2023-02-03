@@ -73,7 +73,7 @@ class EntitiesView internal constructor(
     private val entities: Entities,
     private val query: Iterable<KClass<out Component>>,
 ) : Sequence<EntityView> {
-    fun get(id: UUID): EntityView? {
+    operator fun get(id: UUID): EntityView? {
         return entities.entities[id]?.let { EntityView(id, it) }
     }
 
