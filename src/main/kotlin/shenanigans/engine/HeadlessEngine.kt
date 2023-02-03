@@ -2,6 +2,7 @@ package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.System
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.events.control.ControlEvent
@@ -57,7 +58,8 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene){
             engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
+            val physicsResources = ResourcesView(scene.sceneResources, engineResources)
+            scene.defaultSystems.forEach(scene.runSystem(System::executePhysics, physicsResources))
         }
     }
 }

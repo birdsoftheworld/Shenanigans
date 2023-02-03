@@ -9,7 +9,17 @@ interface System {
     fun query(): Iterable<KClass<out Component>>
 
     /**
-     * Execute the system on the entities.
+     * Execute the system at physics time.
      */
-    fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle)
+    fun executePhysics(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {}
+
+    /**
+     * Execute the system at network time.
+     */
+    fun executeNetwork(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {}
+
+    /**
+     * Execute the system at render time.
+     */
+    fun executeRender(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {}
 }

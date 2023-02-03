@@ -6,13 +6,14 @@ import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
+import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
 
 class CollisionSystem : System {
 
-    private val radii = hashMapOf<EntityId, Pair<Float, Int>>()
+    private val radii = hashMapOf<UUID, Pair<Float, Int>>()
 
     private val transformMatrix = Matrix4f()
 
@@ -20,7 +21,7 @@ class CollisionSystem : System {
         return listOf(Collider::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
 
         val collisionPairs = getCollisionPairs(entities)
 

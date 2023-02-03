@@ -4,29 +4,36 @@ import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
 import shenanigans.engine.util.camera.CameraResource
-import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.graphics.api.renderer.FontRenderer
 import shenanigans.engine.graphics.api.renderer.ShapeRenderer
 import shenanigans.engine.graphics.api.renderer.TextureRenderer
 import shenanigans.engine.graphics.api.resource.FontRendererResource
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
+import shenanigans.engine.graphics.api.system.DrawBackgroundSystem
+import shenanigans.engine.graphics.api.system.ShapeSystem
+import shenanigans.engine.graphics.api.system.SpriteSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
-import shenanigans.engine.init.SystemList
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.ui.UISystem
 import shenanigans.engine.window.Window
-import java.lang.System
+import java.lang.System as JSystem
 
 object Renderer {
-    private lateinit var renderSystems: List<RenderSystem>
-
     private lateinit var renderResources: Resources
 
     private lateinit var textureRenderer: TextureRenderer
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var fontRenderer: FontRenderer
 
-    fun init(systems: SystemList<RenderSystem>) {
+    private val builtinSystems: List<System> = listOf(
+        DrawBackgroundSystem(),
+        SpriteSystem(),
+        ShapeSystem(),
+        UISystem(),
+    )
+
+    fun init() {
         renderResources = Resources()
 
         textureRenderer = TextureRenderer()
@@ -38,24 +45,19 @@ object Renderer {
         renderResources.set(FontRendererResource(fontRenderer))
 
         GlobalRendererState.initialize()
-        if(System.getProperty("render_debug") != null) {
+        if (JSystem.getProperty("render_debug") != null) {
             GLUtil.setupDebugMessageCallback()
         }
         TextureManager.initialize()
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-        renderSystems = systems.build()
     }
 
     fun discard() {
         textureRenderer.discard()
         shapeRenderer.discard()
         fontRenderer.discard()
-        for (renderSystem in renderSystems) {
-            renderSystem.discard()
-        }
         TextureManager.discard()
     }
 
@@ -68,7 +70,9 @@ object Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         val resources = ResourcesView(renderResources, scene.sceneResources, engineResources)
-        scene.runSystems(resources, renderSystems)
+
+        builtinSystems.forEach(scene.runSystem(System::executeRender, resources))
+        scene.defaultSystems.forEach(scene.runSystem(System::executeRender, resources))
 
         window.swapBuffers()
     }

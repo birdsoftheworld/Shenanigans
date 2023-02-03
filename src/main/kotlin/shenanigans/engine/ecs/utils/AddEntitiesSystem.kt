@@ -8,7 +8,7 @@ class AddEntitiesSystem(val entities: Sequence<Sequence<Component>>) : System {
         return emptySet()
     }
 
-    override fun execute(resources: ResourcesView, _entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, _entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         entities.forEach { lifecycle.add(it) }
     }
 }

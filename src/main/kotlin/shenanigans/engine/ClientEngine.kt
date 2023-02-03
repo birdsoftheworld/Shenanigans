@@ -1,9 +1,11 @@
 package shenanigans.engine
 
+import com.esotericsoftware.kryonet.Client
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.System
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.events.control.ControlEvent
@@ -11,8 +13,6 @@ import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.graphics.Renderer
-import shenanigans.engine.init.client.ClientEngineOptions
-import shenanigans.engine.network.Client
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.camera.CameraResource
@@ -22,8 +22,10 @@ import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 
-class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngineOptions()) : Engine(initScene = initScene, options) {
+class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
     private lateinit var window: Window
+
+    private val client = Client()
 
     override fun init() {
         window = Window("game", 640, 640)
@@ -35,25 +37,25 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
         engineResources.set(MouseState())
 
         engineResources.set(CameraResource(OrthoCamera()))
-
-        Client.engine = this
     }
 
     override fun loop() {
         GL.createCapabilities()
-        Renderer.init((options as ClientEngineOptions).renderSystems)
+        Renderer.init()
 
         GL30C.glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
         var previousTime = GLFW.glfwGetTime()
 
+        window.onResize { _, _ ->
+            Renderer.renderGame(window, scene, engineResources)
+        }
+
         while (!window.shouldClose) {
             GLFW.glfwPollEvents()
 
-            eventLock.lock()
+            // shhhhh just pretend this is atomic
             val events = unprocessedEvents
             unprocessedEvents = mutableListOf()
-            eventLock.unlock()
-
             val eventQueue = EventQueue(events, ::queueEvent)
 
             val exit = eventQueue.iterate<ControlEvent>().any { e ->
@@ -85,7 +87,8 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
             engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
+            val physicsResources = ResourcesView(scene.sceneResources, engineResources)
+            scene.defaultSystems.forEach(scene.runSystem(System::executePhysics, physicsResources))
 
             Renderer.renderGame(window, scene, engineResources)
         }
@@ -93,5 +96,3 @@ class ClientEngine (initScene: Scene, options: ClientEngineOptions = ClientEngin
         Renderer.discard()
     }
 }
-
-annotation class ClientOnly
