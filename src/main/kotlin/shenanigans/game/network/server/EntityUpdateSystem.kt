@@ -5,7 +5,7 @@ import shenanigans.engine.events.EventQueue
 import shenanigans.engine.network.Server
 import shenanigans.engine.util.Transform
 import shenanigans.game.network.ConnectionEvent
-import shenanigans.game.network.EntityPacket
+import shenanigans.game.network.EntityUpdatePacket
 import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.Synchronized
 import kotlin.reflect.KClass
@@ -18,7 +18,7 @@ class EntityUpdateSystem : System {
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val eventQueue = resources.get<EventQueue>()
 
-        eventQueue.iterate<EntityPacket>().forEach {packet ->
+        eventQueue.iterate<EntityUpdatePacket>().forEach { packet ->
             packet.entities.forEach() { entity ->
                 if(entities[entity.key]?.component<Transform>() == null) {
                     println("entity does not have a transform!")
@@ -27,7 +27,7 @@ class EntityUpdateSystem : System {
             }
         }
 
-        resources.get<Server>().updateEntities(EntityPacket(entities))
+//        eventQueue.queueNetworked()
     }
 }
 
@@ -45,7 +45,7 @@ class ServerRegistrationSystem : System {
                 entityRegistrationPacket.components.asSequence()
             )
 
-            resources.get<Server>().registerEntity(entityRegistrationPacket)
+//            eventQueue.queueNetworked()
         }
     }
 }
@@ -61,7 +61,7 @@ class FullEntitySyncSystem : System {
         eventQueue.iterate<ConnectionEvent>().forEach { connectionEvent ->
             val connection = connectionEvent.connection
             entities.forEach {
-                val packet = EntityRegistrationPacket(it, -1)
+                val packet = EntityRegistrationPacket(it)
                 packet.serverEntityId = it.id
                 server.registerEntityTo(connection.id, packet)
             }

@@ -1,15 +1,16 @@
 package shenanigans.game.network
 
+import com.esotericsoftware.kryonet.Connection
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.network.Client
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.game.KeyboardPlayer
 import kotlin.reflect.KClass
-
 
 class NetworkSystem : System {
 
@@ -19,9 +20,9 @@ class NetworkSystem : System {
         return setOf(Synchronized::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executeNetwork(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
 
-        resources.get<EventQueue>().iterate<EntityPacket>().forEach update@{ packet ->
+        resources.get<EventQueue>().iterate<EntityUpdatePacket>().forEach update@{ packet ->
             packet.entities.forEach() packet@{ entity ->
                 if (!clientIds.containsValue(entity.key)) {
                     return@packet
@@ -49,7 +50,6 @@ class NetworkSystem : System {
                 if (it is Synchronized) {
                     it.serverId = EntityId(-1)
                 }
-                println(it)
             }
 
             val newId = lifecycle.add(
@@ -60,16 +60,12 @@ class NetworkSystem : System {
             clientIds[newId] = packet.serverEntityId!!
         }
 
-        for (entity in entities) {
-            if (entity.component<Synchronized>().get().serverId == null) {
-                Client.createNetworkedEntity(entity)
-                entity.component<Synchronized>().get().serverId = EntityId(-1)
-                continue
-            }
+        entities.filter { !it.component<Synchronized>().get().connected }.forEach {
+            networkEventQueue.queueReliable(EntityRegistrationPacket())
         }
 
-        Client.updateEntities(EntityPacket(entities.filter {
-            it.component<Synchronized>().get().serverId != EntityId(-1)
-        }, clientIds))
+//        eventQueue.queueNewtorked(EntityUpdatePacket(entities.filter {
+//            it.component<Synchronized>().get().connected
+//        }, clientIds))
     }
 }
