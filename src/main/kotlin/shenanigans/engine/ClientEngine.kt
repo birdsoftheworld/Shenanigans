@@ -85,6 +85,10 @@ class ClientEngine(initScene: Scene) : Engine(initScene = initScene) {
             )
 
             Renderer.renderGame(window, scene, engineResources, eventQueuesFor(renderEvents))
+
+            physicsEvents.finish()
+            networkEvents.finish()
+            renderEvents.finish()
         }
     }
 

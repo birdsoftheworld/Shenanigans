@@ -14,7 +14,7 @@ class EventQueue internal constructor() : Resource {
         deferredEvents.add(event)
     }
 
-    fun finish() {
+    internal fun finish() {
         // shhhh pretend this is atomic
         events = deferredEvents
         deferredEvents = mutableListOf()
