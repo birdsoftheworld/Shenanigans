@@ -11,7 +11,7 @@ import shenanigans.engine.util.Transform
 import java.util.*
 import kotlin.jvm.internal.ClassReference
 
-fun registerClasses(endpoint: EndPoint){
+fun registerDefaultClasses(endpoint: EndPoint){
     val kryo: Kryo = endpoint.kryo
 
     // Components
