@@ -3,40 +3,67 @@ package shenanigans.engine
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.events.Event
+import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.StateMachine
+import shenanigans.engine.events.control.ControlEvent
+import shenanigans.engine.events.control.ExitEvent
+import shenanigans.engine.events.control.SceneChangeEvent
+import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.scene.Scene
-import java.util.concurrent.locks.ReentrantLock
 
 abstract class Engine(initScene: Scene) {
     protected var scene: Scene = initScene
-    internal val engineResources = Resources()
+    protected val engineResources = Resources()
 
-    protected val eventLock = ReentrantLock()
-    protected var unprocessedEvents = mutableListOf<Event>()
+    val physicsEvents: EventQueue = EventQueue()
+    val renderEvents: EventQueue = EventQueue()
+    val networkEvents: EventQueue = EventQueue()
 
     fun run() {
-        if(!GLFW.glfwInit()) throw RuntimeException("Failed to initialize GLFW")
+        if (!GLFW.glfwInit()) throw RuntimeException("Failed to initialize GLFW")
         init()
         loop()
-        GLFW.glfwTerminate()
     }
 
     abstract fun init()
 
-    /**
-     * Queue an event with no regard for the lock state. Do not use on a different thread than the game loop thread.
-     */
-    fun unsafeQueueEvent(event: Event) {
-        unprocessedEvents.add(event)
-    }
-
-    /**
-     * Wait to acquire the event lock, then queue an event.
-     */
-    fun queueEvent(event: Event) {
-        eventLock.lock()
-        unprocessedEvents.add(event)
-        eventLock.unlock()
-    }
-
     abstract fun loop()
+
+    abstract fun exit()
+
+    protected fun handleControlEvents(events: EventQueue) {
+        events.iterate<ControlEvent>().forEach { e ->
+            when (e) {
+                is ExitEvent -> {
+                    exit()
+                }
+
+                is SceneChangeEvent -> {
+                    scene = e.scene
+                }
+
+                is UpdateDefaultSystemsEvent -> {
+                    e.update(scene.defaultSystems)
+                }
+            }
+        }
+    }
+
+    protected fun transitionStateMachineResources(events: EventQueue) {
+        engineResources.resources.forEach { (_, value) ->
+            if (value is StateMachine) {
+                value.transition(events)
+            }
+        }
+    }
+
+    protected fun eventQueuesFor(own: EventQueue): EventQueues {
+        return EventQueues(
+            physics = physicsEvents,
+            network = networkEvents,
+            render = renderEvents,
+            own = own
+        )
+    }
 }

@@ -21,8 +21,10 @@ import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
+import javax.naming.ldap.Control
+import kotlin.system.exitProcess
 
-class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
+class ClientEngine(initScene: Scene) : Engine(initScene = initScene) {
     private lateinit var window: Window
 
     private val client = Client()
@@ -30,7 +32,7 @@ class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
     override fun init() {
         window = Window("game", 640, 640)
 
-        window.onEvent(::queueEvent)
+        window.onEvent { e -> physicsEvents.queueLater(e) }
 
         engineResources.set(WindowResource(window))
         engineResources.set(KeyboardState())
@@ -47,52 +49,54 @@ class ClientEngine (initScene: Scene) : Engine(initScene = initScene) {
         var previousTime = GLFW.glfwGetTime()
 
         window.onResize { _, _ ->
-            Renderer.renderGame(window, scene, engineResources)
+            Renderer.renderGame(window, scene, engineResources, eventQueuesFor(renderEvents))
         }
 
         while (!window.shouldClose) {
             GLFW.glfwPollEvents()
 
-            // shhhhh just pretend this is atomic
-            val events = unprocessedEvents
-            unprocessedEvents = mutableListOf()
-            val eventQueue = EventQueue(events, ::queueEvent)
+            handleControlEvents(physicsEvents)
+            handleControlEvents(networkEvents)
 
-            val exit = eventQueue.iterate<ControlEvent>().any { e ->
-                when (e) {
-                    is ExitEvent -> true
-                    is SceneChangeEvent -> {
-                        scene = e.scene
-                        false
-                    }
-                    is UpdateDefaultSystemsEvent -> {
-                        e.update(scene.defaultSystems)
-                        false
-                    }
-                }
-            }
-            if (exit) {
-                break
-            }
-
-            engineResources.set(eventQueue)
-
-            engineResources.resources.forEach { (_, value) ->
-                if (value is StateMachine) {
-                    value.transition(eventQueue)
-                }
-            }
+            transitionStateMachineResources(physicsEvents)
+            transitionStateMachineResources(networkEvents)
+            transitionStateMachineResources(renderEvents)
 
             val currentTime = GLFW.glfwGetTime()
             engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
             val physicsResources = ResourcesView(scene.sceneResources, engineResources)
-            scene.defaultSystems.forEach(scene.runSystem(System::executePhysics, physicsResources))
+            scene.defaultSystems.forEach(
+                scene.runSystem(
+                    System::executePhysics,
+                    physicsResources,
+                    eventQueuesFor(physicsEvents)
+                )
+            )
 
-            Renderer.renderGame(window, scene, engineResources)
+            val networkResources = ResourcesView(scene.sceneResources, engineResources)
+            scene.defaultSystems.forEach(
+                scene.runSystem(
+                    System::executeNetwork,
+                    networkResources,
+                    eventQueuesFor(networkEvents)
+                )
+            )
+
+            Renderer.renderGame(window, scene, engineResources, eventQueuesFor(renderEvents))
+
+            physicsEvents.finish()
+            networkEvents.finish()
+            renderEvents.finish()
         }
+    }
 
+    override fun exit() {
         Renderer.discard()
+
+        GLFW.glfwTerminate()
+
+        exitProcess(0)
     }
 }

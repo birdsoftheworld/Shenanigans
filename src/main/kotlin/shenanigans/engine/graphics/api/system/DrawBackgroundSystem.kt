@@ -3,6 +3,7 @@ package shenanigans.engine.graphics.api.system
 import org.joml.Vector2f
 import org.joml.Vector2i
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.graphics.TextureOptions
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.graphics.api.texture.TextureManager
@@ -18,7 +19,7 @@ class DrawBackgroundSystem : System {
         return emptySet()
     }
 
-    override fun executeRender(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executeRender(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
         val size = resources.get<WindowResource>().window.size
         val camera = resources.get<CameraResource>().camera!!
