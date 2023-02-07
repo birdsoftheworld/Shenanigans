@@ -31,12 +31,15 @@ class EntityUpdatePacket : Event {
 
 class EntityRegistrationPacket() : Event {
     val components: MutableList<Component> = mutableListOf()
+    var clientId: Int? = null
 
-    constructor (entityView: EntityView) : this() {
+    constructor (entityView: EntityView, clientId: Int) : this() {
         entityView.components.values.forEach {
             if (!it.component.javaClass.isAnnotationPresent(ClientOnly::class.java)) {
                 components.add(it.component)
             }
         }
+
+        this.clientId = clientId
     }
 }

@@ -1,12 +1,7 @@
 package shenanigans.game.network
 
-import com.esotericsoftware.kryonet.Connection
-import com.google.common.collect.BiMap
-import com.google.common.collect.HashBiMap
 import shenanigans.engine.ecs.*
-import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.network.Client
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.game.KeyboardPlayer
@@ -14,7 +9,7 @@ import kotlin.reflect.KClass
 
 class NetworkSystem : System {
 
-    private val clientIds: BiMap<EntityId, EntityId> = HashBiMap.create()
+    var clientId: Int = null
 
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Synchronized::class)
@@ -38,8 +33,7 @@ class NetworkSystem : System {
         }
 
         resources.get<EventQueue>().iterate<EntityRegistrationPacket>().forEach registration@{ packet ->
-            println(packet.serverEntityId)
-            if (packet.clientId == Client.getId()) {
+            if (packet.clientId == clientId) {
                 clientIds[packet.clientEntityId] = packet.serverEntityId!!
                 entities.get(packet.clientEntityId)!!.component<Synchronized>().get().serverId = packet.serverEntityId
                 Logger.log("Network System", "WHaHOOO")
@@ -48,20 +42,19 @@ class NetworkSystem : System {
 
             packet.components.forEach() {
                 if (it is Synchronized) {
-                    it.serverId = EntityId(-1)
+                    it.connected = true
                 }
             }
 
             val newId = lifecycle.add(
                 packet.components.asSequence()
             )
-            Logger.log("Network System", "WahoOO!")
 
-            clientIds[newId] = packet.serverEntityId!!
+            Logger.log("Network System", "WahoOO!")
         }
 
         entities.filter { !it.component<Synchronized>().get().connected }.forEach {
-            networkEventQueue.queueReliable(EntityRegistrationPacket())
+//            networkEventQueue.queueReliable(EntityRegistrationPacket())
         }
 
 //        eventQueue.queueNewtorked(EntityUpdatePacket(entities.filter {

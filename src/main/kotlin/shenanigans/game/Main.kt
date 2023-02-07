@@ -20,6 +20,7 @@ import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.network.Synchronized
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -118,7 +119,7 @@ class AddTestEntities : System {
                 shape2,
                 Collider(shape2, false),
                 KeyboardPlayer(500f),
-                Sendable(),
+                Synchronized(),
             )
         )
 
