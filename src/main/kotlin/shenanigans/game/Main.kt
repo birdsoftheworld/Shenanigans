@@ -151,9 +151,16 @@ class AddTestEntities : System {
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))
-
-
-
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(300f, 400f)
+                ),
+                shape3,
+                Collider(shape3, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+            ))
     }
 }
 

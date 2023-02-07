@@ -6,6 +6,7 @@ import shenanigans.engine.events.EventQueue
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.moveTowards
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
 import kotlin.math.max
@@ -13,27 +14,33 @@ import kotlin.math.sign
 import kotlin.reflect.KClass
 
 
-enum class WallStatus {
-    Off,
-    Left,
-    Right
+enum class WallStatus(val sign: Float) {
+    Off(0f),
+    Left(-1f),
+    Right(1f)
 }
 
 data class PlayerProperties(
-    val groundAccel: Float = 500f,
-    val airAccelRatio: Float = .04f,
-    val xMax: Float = .07f,
+    val maxAcceleration: Float = .50f,
+    val maxAirAcceleration: Float = .75f * maxAcceleration,
+    val maxDeceleration: Float = 15f,
+    val maxAirDeceleration: Float = .1f,
+    val maxTurnSpeed: Float = 20f,
+    val maxAirTurnSpeed: Float = .75f,
+
+    val maxSpeed: Float = .1f,
+
     val jumpSpeed: Float = .15f,
-    val friction: Float = 15f,
-    val drag: Float = 3f,
-    val turnSpeed: Float = 20f,
-    val airTurnSpeed: Float = 5f,
-    val wallJumpDistance: Float = jumpSpeed,
+
+    val wallJumpDistance: Float = .1f,
+    val wallJumpSpeed: Float = .175f,
+    val wallJumpSlideSpeed: Float = 0.05f,
+
     val coyoteTime: Float = .1f,
     val jumpBufferTime: Float = .25f,
+
     val gravity: Float = .5f,
     val terminalVelocity: Float = 50f,
-    val wallJumpSlideSpeed: Float = 4f
 )
 
 data class Player(
@@ -70,16 +77,17 @@ class PlayerController : System {
                 if (entity.id == event.target) {
                     if (event.normal.y < 0) {
                         player.onGround = true
-                        if (velocity.y > 0f) {
-                            velocity.y = 0f
-                        }
+                        velocity.y = velocity.y.coerceAtMost(0f)
                     } else if (event.normal.y > 0) {
                         player.onCeiling = true
+                        velocity.y = max(0f, velocity.y)
                     }
                     if (event.normal.x < 0) {
                         player.wall = WallStatus.Right
+                        velocity.x = velocity.x.coerceAtMost(0f)
                     } else if (event.normal.x > 0) {
                         player.wall = WallStatus.Left
+                        velocity.x = velocity.x.coerceAtLeast(0f)
                     }
                 }
             }
@@ -87,56 +95,62 @@ class PlayerController : System {
             val pos = transform.get().position
 
             val properties = player.properties
+
             val desiredVelocity = Vector2f(0f, 0f)
 
-            var backwardsAcceleration = 0f
-            var turnAcceleration = 0f
-            var acceleration = properties.groundAccel
+            var direction = 0f
+            //left
+            if (keyboard.isPressed(Key.A)) {
+                direction -= 1f
+            }
+            //right
+            if (keyboard.isPressed(Key.D)) {
+                direction += 1f
+            }
+            desiredVelocity.add(direction * properties.maxSpeed, 0f)
+
+            var turnSpeed = 0f
+            var acceleration = 0f
+            var deceleration = 0f
 
             //Deceleration based on whether on ground or in air
             when (player.onGround) {
                 true -> {
-                    backwardsAcceleration = properties.friction
-                    turnAcceleration = properties.turnSpeed
+                    acceleration = properties.maxAcceleration
+                    deceleration = properties.maxDeceleration
+                    turnSpeed = properties.maxTurnSpeed
                 }
 
                 false -> {
-                    acceleration *= properties.airAccelRatio
-                    backwardsAcceleration = properties.drag
-                    turnAcceleration = properties.airTurnSpeed
+                    acceleration = properties.maxAirAcceleration
+                    deceleration = properties.maxAirDeceleration
+                    turnSpeed = properties.maxAirTurnSpeed
                 }
             }
 
-            //left
-            if (keyboard.isPressed(Key.A)) {
-                desiredVelocity.add(Vector2f(-properties.xMax, 0f))
-            }
-
-            //right
-            if (keyboard.isPressed(Key.D)) {
-                desiredVelocity.add(Vector2f(properties.xMax, 0f))
-            }
-
-            var jumped = false
-            if ((keyboard.isJustPressed(Key.W) || player.jumpBufferTime > 0f) && player.canJump()) {
-                jumped = true
-                player.jump()
-            }
-            if (!jumped && keyboard.isJustPressed(Key.W) && !player.canJump()) {
-                player.jumpBufferTime = properties.jumpBufferTime
-            }
-
-            val speed = if (desiredVelocity.x != 0f) {
+            val maxSpeedChange = if (direction != 0f) {
                 if (desiredVelocity.x.sign != velocity.x.sign) {
-                    turnAcceleration
+                    turnSpeed
                 } else {
                     acceleration
                 }
             } else {
-                backwardsAcceleration
+                deceleration
             } * deltaTime.toFloat()
 
-            velocity.x = velocity.x + (desiredVelocity.x - velocity.x) * speed
+            velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
+
+            var jumped = false
+            val pressedJump = keyboard.isJustPressed(Key.W)
+            val bufferedJump = player.jumpBufferTime > 0f
+
+            if ((pressedJump || bufferedJump) && player.canJump()) {
+                jumped = true
+                player.jump()
+            }
+            if (pressedJump && !jumped) {
+                player.jumpBufferTime = properties.jumpBufferTime
+            }
 
             if (player.onGround && !jumped) {
                 player.coyoteTime = properties.coyoteTime
@@ -145,16 +159,12 @@ class PlayerController : System {
             }
             player.jumpBufferTime = (player.jumpBufferTime - deltaTime.toFloat()).coerceAtLeast(0f)
 
-            if (player.onCeiling) {
-                velocity.y = max(0f, velocity.y)
+            if (!player.onGround) {
+                velocity.y += properties.gravity * deltaTime.toFloat()
             }
 
-            if (!player.onGround && !jumped) {
-                velocity.y += if (player.wall != WallStatus.Off) {
-                    properties.gravity / properties.wallJumpSlideSpeed
-                } else {
-                    properties.gravity
-                } * deltaTime.toFloat()
+            if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
+                velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
             }
 
             pos.add(velocity)
@@ -163,13 +173,15 @@ class PlayerController : System {
     }
 
     private fun Player.jump() {
-        velocity.y = -properties.jumpSpeed
         if (!this.onGround) {
+            velocity.y = -properties.wallJumpSpeed
             if (this.wall == WallStatus.Right) {
                 velocity.x -= properties.wallJumpDistance
             } else if (this.wall == WallStatus.Left) {
                 velocity.x += properties.wallJumpDistance
             }
+        } else {
+            velocity.y = -properties.jumpSpeed
         }
 
         this.jumpBufferTime = 0f
