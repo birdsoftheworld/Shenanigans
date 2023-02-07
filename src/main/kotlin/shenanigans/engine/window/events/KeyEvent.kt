@@ -26,10 +26,14 @@ data class KeyEvent(val key: Key, val action: KeyAction, val modifiers: KeyModif
 
 class KeyboardState : Resource, StateMachine {
     private val pressed: MutableMap<Key, Boolean> = mutableMapOf()
+    private val justPressed: MutableMap<Key, Boolean> = mutableMapOf()
 
     override fun transition(queue: EventQueue) {
+        justPressed.clear()
         queue.iterate<KeyEvent>().forEach { event ->
-            pressed[event.key] = event.action == KeyAction.PRESS || event.action == KeyAction.REPEAT
+            val press = event.action == KeyAction.PRESS
+            justPressed[event.key] = press && !(pressed[event.key] ?: false)
+            pressed[event.key] = press || event.action == KeyAction.REPEAT
         }
     }
 
@@ -37,4 +41,7 @@ class KeyboardState : Resource, StateMachine {
         return pressed[key] ?: false
     }
 
+    fun isJustPressed(key: Key): Boolean {
+        return justPressed[key] ?: false
+    }
 }
