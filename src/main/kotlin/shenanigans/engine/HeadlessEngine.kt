@@ -50,6 +50,10 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene) {
                     eventQueuesFor(networkEvents)
                 )
             )
+
+            physicsEvents.finish()
+            networkEvents.finish()
+            renderEvents.finish()
         }
     }
 
