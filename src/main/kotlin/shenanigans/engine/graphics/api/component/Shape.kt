@@ -1,6 +1,5 @@
 package shenanigans.engine.graphics.api.component
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color

@@ -1,17 +1,13 @@
 package shenanigans.game.player
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.engine.events.Event
-import shenanigans.engine.graphics.api.component.Shape
-import shenanigans.engine.physics.Collider
-import shenanigans.game.MousePlayer
 import shenanigans.game.SpawnPoint
 import kotlin.math.sign
 import kotlin.reflect.KClass

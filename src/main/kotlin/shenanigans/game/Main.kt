@@ -1,31 +1,26 @@
 package shenanigans.game
 
-import jdk.nashorn.internal.AssertsEnabled
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
-import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.KeyAction
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.*
+import shenanigans.game.network.Sendable
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
-import shenanigans.game.network.Sendable
-import sun.java2d.pipe.SpanClipRenderer
-import java.awt.event.MouseWheelEvent
-import java.awt.event.MouseWheelListener
 import kotlin.math.round
 import kotlin.reflect.KClass
 
