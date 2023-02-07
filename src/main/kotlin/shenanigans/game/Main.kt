@@ -1,5 +1,6 @@
 package shenanigans.game
 
+import jdk.nashorn.internal.AssertsEnabled
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
@@ -16,13 +17,15 @@ import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
+import shenanigans.engine.window.KeyAction
 import shenanigans.engine.window.MouseButtonAction
-import shenanigans.engine.window.events.KeyboardState
-import shenanigans.engine.window.events.MouseButtonEvent
-import shenanigans.engine.window.events.MouseState
+import shenanigans.engine.window.events.*
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import shenanigans.game.network.Sendable
+import sun.java2d.pipe.SpanClipRenderer
+import java.awt.event.MouseWheelEvent
+import java.awt.event.MouseWheelListener
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -65,15 +68,27 @@ class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{
     fun grab(){this.grabbed=true}
     fun drop(){this.grabbed=false}
 }
+class SpawnPoint() : Component
 data class KeyboardPlayer(val speed: Float) : Component
 
+fun newShape(h : Float, w : Float) : Shape{
+    return Shape(
+        arrayOf(
+            Vector2f(0f, 0f),
+            Vector2f(0f, h),
+            Vector2f(w, h),
+            Vector2f(w, 0f)
+        ), Color(1f, 0f, 0f)
+    )
+}
 class AddTestEntities : System {
     override fun query(): Iterable<KClass<out Component>> {
         return emptySet()
     }
 
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
-        val shape = Shape(
+        //Shapes Declaration
+        val floorShape = Shape(
             arrayOf(
                 Vector2f(0f, 0f),
                 Vector2f(0f, 50f),
@@ -82,58 +97,13 @@ class AddTestEntities : System {
             ), Color(1f, 0f, 0f)
         )
 
-
-        lifecycle.add(
-            sequenceOf(
-                Transform(
-                    Vector2f(0f, 600f)
-                ),
-                shape,
-                Collider(shape, true),
-                MousePlayer(false, Vector2f(0f,0f)),
-            )
-        )
-
-        val shape2 = Shape(
+        val playerShape = Shape(
             arrayOf(
                 Vector2f(0f, 0f), Vector2f(0f, 30f), Vector2f(30f, 30f), Vector2f(30f, 0f)
             ), Color(0f, 0f, 1f)
         )
-        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(30f,30f))
-        lifecycle.add(
-            sequenceOf(
-                Transform(
-                    Vector2f(200f, 500f),
-                ),
-                sprite,
-                Collider(shape2, false),
-                Player(500f),
-                Sendable(),
-            )
-        )
 
-        lifecycle.add((
-            sequenceOf(
-                Transform(
-                    Vector2f(600f, 700f)
-                ),
-                shape,
-                Collider(shape, true),
-                MousePlayer(false, Vector2f(0f,0f)),
-                )
-        ))
-
-        lifecycle.add((
-            sequenceOf(
-                Transform(
-                    Vector2f(800f, 600f)
-                ),
-                shape,
-                Collider(shape, true),
-                MousePlayer(false, Vector2f(0f,0f)),
-                )
-        ))
-        val shape3 = Shape(
+        val wallShape = Shape(
             arrayOf(
                 Vector2f(0f, 0f),
                 Vector2f(0f, 600f),
@@ -141,13 +111,83 @@ class AddTestEntities : System {
                 Vector2f(50f, 0f)
             ), Color(0f, 1f, 1f)
         )
+
+        //Sprites Declaration
+        val playerSprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(30f,30f))
+        val respawnSprite = Sprite(TextureManager.createTexture("/sprite.png").getRegion(), Vector2f(30f,30f))
+
+
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector2f(0f, 600f)
+                ),
+                floorShape,
+                Collider(floorShape, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+
+
+
+        //Player Respawn Block
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(100f, 500f)
+                ),
+                playerShape,
+                MousePlayer(false, Vector2f(0f,0f)),
+                SpawnPoint(),
+            )
+        ))
+
+
+        //PLAYER
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector2f(100f, 500f),
+                ),
+                playerSprite,
+                Collider(playerShape, false),
+                Player(500f),
+                Sendable(),
+            )
+        )
+
+
+
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(600f, 700f)
+                ),
+                floorShape,
+                Collider(floorShape, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        ))
+
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(800f, 600f)
+                ),
+                floorShape,
+                Collider(floorShape, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                )
+        ))
+
+
         lifecycle.add((
             sequenceOf(
                 Transform(
                     Vector2f(400f, 400f)
                 ),
-                shape3,
-                Collider(shape3, true),
+                wallShape,
+                Collider(wallShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))
@@ -156,7 +196,6 @@ class AddTestEntities : System {
 
     }
 }
-
 
 class InsertEntitiesOngoing : System{
     override fun query(): Iterable<KClass<out Component>> {
@@ -198,12 +237,35 @@ class MouseMovementSystem : System {
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         entities.forEach { entity ->
             val mousePlayer = entity.component<MousePlayer>().get()
+            val key = KeyEvent
+            val EventQueue = resources.get<EventQueue>()
             if(mousePlayer.grabbed){
                 val transform = entity.component<Transform>().get()
                 val position = resources.get<MouseState>().position()
                 val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(position))
                 transform.position.set(transformedPosition.x() + mousePlayer.dragOffset.x(), transformedPosition.y() + mousePlayer.dragOffset.y())
+
+
+                EventQueue.iterate<KeyEvent>().forEach{event ->
+                    if(event.key == Key.Q && event.action == KeyAction.PRESS){
+                        transform.rotation -= (Math.PI/2).toFloat()
+                    }
+                    if(event.key == Key.E && event.action == KeyAction.PRESS){
+                        transform.rotation += (Math.PI/2).toFloat()
+                    }
+                }
+
+
                 entity.component<Transform>().mutate()
+
+            }
+        }
+
+
+        resources.get<EventQueue>().iterate<MouseScrollEvent>().forEach { event ->
+            val scroll = MouseScrollEvent
+            if(true){
+                println(scroll)
             }
         }
 
