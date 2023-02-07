@@ -1,5 +1,6 @@
 package shenanigans.engine.ecs
 
+import shenanigans.engine.events.EventQueues
 import kotlin.reflect.KClass
 
 interface System {
@@ -11,15 +12,33 @@ interface System {
     /**
      * Execute the system at physics time.
      */
-    fun executePhysics(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {}
+    fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
+    }
 
     /**
      * Execute the system at network time.
      */
-    fun executeNetwork(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {}
+    fun executeNetwork(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
+    }
 
     /**
      * Execute the system at render time.
      */
-    fun executeRender(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {}
+    fun executeRender(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
+    }
 }

@@ -1,6 +1,7 @@
 package shenanigans.engine.ecs.utils
 
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
 import kotlin.reflect.KClass
 
 class AddEntitiesSystem(val entities: Sequence<Sequence<Component>>) : System {
@@ -8,7 +9,12 @@ class AddEntitiesSystem(val entities: Sequence<Sequence<Component>>) : System {
         return emptySet()
     }
 
-    override fun executePhysics(resources: ResourcesView, _entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        _entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
         entities.forEach { lifecycle.add(it) }
     }
 }

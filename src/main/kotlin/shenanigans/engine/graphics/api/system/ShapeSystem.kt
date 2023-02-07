@@ -1,6 +1,7 @@
 package shenanigans.engine.graphics.api.system
 
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
@@ -15,7 +16,7 @@ class ShapeSystem : System {
         return setOf(Shape::class, Transform::class)
     }
 
-    override fun executeRender(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executeRender(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val renderer = resources.get<ShapeRendererResource>().shapeRenderer
         val camera = resources.get<CameraResource>().camera
         renderer.projection = camera!!.computeProjectionMatrix()

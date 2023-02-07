@@ -4,6 +4,7 @@ import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector4f
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
 import java.util.UUID
@@ -21,7 +22,7 @@ class CollisionSystem : System {
         return listOf(Collider::class, Transform::class)
     }
 
-    override fun executePhysics(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
 
         val collisionPairs = getCollisionPairs(entities)
 
