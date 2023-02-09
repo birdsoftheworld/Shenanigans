@@ -4,7 +4,7 @@ import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.emptyEventQueues
+import shenanigans.engine.events.fakeEventQueues
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.scene.Scene
@@ -18,7 +18,7 @@ fun main() {
 fun makeScene(): Scene {
     val scene = Scene()
 
-    scene.entities.runSystem(System::executePhysics, AddTiles(), ResourcesView(), emptyEventQueues())
+    scene.entities.runSystem(System::executePhysics, AddTiles(), ResourcesView(), fakeEventQueues())
 
     return scene
 }

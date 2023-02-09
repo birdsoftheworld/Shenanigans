@@ -3,9 +3,8 @@ package shenanigans.game
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
-import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.emptyEventQueues
+import shenanigans.engine.events.fakeEventQueues
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
@@ -20,7 +19,6 @@ import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.Synchronized
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -34,7 +32,7 @@ fun testScene(): Scene {
     // NOTE: in the future, this will not be the recommended way to populate a scene
     //       instead, the engine will have a facility for running systems once
     //       which will be used with a canonical "AddEntities" system
-    scene.entities.runSystem(System::executePhysics, AddTestEntities(), ResourcesView(), emptyEventQueues())
+    scene.entities.runSystem(System::executePhysics, AddTestEntities(), ResourcesView(), fakeEventQueues())
 
     scene.defaultSystems.add(MouseMovementSystem())
     scene.defaultSystems.add(KeyboardMovementSystem())
@@ -119,7 +117,6 @@ class AddTestEntities : System {
                 shape2,
                 Collider(shape2, false),
                 KeyboardPlayer(500f),
-                Synchronized(),
             )
         )
 

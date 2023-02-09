@@ -6,12 +6,6 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
-import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.StateMachine
-import shenanigans.engine.events.control.ControlEvent
-import shenanigans.engine.events.control.ExitEvent
-import shenanigans.engine.events.control.SceneChangeEvent
-import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
@@ -21,7 +15,6 @@ import shenanigans.engine.window.Window
 import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
-import javax.naming.ldap.Control
 import kotlin.system.exitProcess
 
 class ClientEngine(initScene: Scene) : Engine(initScene = initScene) {

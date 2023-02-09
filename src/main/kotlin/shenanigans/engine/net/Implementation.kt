@@ -3,7 +3,7 @@ package shenanigans.engine.net
 import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.net.events.ConnectionEvent
-import shenanigans.engine.net.events.ConnectionType
+import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.game.network.registerDefaultClasses
 import java.io.IOException
 import com.esotericsoftware.kryonet.Client as KryoClient
@@ -18,7 +18,7 @@ interface NetworkImplementation {
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
     constructor() : this(KryoServer()) {
-        registerDefaultClasses(kryoServer)
+        registerDefaultClasses(kryoServer.kryo)
 
         kryoServer.start()
         kryoServer.bind(40506, 40506)
@@ -32,28 +32,14 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
     }
 
     override fun registerListener(listener: (Message) -> Unit) {
-        kryoServer.addListener(object : Listener {
-            override fun received(connection: Connection?, `object`: Any?) {
-                if (`object` is Message) {
-                    listener(`object`)
-                }
-            }
-
-            override fun connected(connection: Connection?) {
-                listener(EventMessage(ConnectionEvent(connection, ConnectionType.Connect)))
-            }
-
-            override fun disconnected(connection: Connection?) {
-                listener(EventMessage(ConnectionEvent(connection, ConnectionType.Disconnect)))
-            }
-        })
+        kryoServer.addListener(KryoListener(listener))
     }
 }
 
 class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
     constructor() : this(KryoClient()) {
-        registerDefaultClasses(kryoClient)
+        registerDefaultClasses(kryoClient.kryo)
 
         try {
             val addresses = kryoClient.discoverHosts(40506, 500)
@@ -75,20 +61,23 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
     }
 
     override fun registerListener(listener: (Message) -> Unit) {
-        kryoClient.addListener(object : Listener {
-            override fun received(connection: Connection?, `object`: Any?) {
-                if (`object` is Message) {
-                    listener(`object`)
-                }
-            }
+        kryoClient.addListener(KryoListener(listener))
 
-            override fun connected(connection: Connection?) {
-                listener(EventMessage(ConnectionEvent(connection, ConnectionType.Connect)))
-            }
+    }
+}
 
-            override fun disconnected(connection: Connection?) {
-                listener(EventMessage(ConnectionEvent(connection, ConnectionType.Disconnect)))
-            }
-        })
+internal class KryoListener(val cb: (Message) -> Unit) : Listener {
+    override fun received(connection: Connection?, `object`: Any?) {
+        if (`object` is Message) {
+            cb(`object`)
+        }
+    }
+
+    override fun connected(connection: Connection?) {
+        cb(EventMessage(ConnectionEvent(connection, ConnectionEventType.Connect)))
+    }
+
+    override fun disconnected(connection: Connection?) {
+        cb(EventMessage(ConnectionEvent(connection, ConnectionEventType.Disconnect)))
     }
 }

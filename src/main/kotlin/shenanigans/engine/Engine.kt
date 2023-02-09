@@ -2,10 +2,7 @@ package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.Resources
-import shenanigans.engine.events.Event
-import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.StateMachine
+import shenanigans.engine.events.*
 import shenanigans.engine.events.control.ControlEvent
 import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
@@ -16,9 +13,9 @@ abstract class Engine(initScene: Scene) {
     protected var scene: Scene = initScene
     protected val engineResources = Resources()
 
-    val physicsEvents: EventQueue = EventQueue()
-    val renderEvents: EventQueue = EventQueue()
-    val networkEvents: EventQueue = EventQueue()
+    val physicsEvents: EventQueue = LocalEventQueue()
+    val renderEvents: EventQueue = LocalEventQueue()
+    val networkEvents: EventQueue = LocalEventQueue()
 
     fun run() {
         if (!GLFW.glfwInit()) throw RuntimeException("Failed to initialize GLFW")

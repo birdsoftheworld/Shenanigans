@@ -11,13 +11,11 @@ import shenanigans.engine.util.Transform
 import java.util.*
 import kotlin.jvm.internal.ClassReference
 
-fun registerDefaultClasses(endpoint: EndPoint){
-    val kryo: Kryo = endpoint.kryo
-
+internal fun registerDefaultClasses(kryo: Kryo) {
     // Components
     kryo.register(Component::class.java)
-    kryo.register(Shape::class.java).setInstantiator {Shape(arrayOf(), Color(0f, 0f, 0f))}
-    kryo.register(Collider::class.java).setInstantiator {Collider(arrayOf(), static = false, triggerCollider = false)}
+    kryo.register(Shape::class.java).setInstantiator { Shape(arrayOf(), Color(0f, 0f, 0f)) }
+    kryo.register(Collider::class.java).setInstantiator { Collider(arrayOf(), static = false, triggerCollider = false) }
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
 
@@ -27,7 +25,7 @@ fun registerDefaultClasses(endpoint: EndPoint){
     kryo.register(Vector2f::class.java)
     kryo.register(Array<Vector2f>::class.java)
     kryo.register(Array<Component>::class.java)
-    kryo.register(UUID::class.java).setInstantiator {UUID.randomUUID()}
+    kryo.register(UUID::class.java).setInstantiator { UUID.randomUUID() }
     kryo.register(LinkedHashMap::class.java)
     kryo.register(ClassReference::class.java).setInstantiator { ClassReference(Void::class.java) }
     kryo.register(Class::class.java)

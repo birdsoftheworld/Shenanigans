@@ -7,11 +7,11 @@ data class EventQueues(
     val own: EventQueue
 )
 
-fun emptyEventQueues(): EventQueues {
+fun fakeEventQueues(): EventQueues {
     return EventQueues(
-        physics = EventQueue(),
-        network = EventQueue(),
-        render = EventQueue(),
-        own = EventQueue()
+        physics = LocalEventQueue(),
+        network = LocalEventQueue(),
+        render = LocalEventQueue(),
+        own = LocalEventQueue()
     )
 }

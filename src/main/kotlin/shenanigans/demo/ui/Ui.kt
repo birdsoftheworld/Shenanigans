@@ -5,8 +5,7 @@ import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.ecs.utils.AddEntitiesSystem
-import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.emptyEventQueues
+import shenanigans.engine.events.fakeEventQueues
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UIComponent
@@ -71,7 +70,7 @@ fun makeScene(): Scene {
             )
         ),
         ResourcesView(),
-        emptyEventQueues(),
+        fakeEventQueues(),
     )
 
     return scene
