@@ -37,6 +37,7 @@ fun testScene(): Scene {
     scene.runSystems(ResourcesView(), listOf(AddTestEntities()))
 
     scene.defaultSystems.add(MouseMovementSystem())
+    scene.defaultSystems.add(OscillatingBlocksSystem())
     scene.defaultSystems.add(InsertEntitiesOngoing())
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
@@ -64,7 +65,37 @@ class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{
     fun drop(){this.grabbed=false}
 }
 class SpawnPoint() : Component
+class ScaryBlock() : Component
+class StickyBlock() : Component
+class SlipperyBlock() : Component
+
+class OscillatingPlayer(val distanceToOscillate : Float, var horizontal : Boolean, var startPos : Vector2f, var speed : Float) : Component{
+    fun changeAxis(){
+        this.horizontal = !horizontal
+        println(this.horizontal)
+    }
+
+    fun changeDirection(){
+        this.speed*=-1
+    }
+
+    fun setPos(newPos : Vector2f){
+        this.startPos = newPos
+    }
+
+}
 data class KeyboardPlayer(val speed: Float) : Component
+
+fun newShape(h : Float, w : Float, color : Triple<Float,Float,Float>) : Shape{
+    return Shape(
+        arrayOf(
+            Vector2f(0f, 0f),
+            Vector2f(0f, h),
+            Vector2f(w, h),
+            Vector2f(w, 0f)
+        ), Color(color.first,color.second,color.third)
+    )
+}
 
 fun newShape(h : Float, w : Float) : Shape{
     return Shape(
@@ -73,7 +104,7 @@ fun newShape(h : Float, w : Float) : Shape{
             Vector2f(0f, h),
             Vector2f(w, h),
             Vector2f(w, 0f)
-        ), Color(1f, 0f, 0f)
+        ), Color(.5f,.5f,.5f)
     )
 }
 class AddTestEntities : System {
@@ -107,9 +138,37 @@ class AddTestEntities : System {
             ), Color(0f, 1f, 1f)
         )
 
+        val oscillatingShape = Shape(
+            arrayOf(
+                Vector2f(0f, 0f),
+                Vector2f(0f, 50f),
+                Vector2f(50f, 50f),
+                Vector2f(50f, 0f)
+            ), Color(.5f, .5f, .5f)
+        )
+
+        val scaryShape = newShape(25f,25f)
+
+        val stickyShape = newShape(5f,50f, Triple(.2f,.2f,.2f))
+
+        val slipperyShape = newShape(5f,50f, Triple(7f,.7f,.7f))
+
         //Sprites Declaration
         val playerSprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(30f,30f))
         val respawnSprite = Sprite(TextureManager.createTexture("/sprite.png").getRegion(), Vector2f(30f,30f))
+
+        //Oscillating Block
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(100f, 500f)
+                ),
+                oscillatingShape,
+                Collider(oscillatingShape, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+                OscillatingPlayer(100f,true, Vector2f(100f, 500f), .01f),
+            )
+        ))
 
 
         lifecycle.add(
@@ -118,7 +177,7 @@ class AddTestEntities : System {
                     Vector2f(0f, 600f)
                 ),
                 floorShape,
-                Collider(floorShape, true),
+                Collider(floorShape, true, false),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
@@ -159,7 +218,7 @@ class AddTestEntities : System {
                     Vector2f(600f, 700f)
                 ),
                 floorShape,
-                Collider(floorShape, true),
+                Collider(floorShape, true, false),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))
@@ -170,7 +229,7 @@ class AddTestEntities : System {
                     Vector2f(800f, 600f)
                 ),
                 floorShape,
-                Collider(floorShape, true),
+                Collider(floorShape, true, false),
                 MousePlayer(false, Vector2f(0f,0f)),
                 )
         ))
@@ -182,7 +241,7 @@ class AddTestEntities : System {
                     Vector2f(400f, 400f)
                 ),
                 wallShape,
-                Collider(wallShape, true),
+                Collider(wallShape, true, false),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))
@@ -224,6 +283,40 @@ class InsertEntitiesOngoing : System{
         }
     }
 }
+class OscillatingBlocksSystem : System {
+    override fun query(): Iterable<KClass<out Component>> {
+        return setOf(OscillatingPlayer::class, Transform::class)
+    }
+
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+        entities.forEach { entity ->
+            val transform = entity.component<Transform>().get()
+            val oscillatingPlayer = entity.component<OscillatingPlayer>().get()
+            val mousePlayer = entity.component<MousePlayer>().get()
+            if(!entity.component<MousePlayer>().get().grabbed){
+                when(oscillatingPlayer.horizontal){
+                    true -> entity.component<Transform>().get().position.x += oscillatingPlayer.speed
+
+                    false -> entity.component<Transform>().get().position.y += oscillatingPlayer.speed
+
+                }
+            }
+            when(oscillatingPlayer.horizontal){
+                true -> if(!mousePlayer.grabbed && Math.abs(transform.position.x - oscillatingPlayer.startPos.x) > oscillatingPlayer.distanceToOscillate){
+                    oscillatingPlayer.changeDirection()
+                }
+
+                false -> if(!mousePlayer.grabbed && Math.abs(transform.position.y - oscillatingPlayer.startPos.y) > oscillatingPlayer.distanceToOscillate){
+                    oscillatingPlayer.changeDirection()
+                }
+
+            }
+
+        }
+    }
+
+}
+
 class MouseMovementSystem : System {
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(MousePlayer::class, Transform::class)
@@ -232,25 +325,35 @@ class MouseMovementSystem : System {
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         entities.forEach { entity ->
             val mousePlayer = entity.component<MousePlayer>().get()
-            val key = KeyEvent
             val EventQueue = resources.get<EventQueue>()
             if(mousePlayer.grabbed){
                 val transform = entity.component<Transform>().get()
+                val mousePos = resources.get<MouseState>().position()
                 val position = resources.get<MouseState>().position()
                 val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(position))
-                transform.position.set(transformedPosition.x() + mousePlayer.dragOffset.x(), transformedPosition.y() + mousePlayer.dragOffset.y())
-
-
+                val dragOffset = mousePlayer.dragOffset
+                val x = dragOffset.x
+                val y = dragOffset.y
                 EventQueue.iterate<KeyEvent>().forEach{event ->
                     if(event.key == Key.Q && event.action == KeyAction.PRESS){
                         transform.rotation -= (Math.PI/2).toFloat()
+                        dragOffset.x = y
+                        dragOffset.y = -x
+                        if(entity.componentOpt<OscillatingPlayer>() != null){
+                            entity.component<OscillatingPlayer>().get().changeAxis()
+                        }
                     }
                     if(event.key == Key.E && event.action == KeyAction.PRESS){
                         transform.rotation += (Math.PI/2).toFloat()
+                        dragOffset.x = -y
+                        dragOffset.y = x
+                        if(entity.componentOpt<OscillatingPlayer>() != null){
+                            entity.component<OscillatingPlayer>().get().changeAxis()
+                        }
                     }
                 }
 
-
+                transform.position.set(transformedPosition.x() + mousePlayer.dragOffset.x(), transformedPosition.y() + mousePlayer.dragOffset.y())
                 entity.component<Transform>().mutate()
 
             }
@@ -279,6 +382,9 @@ class MouseMovementSystem : System {
                     mousePlayer.drop()
                     transform.position.x = round(transform.position.x/50)*50
                     transform.position.y = round(transform.position.y/50)*50
+                    if (entity.componentOpt<OscillatingPlayer>() != null){
+                        entity.component<OscillatingPlayer>().get().setPos(transform.position)
+                    }
                 }
             }
         }

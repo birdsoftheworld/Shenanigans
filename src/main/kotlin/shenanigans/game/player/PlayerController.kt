@@ -38,6 +38,10 @@ class PlayerOnWallLeftEvent : Event
 class PlayerOnWallRightEvent : Event
 class PlayerOnGroundEvent : Event
 class PlayerOnRoofEvent : Event
+
+class ScaryEvent : Event
+class StickyEvent : Event
+class SlipperyEvent : Event
 class PlayerController : System {
     val gravity : Float = .5f
     var velocity = Vector2f()
@@ -71,6 +75,7 @@ class PlayerController : System {
                 eventQueue.iterate<PlayerOnRoofEvent>().forEach { event ->
                     player.get().onRoof = true
                 }
+
                 val transform = entity.component<Transform>()
                 val pos = transform.get().position
                 val xMax = player.get().xMax
@@ -91,7 +96,15 @@ class PlayerController : System {
                 if (!onGround) {
                     xAccel *= player.get().airAccelRatio
                 }
-
+                eventQueue.iterate<ScaryEvent>().forEach { event ->
+                    entities.forEach { entity ->
+                        if (entity.componentOpt<SpawnPoint>() != null) {
+                            val resetPos = entity.component<Transform>().get().position
+                            velocity.mul(0f,0f)
+                            pos.add(Vector2f(resetPos.x - pos.x, resetPos.y - pos.y))
+                        }
+                    }
+                }
                 //Deceleration based on whether on ground or in air
                 when (onGround) {
                     true -> {
@@ -103,6 +116,15 @@ class PlayerController : System {
                         deccel = drag;
                         turnAccel = airTurnSpeed
                     }
+                }
+
+
+                eventQueue.iterate<StickyEvent>().forEach { event ->
+                    player.get().onRoof = true
+                }
+                eventQueue.iterate<SlipperyEvent>().forEach { event ->
+                    deccel*=2f
+                    turnAccel*=.5f
                 }
 
                 //left

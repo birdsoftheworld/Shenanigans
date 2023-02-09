@@ -13,4 +13,6 @@ class Collider constructor(
 
     constructor(shape: Shape, static: Boolean) :
             this(shape.vertices, static, false)
+    constructor(shape: Shape, static: Boolean, triggerCollider: Boolean) :
+            this(shape.vertices, static, triggerCollider)
 }
