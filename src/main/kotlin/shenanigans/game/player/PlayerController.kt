@@ -9,8 +9,10 @@ import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sign
+import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 
@@ -26,18 +28,21 @@ data class PlayerProperties(
     val maxDeceleration: Float = 15f,
     val maxAirDeceleration: Float = .1f,
     val maxTurnSpeed: Float = 20f,
-    val maxAirTurnSpeed: Float = .75f,
+    val maxAirTurnSpeed: Float = .5f,
 
     val maxSpeed: Float = .1f,
 
-    val jumpSpeed: Float = .15f,
+    val jumpHeight: Float = .03f,
+    val timeToJumpApex: Float = .35f,
 
-    val wallJumpDistance: Float = .1f,
-    val wallJumpSpeed: Float = .175f,
+    val downwardMovementMultiplier: Float = 1.275f,
+
+    val wallJumpDistance: Float = .125f,
+    val wallJumpHeight: Float = .025f,
     val wallJumpSlideSpeed: Float = 0.05f,
 
     val coyoteTime: Float = .1f,
-    val jumpBufferTime: Float = .25f,
+    val jumpBufferTime: Float = .2f,
 
     val gravity: Float = .5f,
     val terminalVelocity: Float = 50f,
@@ -140,13 +145,21 @@ class PlayerController : System {
 
             velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
+            val gravityMultiplier = if (velocity.y > 0f) {
+                properties.downwardMovementMultiplier
+            } else {
+                1f
+            }
+            val adjustedGravity = (-2f * properties.jumpHeight) / (properties.timeToJumpApex * properties.timeToJumpApex)
+            val gravityScale = (adjustedGravity / -properties.gravity) * gravityMultiplier
+
             var jumped = false
             val pressedJump = keyboard.isJustPressed(Key.W)
-            val bufferedJump = player.jumpBufferTime > 0f
+            val bufferedJump = player.jumpBufferTime > 0f && keyboard.isPressed(Key.W)
 
             if ((pressedJump || bufferedJump) && player.canJump()) {
                 jumped = true
-                player.jump()
+                player.jump(gravityScale)
             }
             if (pressedJump && !jumped) {
                 player.jumpBufferTime = properties.jumpBufferTime
@@ -160,7 +173,7 @@ class PlayerController : System {
             player.jumpBufferTime = (player.jumpBufferTime - deltaTime.toFloat()).coerceAtLeast(0f)
 
             if (!player.onGround) {
-                velocity.y += properties.gravity * deltaTime.toFloat()
+                velocity.y += properties.gravity * gravityScale * deltaTime.toFloat()
             }
 
             if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
@@ -172,17 +185,26 @@ class PlayerController : System {
         }
     }
 
-    private fun Player.jump() {
-        if (!this.onGround) {
-            velocity.y = -properties.wallJumpSpeed
+    private fun Player.jump(gravityScale: Float) {
+        val targetHeight = if (!this.onGround) {
             if (this.wall == WallStatus.Right) {
                 velocity.x -= properties.wallJumpDistance
             } else if (this.wall == WallStatus.Left) {
                 velocity.x += properties.wallJumpDistance
             }
+            properties.wallJumpHeight
         } else {
-            velocity.y = -properties.jumpSpeed
+            properties.jumpHeight
         }
+
+        var jumpSpeed = sqrt(2f * properties.gravity * gravityScale * targetHeight)
+        if (velocity.y < 0f) {
+            jumpSpeed = max(jumpSpeed + velocity.y, 0f)
+        } else if (velocity.y > 0f) {
+            jumpSpeed += abs(velocity.y)
+        }
+
+        velocity.y -= jumpSpeed
 
         this.jumpBufferTime = 0f
         this.coyoteTime = 0f
