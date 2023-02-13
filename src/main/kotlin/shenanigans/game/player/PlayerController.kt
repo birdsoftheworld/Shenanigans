@@ -28,33 +28,44 @@ data class PlayerProperties(
     val maxDeceleration: Float = 15f,
     val maxAirDeceleration: Float = .1f,
     val maxTurnSpeed: Float = 20f,
-    val maxAirTurnSpeed: Float = .5f,
+    val maxAirTurnSpeed: Float = .75f,
 
     val maxSpeed: Float = .1f,
 
     val jumpHeight: Float = .03f,
     val timeToJumpApex: Float = .35f,
 
-    val downwardMovementMultiplier: Float = 1.275f,
+    val downwardMovementMultiplier: Float = 1.325f,
 
-    val wallJumpDistance: Float = .125f,
-    val wallJumpHeight: Float = .025f,
-    val wallJumpSlideSpeed: Float = 0.05f,
+    val wallJumpDistance: Float = .1f,
+    val wallJumpHeight: Float = .0275f,
+    val wallJumpSlideSpeed: Float = .05f,
 
     val coyoteTime: Float = .1f,
+    val wallCoyoteTime: Float = .085f,
     val jumpBufferTime: Float = .2f,
 
+    val jumpCutOff: Float = 1.75f,
+
     val gravity: Float = .5f,
-    val terminalVelocity: Float = 50f,
+    val terminalVelocity: Float = .3f,
 )
+
+enum class JumpType {
+    Wall,
+    Floor,
+    None
+}
 
 data class Player(
     val properties: PlayerProperties,
     val velocity: Vector2f = Vector2f(),
     var onGround: Boolean = false,
     var wall: WallStatus = WallStatus.Off,
+    var currentJump: JumpType = JumpType.None,
     var onCeiling: Boolean = false,
     var coyoteTime: Float = 0f,
+    var wallCoyoteTime: Float = 0f,
     var jumpBufferTime: Float = 0f
 ) : Component
 
@@ -95,6 +106,10 @@ class PlayerController : System {
                         velocity.x = velocity.x.coerceAtLeast(0f)
                     }
                 }
+            }
+
+            if (player.onGround) {
+                player.currentJump = JumpType.None
             }
 
             val pos = transform.get().position
@@ -145,7 +160,13 @@ class PlayerController : System {
 
             velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
-            val gravityMultiplier = if (velocity.y > 0f) {
+            val gravityMultiplier = if (velocity.y < 0f) {
+                if (keyboard.isPressed(Key.W) && player.currentJump != JumpType.None) {
+                    1f
+                } else {
+                    properties.jumpCutOff
+                }
+            } else if (velocity.y > 0f) {
                 properties.downwardMovementMultiplier
             } else {
                 1f
@@ -157,18 +178,25 @@ class PlayerController : System {
             val pressedJump = keyboard.isJustPressed(Key.W)
             val bufferedJump = player.jumpBufferTime > 0f && keyboard.isPressed(Key.W)
 
-            if ((pressedJump || bufferedJump) && player.canJump()) {
+            val jumpType = player.getJumpType()
+            if ((pressedJump || bufferedJump) && jumpType != JumpType.None) {
                 jumped = true
-                player.jump(gravityScale)
+                player.jump(jumpType, gravityScale)
             }
             if (pressedJump && !jumped) {
                 player.jumpBufferTime = properties.jumpBufferTime
             }
 
+            if (player.wall != WallStatus.Off && !jumped) {
+                player.wallCoyoteTime = properties.wallCoyoteTime
+            }
             if (player.onGround && !jumped) {
                 player.coyoteTime = properties.coyoteTime
-            } else {
+            }
+
+            if (!player.onGround) {
                 player.coyoteTime = (player.coyoteTime - deltaTime.toFloat()).coerceAtLeast(0f)
+                player.wallCoyoteTime = (player.wallCoyoteTime - deltaTime.toFloat()).coerceAtLeast(0f)
             }
             player.jumpBufferTime = (player.jumpBufferTime - deltaTime.toFloat()).coerceAtLeast(0f)
 
@@ -180,13 +208,17 @@ class PlayerController : System {
                 velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
             }
 
+            velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+
             pos.add(velocity)
             transform.mutate()
         }
     }
 
-    private fun Player.jump(gravityScale: Float) {
-        val targetHeight = if (!this.onGround) {
+    private fun Player.jump(jumpType: JumpType, gravityScale: Float) {
+        this.currentJump = jumpType
+
+        val targetHeight = if (jumpType == JumpType.Wall) {
             if (this.wall == WallStatus.Right) {
                 velocity.x -= properties.wallJumpDistance
             } else if (this.wall == WallStatus.Left) {
@@ -210,7 +242,12 @@ class PlayerController : System {
         this.coyoteTime = 0f
     }
 
-    private fun Player.canJump(): Boolean {
-        return (this.onGround || this.wall != WallStatus.Off || this.coyoteTime > 0f)
+    private fun Player.getJumpType(): JumpType {
+        if (this.onGround || this.coyoteTime > 0f) {
+            return JumpType.Floor
+        } else if (this.wall != WallStatus.Off || this.wallCoyoteTime > 0f) {
+            return JumpType.Wall
+        }
+        return JumpType.None
     }
 }
