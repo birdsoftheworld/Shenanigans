@@ -3,11 +3,13 @@ package shenanigans.engine
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
+import shenanigans.engine.net.Network
+import shenanigans.engine.net.Server
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import kotlin.system.exitProcess
 
-class HeadlessEngine(initScene: Scene) : Engine(initScene) {
+class HeadlessEngine(initScene: Scene) : Engine(initScene, Network(Server())) {
     override fun init() {
     }
 

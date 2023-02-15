@@ -2,6 +2,7 @@ package shenanigans.game.network
 
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.game.KeyboardPlayer
@@ -15,11 +16,11 @@ class NetworkSystem : System {
 
     override fun executeNetwork(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<NetworkEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
-        eventQueues.network.iterate<EntityMovementPacket>().forEach update@{ packet ->
+        eventQueues.own.receive(EntityMovementPacket::class).forEach update@{ packet ->
             packet.entities.forEach() packet@{ entity ->
                 if (entities[entity.key] == null) {
                     return@packet
@@ -34,7 +35,7 @@ class NetworkSystem : System {
             }
         }
 
-        eventQueues.network.iterate<EntityRegistrationPacket>().forEach registration@{ packet ->
+        eventQueues.own.receive(EntityRegistrationPacket::class).forEach registration@{ packet ->
             if (entities[packet.entity.id] != null) {
                 entities[packet.entity.id]!!.component<Synchronized>().get().connected = true
                 Logger.log("Network System", "WHaHOOO")

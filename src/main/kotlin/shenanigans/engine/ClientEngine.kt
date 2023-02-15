@@ -1,12 +1,13 @@
 package shenanigans.engine
 
-import com.esotericsoftware.kryonet.Client
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.graphics.Renderer
+import shenanigans.engine.net.Client
+import shenanigans.engine.net.Network
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.camera.CameraResource
@@ -17,13 +18,12 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 import kotlin.system.exitProcess
 
-class ClientEngine(initScene: Scene) : Engine(initScene = initScene) {
+class ClientEngine(initScene: Scene) : Engine(initScene = initScene, Network(Client())) {
     private lateinit var window: Window
-
-    private val client = Client()
 
     override fun init() {
         window = Window("game", 640, 640)
+
 
         window.onEvent { e -> physicsEvents.queueLater(e) }
 
