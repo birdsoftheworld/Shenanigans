@@ -2,7 +2,7 @@ package shenanigans.engine.ecs
 
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
-import java.util.UUID
+import java.util.*
 import kotlin.reflect.KClass
 
 class Entities {
@@ -98,8 +98,12 @@ class EntitiesLifecycle internal constructor() {
 
     fun add(components: Sequence<Component>): UUID {
         val id = UUID.randomUUID()
-        requests.add(LifecycleRequest.Add(id, components))
+        addWithID(components, id)
         return id
+    }
+
+    fun addWithID(components: Sequence<Component>, id: UUID) {
+        requests.add(LifecycleRequest.Add(id, components))
     }
 
     fun del(id: UUID) {

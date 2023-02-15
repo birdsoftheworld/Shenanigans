@@ -1,16 +1,8 @@
 package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
-import shenanigans.engine.ecs.Resources
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
-import shenanigans.engine.ecs.resourcesOf
-import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.StateMachine
-import shenanigans.engine.events.control.ControlEvent
-import shenanigans.engine.events.control.ExitEvent
-import shenanigans.engine.events.control.SceneChangeEvent
-import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import kotlin.system.exitProcess

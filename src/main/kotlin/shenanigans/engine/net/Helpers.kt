@@ -1,7 +1,6 @@
 package shenanigans.game.network
 
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryonet.EndPoint
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
@@ -10,6 +9,8 @@ import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import java.util.*
 import kotlin.jvm.internal.ClassReference
+
+annotation class ClientOnly
 
 internal fun registerDefaultClasses(kryo: Kryo) {
     // Components
