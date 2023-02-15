@@ -1,21 +1,29 @@
 package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
+import shenanigans.engine.ecs.EntitiesLifecycle
+import shenanigans.engine.ecs.EntitiesView
 import shenanigans.engine.ecs.Resources
+import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.System
 import shenanigans.engine.events.*
 import shenanigans.engine.events.control.ControlEvent
 import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
+import shenanigans.engine.net.Network
+import shenanigans.engine.net.Server
 import shenanigans.engine.scene.Scene
 
 abstract class Engine(initScene: Scene) {
     protected var scene: Scene = initScene
     protected val engineResources = Resources()
 
-    val physicsEvents: EventQueue = LocalEventQueue()
-    val renderEvents: EventQueue = LocalEventQueue()
-    val networkEvents: EventQueue = LocalEventQueue()
+    val network = Network(Server())
+
+    val physicsEvents = LocalEventQueue()
+    val renderEvents = LocalEventQueue()
+    val networkEvents = network.createEventQueue()
 
     fun run() {
         if (!GLFW.glfwInit()) throw RuntimeException("Failed to initialize GLFW")
@@ -29,8 +37,16 @@ abstract class Engine(initScene: Scene) {
 
     abstract fun exit()
 
+    fun runPhysicsOnce(system: System) {
+        scene.runSystem(
+            System::executePhysics,
+            ResourcesView(engineResources, scene.sceneResources),
+            eventQueuesFor(physicsEvents)
+        )
+    }
+
     protected fun handleControlEvents(events: EventQueue) {
-        events.iterate<ControlEvent>().forEach { e ->
+        events.receive(ControlEvent::class).forEach { e ->
             when (e) {
                 is ExitEvent -> {
                     exit()
@@ -55,7 +71,7 @@ abstract class Engine(initScene: Scene) {
         }
     }
 
-    protected fun eventQueuesFor(own: EventQueue): EventQueues {
+    protected fun <Q : EventQueue?> eventQueuesFor(own: Q): EventQueues<Q> {
         return EventQueues(
             physics = physicsEvents,
             network = networkEvents,

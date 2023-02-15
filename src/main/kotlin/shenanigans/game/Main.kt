@@ -4,7 +4,7 @@ import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.fakeEventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
@@ -23,16 +23,15 @@ import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
-    ClientEngine(testScene()).run()
+    val engine = ClientEngine(testScene())
+
+    engine.runPhysicsOnce(AddTestEntities())
+
+    engine.run()
 }
 
 fun testScene(): Scene {
     val scene = Scene()
-
-    // NOTE: in the future, this will not be the recommended way to populate a scene
-    //       instead, the engine will have a facility for running systems once
-    //       which will be used with a canonical "AddEntities" system
-    scene.entities.runSystem(System::executePhysics, AddTestEntities(), ResourcesView(), fakeEventQueues())
 
     scene.defaultSystems.add(MouseMovementSystem())
     scene.defaultSystems.add(KeyboardMovementSystem())
@@ -50,7 +49,7 @@ class FollowCameraSystem : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -83,7 +82,7 @@ class AddTestEntities : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -139,7 +138,7 @@ class MouseMovementSystem : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -157,7 +156,7 @@ class MouseMovementSystem : System {
             }
         }
 
-        eventQueues.own.iterate<MouseButtonEvent>().forEach { event ->
+        eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
             entities.forEach { entity ->
                 val transform = entity.component<Transform>().get()
                 val mousePosition = resources.get<MouseState>().position()
@@ -188,7 +187,7 @@ class KeyboardMovementSystem : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {

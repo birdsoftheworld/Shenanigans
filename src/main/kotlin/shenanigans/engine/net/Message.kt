@@ -2,7 +2,10 @@ package shenanigans.engine.net
 
 import shenanigans.engine.events.Event
 
-sealed class Message(val delivery: MessageDelivery = MessageDelivery.UnreliableUnordered)
+sealed class Message(
+    val delivery: MessageDelivery = MessageDelivery.UnreliableUnordered,
+    var sender: Int? = null,
+)
 
 enum class MessageDelivery {
     ReliableOrdered,

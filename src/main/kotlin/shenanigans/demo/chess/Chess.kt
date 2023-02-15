@@ -4,7 +4,7 @@ import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.fakeEventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.scene.Scene
@@ -12,15 +12,9 @@ import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 fun main() {
-    ClientEngine(makeScene()).run()
-}
+    val engine = ClientEngine(Scene())
 
-fun makeScene(): Scene {
-    val scene = Scene()
-
-    scene.entities.runSystem(System::executePhysics, AddTiles(), ResourcesView(), fakeEventQueues())
-
-    return scene
+    engine.runPhysicsOnce(AddTiles())
 }
 
 class AddTiles : System {
@@ -28,7 +22,7 @@ class AddTiles : System {
         return emptySet()
     }
 
-    override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues<LocalEventQueue>, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val tileSize = 20f
 
         for (i in 0..7) {

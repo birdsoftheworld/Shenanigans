@@ -69,6 +69,7 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 internal class KryoListener(val cb: (Message) -> Unit) : Listener {
     override fun received(connection: Connection?, `object`: Any?) {
         if (`object` is Message) {
+            `object`.sender = connection?.id
             cb(`object`)
         }
     }

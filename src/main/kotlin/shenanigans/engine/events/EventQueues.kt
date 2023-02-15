@@ -1,17 +1,10 @@
 package shenanigans.engine.events
 
-data class EventQueues(
-    val physics: EventQueue,
-    val network: EventQueue,
-    val render: EventQueue,
-    val own: EventQueue
-)
+import shenanigans.engine.net.NetworkEventQueue
 
-fun fakeEventQueues(): EventQueues {
-    return EventQueues(
-        physics = LocalEventQueue(),
-        network = LocalEventQueue(),
-        render = LocalEventQueue(),
-        own = LocalEventQueue()
-    )
-}
+data class EventQueues<Q : EventQueue?>(
+    val physics: LocalEventQueue,
+    val network: NetworkEventQueue,
+    val render: LocalEventQueue,
+    val own: Q,
+)

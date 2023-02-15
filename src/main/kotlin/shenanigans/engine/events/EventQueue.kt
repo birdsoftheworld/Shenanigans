@@ -1,26 +1,29 @@
 package shenanigans.engine.events
 
-import shenanigans.engine.ecs.Resource
+import kotlin.reflect.KClass
 
 abstract class EventQueue {
-    var receivedEvents: List<Event> = emptyList()
-    var sentEvents: MutableList<Event> = mutableListOf()
+    abstract val received: List<Event>
 
-
-    inline fun <reified T : Event> iterate(): Sequence<T> {
-        return receivedEvents.asSequence().filter((T::class)::isInstance).map { it as T }
+    fun <E : Event> receive(cl: KClass<E>): Sequence<E> {
+        return received.asSequence().filterIsInstance(cl.java)
     }
 
-    fun queueLater(event: Event) {
-        sentEvents.add(event)
-    }
+    abstract fun queueLater(event: Event)
 
     abstract fun finish()
 }
 
 class LocalEventQueue : EventQueue() {
+    override var received: List<Event> = emptyList()
+    private var sent: MutableList<Event> = mutableListOf()
+
+    override fun queueLater(event: Event) {
+        sent.add(event)
+    }
+
     override fun finish() {
-        receivedEvents = sentEvents
-        sentEvents = mutableListOf()
+        received = sent
+        sent = mutableListOf()
     }
 }

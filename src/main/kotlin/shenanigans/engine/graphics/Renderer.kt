@@ -4,6 +4,7 @@ import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.renderer.FontRenderer
 import shenanigans.engine.graphics.api.renderer.ShapeRenderer
@@ -62,7 +63,7 @@ object Renderer {
         TextureManager.discard()
     }
 
-    fun renderGame(window: Window, scene: Scene, engineResources: Resources, eventQueues: EventQueues) {
+    fun renderGame(window: Window, scene: Scene, engineResources: Resources, eventQueues: EventQueues<LocalEventQueue>) {
         val width = window.width
         val height = window.height
         glViewport(0, 0, width, height)
