@@ -2,15 +2,20 @@ package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.Resources
-import shenanigans.engine.events.*
+import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.events.StateMachine
 import shenanigans.engine.events.control.ControlEvent
 import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
+import shenanigans.engine.net.Network
 import shenanigans.engine.scene.Scene
 
 abstract class Engine(initScene: Scene) {
     protected var scene: Scene = initScene
+    protected var network: Network? = null
     protected val engineResources = Resources()
 
     val physicsEvents: EventQueue = LocalEventQueue()

@@ -5,7 +5,6 @@ import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.fakeEventQueues
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
@@ -13,6 +12,7 @@ import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.MouseButtonAction

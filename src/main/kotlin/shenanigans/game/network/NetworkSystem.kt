@@ -52,8 +52,8 @@ class NetworkSystem : System {
             eventQueues.network.queueLater(EntityRegistrationPacket(it, ))
         }
 
-//        eventQueue.queueNewtorked(EntityUpdatePacket(entities.filter {
-//            it.component<Synchronized>().get().connected
-//        }, clientIds))
+        eventQueues.network.queueLater(EntityMovementPacket(entities.filter {
+            it.component<Synchronized>().get().connected
+        }))
     }
 }
