@@ -70,7 +70,7 @@ abstract class Engine(initScene: Scene, val network: Network) {
     }
 
     protected fun <Q : EventQueue?> eventQueuesFor(own: Q): EventQueues<Q> {
-        return EventQueues(
+        return eventQueues(
             physics = physicsEvents,
             network = networkEvents,
             render = renderEvents,
