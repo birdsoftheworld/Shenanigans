@@ -5,15 +5,15 @@ import org.joml.Vector2f
 import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.Event
-import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
-import java.util.UUID
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
 
-class CollisionEvent(val normal: Vector2f, val target: EntityId, val with: EntityId) : Event
+class CollisionEvent(val normal: Vector2f, val target: UUID, val with: UUID) : Event
 
 class CollisionSystem : System {
 
@@ -29,7 +29,6 @@ class CollisionSystem : System {
 
         val collisionPairs = getCollisionPairs(entities)
 
-        val eventQueue = resources.get<EventQueue>()
         collisionPairs.forEach { pair ->
             val collision = testCollision(pair) ?: return@forEach
 
@@ -53,8 +52,8 @@ class CollisionSystem : System {
                 transform2.get().position.add(move)
                 transform2.mutate()
             }
-            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueue)
-            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueue)
+            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
+            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
         }
         return
     }
@@ -105,10 +104,10 @@ private fun maybeEmitEventsFor(
     normal: Vector2f,
     targetEntity: EntityView,
     with: EntityView,
-    eventQueue: EventQueue
+    eventQueues: EventQueues
 ) {
     if (targetEntity.component<Collider>().get().tracked) {
-        eventQueue.queueLater(
+        eventQueues.own.queueLater(
             CollisionEvent(
                 normal, targetEntity.id, with.id
             )

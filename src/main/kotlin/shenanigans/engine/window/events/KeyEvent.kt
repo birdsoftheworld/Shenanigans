@@ -28,7 +28,7 @@ class KeyboardState : Resource, StateMachine {
     private val pressed: MutableMap<Key, Boolean> = mutableMapOf()
     private val justPressed: MutableMap<Key, Boolean> = mutableMapOf()
 
-    override fun transition(queue: EventQueue) {
+    override fun transitionPhysics(queue: EventQueue) {
         justPressed.clear()
         queue.iterate<KeyEvent>().forEach { event ->
             val press = event.action == KeyAction.PRESS

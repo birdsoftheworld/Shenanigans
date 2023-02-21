@@ -14,7 +14,7 @@ class CameraResource(camera: Camera? = null) : Resource, StateMachine {
         deferredValue = camera
     }
 
-    override fun transition(queue: EventQueue) {
+    override fun transitionPhysics(queue: EventQueue) {
         camera = deferredValue
     }
 }

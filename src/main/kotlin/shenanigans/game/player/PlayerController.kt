@@ -2,7 +2,7 @@ package shenanigans.game.player
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
-import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
@@ -72,7 +72,12 @@ class PlayerController : System {
         return setOf(Player::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
 
@@ -86,7 +91,7 @@ class PlayerController : System {
             player.wall = WallStatus.Off
             player.onCeiling = false
 
-            resources.get<EventQueue>().iterate<CollisionEvent>().forEach { event ->
+            eventQueues.own.iterate<CollisionEvent>().forEach { event ->
                 if (entity.id == event.target) {
                     if (event.normal.y < 0) {
                         player.onGround = true

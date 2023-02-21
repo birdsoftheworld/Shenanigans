@@ -2,7 +2,6 @@ package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.Resources
-import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.StateMachine
@@ -50,10 +49,12 @@ abstract class Engine(initScene: Scene) {
         }
     }
 
-    protected fun transitionStateMachineResources(events: EventQueue) {
+    protected fun transitionStateMachineResources(events: EventQueues) {
         engineResources.resources.forEach { (_, value) ->
             if (value is StateMachine) {
-                value.transition(events)
+                value.transitionPhysics(events.physics)
+                value.transitionRender(events.render)
+                value.transitionNetwork(events.network)
             }
         }
     }

@@ -3,10 +3,8 @@ package shenanigans.game
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
-import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.emptyEventQueues
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
@@ -81,8 +79,6 @@ class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
         this.grabbed = false
     }
 }
-
-data class KeyboardPlayer(val speed: Float) : Component
 
 class AddTestEntities : System {
     override fun query(): Iterable<KClass<out Component>> {
@@ -189,15 +185,20 @@ class AddTestEntities : System {
 }
 
 
-class InsertEntitiesOngoing : System{
+class InsertEntitiesOngoing : System {
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Shape::class,Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
         val mousePos = resources.get<MouseState>().position()
         val keyboard = resources.get<KeyboardState>()
-        val ShapeI = Shape(
+        val shape = Shape(
             arrayOf(
                 Vector2f(0f, 0f),
                 Vector2f(0f, 50f),
@@ -205,15 +206,15 @@ class InsertEntitiesOngoing : System{
                 Vector2f(50f, 0f)
             ), Color(.5f, .5f, .5f)
         )
-        resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
+        eventQueues.own.iterate<MouseButtonEvent>().forEach { event ->
             if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.PRESS) {
                 lifecycle.add(
                     sequenceOf(
                         Transform(
                             Vector2f(round((mousePos.x()-25f)/50)*50, round((mousePos.y()-25f)/50)*50)
                         ),
-                        ShapeI,
-                        Collider(ShapeI, false),
+                        shape,
+                        Collider(shape, false),
                         MousePlayer(false, Vector2f(0f, 0f)),
                     )
                 )
