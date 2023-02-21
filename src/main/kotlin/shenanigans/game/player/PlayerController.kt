@@ -9,10 +9,9 @@ import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sign
-import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 
@@ -23,32 +22,31 @@ enum class WallStatus(val sign: Float) {
 }
 
 data class PlayerProperties(
-    val maxAcceleration: Float = .50f,
+    val maxAcceleration: Float = .5f,
     val maxAirAcceleration: Float = .75f * maxAcceleration,
-    val maxDeceleration: Float = 15f,
+    val maxDeceleration: Float = .6f,
     val maxAirDeceleration: Float = .1f,
-    val maxTurnSpeed: Float = 20f,
+    val maxTurnSpeed: Float = 1f,
     val maxAirTurnSpeed: Float = .75f,
 
     val maxSpeed: Float = .1f,
 
-    val jumpHeight: Float = .03f,
-    val timeToJumpApex: Float = .35f,
+    val jumpSpeed: Float = .2f,
 
-    val downwardMovementMultiplier: Float = 1.325f,
+    val downwardMovementMultiplier: Float = 1f,
 
     val wallJumpDistance: Float = .1f,
-    val wallJumpHeight: Float = .0275f,
+    val wallJumpSpeed: Float = .175f,
     val wallJumpSlideSpeed: Float = .05f,
 
     val coyoteTime: Float = .1f,
     val wallCoyoteTime: Float = .085f,
     val jumpBufferTime: Float = .2f,
 
-    val jumpCutOff: Float = 1.75f,
+    val jumpCutoff: Float = .75f,
 
-    val gravity: Float = .5f,
     val terminalVelocity: Float = .3f,
+    val gravity: Float = .5f,
 )
 
 enum class JumpType {
@@ -70,14 +68,13 @@ data class Player(
 ) : Component
 
 class PlayerController : System {
-
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Player::class, Transform::class)
     }
 
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val keyboard = resources.get<KeyboardState>()
-        val deltaTime = resources.get<DeltaTime>().deltaTime
+        val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
 
         entities.forEach { entity ->
             val player = entity.component<Player>().get()
@@ -156,32 +153,21 @@ class PlayerController : System {
                 }
             } else {
                 deceleration
-            } * deltaTime.toFloat()
+            } * deltaTimeF
 
             velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
-            val gravityMultiplier = if (velocity.y < 0f) {
-                if (keyboard.isPressed(Key.W) && player.currentJump != JumpType.None) {
-                    1f
-                } else {
-                    properties.jumpCutOff
-                }
-            } else if (velocity.y > 0f) {
-                properties.downwardMovementMultiplier
-            } else {
-                1f
-            }
-            val adjustedGravity = (-2f * properties.jumpHeight) / (properties.timeToJumpApex * properties.timeToJumpApex)
-            val gravityScale = (adjustedGravity / -properties.gravity) * gravityMultiplier
-
             var jumped = false
             val pressedJump = keyboard.isJustPressed(Key.W)
-            val bufferedJump = player.jumpBufferTime > 0f && keyboard.isPressed(Key.W)
+            val holdingJump = keyboard.isPressed(Key.W)
+            val bufferedJump = player.jumpBufferTime > 0f && holdingJump
+
+            val gravityScale = player.getGravity(holdingJump)
 
             val jumpType = player.getJumpType()
             if ((pressedJump || bufferedJump) && jumpType != JumpType.None) {
                 jumped = true
-                player.jump(jumpType, gravityScale)
+                player.jump(jumpType)
             }
             if (pressedJump && !jumped) {
                 player.jumpBufferTime = properties.jumpBufferTime
@@ -195,13 +181,13 @@ class PlayerController : System {
             }
 
             if (!player.onGround) {
-                player.coyoteTime = (player.coyoteTime - deltaTime.toFloat()).coerceAtLeast(0f)
-                player.wallCoyoteTime = (player.wallCoyoteTime - deltaTime.toFloat()).coerceAtLeast(0f)
+                player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
+                player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
             }
-            player.jumpBufferTime = (player.jumpBufferTime - deltaTime.toFloat()).coerceAtLeast(0f)
+            player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
-            if (!player.onGround) {
-                velocity.y += properties.gravity * gravityScale * deltaTime.toFloat()
+            if (!player.onGround && !jumped) {
+                velocity.y += gravityScale * deltaTimeF
             }
 
             if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
@@ -215,28 +201,41 @@ class PlayerController : System {
         }
     }
 
-    private fun Player.jump(jumpType: JumpType, gravityScale: Float) {
+    private fun Player.getGravity(holdingJump: Boolean): Float {
+        val gravityMultiplier = if (velocity.y < 0f) {
+            if (holdingJump && this.currentJump != JumpType.None) {
+                1f
+            } else {
+                1f + properties.jumpCutoff
+            }
+        } else if (velocity.y > 0f) {
+            properties.downwardMovementMultiplier
+        } else {
+            1f
+        }
+        return properties.gravity * gravityMultiplier
+    }
+
+    private fun Player.jump(jumpType: JumpType) {
         this.currentJump = jumpType
 
-        val targetHeight = if (jumpType == JumpType.Wall) {
+        val targetSpeed = if (jumpType == JumpType.Wall) {
             if (this.wall == WallStatus.Right) {
                 velocity.x -= properties.wallJumpDistance
             } else if (this.wall == WallStatus.Left) {
                 velocity.x += properties.wallJumpDistance
             }
-            properties.wallJumpHeight
+            properties.wallJumpSpeed
         } else {
-            properties.jumpHeight
+            properties.jumpSpeed
         }
 
-        var jumpSpeed = sqrt(2f * properties.gravity * gravityScale * targetHeight)
+        var jumpSpeed = -targetSpeed
         if (velocity.y < 0f) {
-            jumpSpeed = max(jumpSpeed + velocity.y, 0f)
-        } else if (velocity.y > 0f) {
-            jumpSpeed += abs(velocity.y)
+            jumpSpeed = min(jumpSpeed, velocity.y)
         }
 
-        velocity.y -= jumpSpeed
+        velocity.y = jumpSpeed
 
         this.jumpBufferTime = 0f
         this.coyoteTime = 0f
