@@ -36,14 +36,14 @@ class NetworkSystem : System {
         }
 
         eventQueues.own.receive(EntityRegistrationPacket::class).forEach registration@{ packet ->
-            if (entities[packet.entity.id] != null) {
-                entities[packet.entity.id]!!.component<Synchronized>().get().connected = true
+            if (entities[packet.id] != null) {
+                entities[packet.id]!!.component<Synchronized>().get().connected = true
                 Logger.log("Network System", "WHaHOOO")
                 return@registration
             }
 
             lifecycle.addWithID(
-                packet.entity.components.values.map { it.component }.asSequence(), packet.entity.id
+                packet.entity.values.asSequence(), packet.id
             )
 
             Logger.log("Network System", "WahoOO!")

@@ -37,6 +37,10 @@ class NetworkEventQueue internal constructor(val network: Network) : EventQueue(
         network.impl.sendMessage(EventMessage(event))
     }
 
+    fun queueNetwork(event: Event, delivery: MessageDelivery) {
+        network.impl.sendMessage(EventMessage(event, delivery))
+    }
+
     override fun finish() {
         network.receiveLock.withLock {
             receivedMessages =

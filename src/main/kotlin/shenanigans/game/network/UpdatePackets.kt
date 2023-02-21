@@ -1,25 +1,20 @@
 package shenanigans.game.network
 
+import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.EntitiesView
 import shenanigans.engine.ecs.EntityView
 import shenanigans.engine.events.Event
 import shenanigans.engine.util.Transform
 import java.util.*
+import kotlin.reflect.KClass
 
-class EntityMovementPacket : Event {
-    val entities: MutableMap<UUID, Transform> = mutableMapOf()
+class EntityMovementPacket(val entities: Map<UUID, Transform>): Event {
+    constructor (entities: Sequence<EntityView>) : this(entities.map { it.id to it.component<Transform>().get()}.toMap())
 
-    constructor (entities: Sequence<EntityView>) {
-        entities.forEach { entity ->
-            this.entities[entity.id] = entity.component<Transform>().get()
-        }
-    }
-
-    constructor (entities: EntitiesView) {
-        entities.forEach { entity ->
-            this.entities[entity.id] = entity.component<Transform>().get()
-        }
-    }
+    constructor (entities: EntitiesView) : this(entities.map { it.id to it.component<Transform>().get()}.toMap())
 }
 
-class EntityRegistrationPacket(val entity: EntityView) : Event
+class EntityRegistrationPacket(val id: UUID, val entity: Map<KClass<out Component>, Component>) : Event {
+    constructor(entityView: EntityView) :
+            this(entityView.id, entityView.components.mapValues { it.value.component })
+}

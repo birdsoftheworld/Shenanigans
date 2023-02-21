@@ -41,6 +41,8 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
     constructor() : this(KryoClient()) {
         registerDefaultClasses(kryoClient.kryo)
 
+        kryoClient.start()
+
         try {
             val addresses = kryoClient.discoverHosts(40506, 500)
             if (addresses.size == 0) {

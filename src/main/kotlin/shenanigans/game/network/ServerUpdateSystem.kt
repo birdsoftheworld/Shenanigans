@@ -49,7 +49,7 @@ class ServerRegistrationSystem : System {
 
         eventQueues.own.receive(EntityRegistrationPacket::class).forEach {entityRegistrationPacket ->
             lifecycle.add(
-                entityRegistrationPacket.entity.components.values.map{it.component}.asSequence()
+                entityRegistrationPacket.entity.values.asSequence()
             )
             eventQueues.network.queueLater(entityRegistrationPacket)
         }

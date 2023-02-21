@@ -5,6 +5,10 @@ import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
+import shenanigans.engine.net.EventMessage
+import shenanigans.engine.net.MessageDelivery
+import shenanigans.engine.net.events.ConnectionEvent
+import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import java.util.*
@@ -20,6 +24,12 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
 
+    // Events
+    kryo.register(EventMessage::class.java).setInstantiator { EventMessage(ConnectionEvent(null, ConnectionEventType.Connect)) }
+    kryo.register(MessageDelivery::class.java)
+    kryo.register(EntityMovementPacket::class.java).setInstantiator { EntityMovementPacket(mapOf()) }
+    kryo.register(EntityRegistrationPacket::class.java).setInstantiator { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }
+
     // Utils
     kryo.register(Map::class.java)
     kryo.register(ArrayList::class.java)
@@ -31,4 +41,5 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     kryo.register(ClassReference::class.java).setInstantiator { ClassReference(Void::class.java) }
     kryo.register(Class::class.java)
     kryo.register(Color::class.java).setInstantiator { Color(0f, 0f, 0f) }
+    kryo.register(emptyMap<Unit, Unit>()::class.java)
 }
