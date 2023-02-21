@@ -2,6 +2,8 @@ package shenanigans.engine.network
 
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.util.Transform
 import shenanigans.game.network.EntityMovementPacket
@@ -16,11 +18,11 @@ class ServerUpdateSystem : System {
 
     override fun executeNetwork(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<NetworkEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
-        eventQueues.network.iterate<EntityMovementPacket>().forEach { packet ->
+        eventQueues.own.receive(EntityMovementPacket::class).forEach { packet ->
             packet.entities.forEach() { entity ->
                 if(entities[entity.key]?.componentOpt<Transform>() == null) {
                     println("entity does not have a transform!")
@@ -40,12 +42,12 @@ class ServerRegistrationSystem : System {
 
     override fun executeNetwork(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<NetworkEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
 
-        eventQueues.network.iterate<EntityRegistrationPacket>().forEach {entityRegistrationPacket ->
+        eventQueues.own.receive(EntityRegistrationPacket::class).forEach {entityRegistrationPacket ->
             lifecycle.add(
                 entityRegistrationPacket.entity.components.values.map{it.component}.asSequence()
             )
@@ -60,12 +62,12 @@ class FullEntitySyncSystem : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
 
-        eventQueues.network.iterate<ConnectionEvent>().forEach { connectionEvent ->
+        eventQueues.own.receive(ConnectionEvent::class).forEach { connectionEvent ->
             val connection = connectionEvent.connection
             entities.forEach {
                 val packet = EntityRegistrationPacket(it)

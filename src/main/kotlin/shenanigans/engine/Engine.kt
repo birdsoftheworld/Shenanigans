@@ -1,25 +1,23 @@
 package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
-import shenanigans.engine.ecs.EntitiesLifecycle
-import shenanigans.engine.ecs.EntitiesView
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
-import shenanigans.engine.events.*
+import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.events.StateMachine
 import shenanigans.engine.events.control.ControlEvent
 import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.net.Network
-import shenanigans.engine.net.Server
 import shenanigans.engine.scene.Scene
 
-abstract class Engine(initScene: Scene) {
+abstract class Engine(initScene: Scene, val network: Network) {
     protected var scene: Scene = initScene
     protected val engineResources = Resources()
-
-    val network = Network(Server())
 
     val physicsEvents = LocalEventQueue()
     val renderEvents = LocalEventQueue()
@@ -42,7 +40,7 @@ abstract class Engine(initScene: Scene) {
             System::executePhysics,
             ResourcesView(engineResources, scene.sceneResources),
             eventQueuesFor(physicsEvents)
-        )
+        )(system)
     }
 
     protected fun handleControlEvents(events: EventQueue) {
