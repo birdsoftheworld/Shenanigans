@@ -1,35 +1,39 @@
 package shenanigans.engine.ecs
 
+import shenanigans.engine.events.EventQueues
+import java.util.UUID
 import kotlin.reflect.KClass
 
 class Entities {
-    private val entities: MutableList<StoredEntity> = arrayListOf()
-    private var nextId: Int = 0
+    internal val entities: HashMap<UUID, StoredComponents> = hashMapOf()
 
-    fun runSystem(system: System, resourcesView: ResourcesView) {
+    fun <S : System> runSystem(
+        execute: S.(ResourcesView, EventQueues, EntitiesView, EntitiesLifecycle) -> Unit,
+        system: S,
+        resourcesView: ResourcesView,
+        eventQueues: EventQueues,
+    ) {
         val query = system.query()
 
-        val lifecycle = EntitiesLifecycle(nextId)
-        system.execute(
+        val lifecycle = EntitiesLifecycle()
+        execute(
+            system,
             resourcesView,
-            EntitiesView(query, entities),
+            eventQueues,
+            EntitiesView(this, query),
             lifecycle
         )
-        lifecycle.finish(entities)
-        nextId = lifecycle.nextId
+        lifecycle.finish(this)
     }
 }
 
-typealias StoredEntity = Pair<EntityId, Map<KClass<out Component>, StoredComponent>>
-
-@JvmInline
-value class EntityId(val number: Int)
+internal typealias StoredComponents = Map<KClass<out Component>, StoredComponent>
 
 data class StoredComponent(val component: Component, var version: Int = 0)
 
 class EntityView internal constructor(
-    val id: EntityId,
-    @PublishedApi internal val components: Map<KClass<out Component>, StoredComponent>,
+    val id: UUID,
+    @PublishedApi internal val components: StoredComponents,
 ) {
     inline fun <reified T : Component> component(): ComponentView<T> {
         return componentOpt()!!
@@ -69,72 +73,50 @@ class ComponentView<T : Component>(private val stored: StoredComponent) {
 }
 
 class EntitiesView internal constructor(
+    private val entities: Entities,
     private val query: Iterable<KClass<out Component>>,
-    private val entities: List<StoredEntity>,
 ) : Sequence<EntityView> {
-    fun get(id: EntityId): EntityView? {
-        val idx = entities.binarySearch { (sid, _) -> sid.number - id.number }
-        val (foundId, components) = entities[idx]
-
-        return if (foundId == id) {
-            EntityView(foundId, components)
-        } else {
-            null
-        }
+    operator fun get(id: UUID): EntityView? {
+        return entities.entities[id]?.let { EntityView(id, it) }
     }
 
     override fun iterator(): Iterator<EntityView> {
-        return entities.filter { (_, components) ->
+        return entities.entities.filter { (_, components) ->
             components.keys.containsAll(query as Collection<KClass<out Component>>)
         }.map { (id, components) -> EntityView(id, components) }.iterator()
     }
 }
 
-class EntitiesLifecycle internal constructor(var nextId: Int) {
+class EntitiesLifecycle internal constructor() {
     private val requests: MutableList<LifecycleRequest> = mutableListOf()
 
     sealed class LifecycleRequest {
-        data class Add(val id: EntityId, val components: Sequence<Component>) : LifecycleRequest()
-        data class Del(val id: EntityId) : LifecycleRequest()
+        data class Add(val id: UUID, val components: Sequence<Component>) : LifecycleRequest()
+        data class Del(val id: UUID) : LifecycleRequest()
     }
 
-    fun add(components: Sequence<Component>): EntityId {
-        val id = genId()
+    fun add(components: Sequence<Component>): UUID {
+        val id = UUID.randomUUID()
         requests.add(LifecycleRequest.Add(id, components))
         return id
     }
 
-    fun del(id: EntityId) {
+    fun del(id: UUID) {
         requests.add(LifecycleRequest.Del(id))
     }
 
-    internal fun finish(entities: MutableList<StoredEntity>) {
+    internal fun finish(entities: Entities) {
         requests.forEach { req ->
             when (req) {
                 is LifecycleRequest.Add -> {
-                    entities.add(
-                        Pair(
-                            req.id,
-                            req.components.map { StoredComponent(it) }.associateBy { it.component::class })
-                    )
+                    entities.entities[req.id] =
+                        req.components.map { StoredComponent(it) }.associateBy { it.component::class }
                 }
 
                 is LifecycleRequest.Del -> {
-                    val idx = entities.binarySearch { (id, _) -> id.number - req.id.number }
-
-                    if (entities[idx].first == req.id) {
-                        entities.removeAt(idx)
-                    } else {
-                        throw IllegalStateException("Entity ${req.id} not found")
-                    }
+                    entities.entities.remove(req.id) ?: throw IllegalStateException("Entity ${req.id} not found")
                 }
             }
         }
-    }
-
-    private fun genId(): EntityId {
-        val id = nextId
-        nextId++
-        return EntityId(id)
     }
 }

@@ -3,15 +3,15 @@ package shenanigans.engine.graphics.api.system
 import org.joml.Vector2f
 import org.joml.Vector2i
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.graphics.TextureOptions
-import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.window.WindowResource
 import kotlin.reflect.KClass
 
-class DrawBackgroundSystem : RenderSystem {
+class DrawBackgroundSystem : System {
     val background = TextureManager.createTexture("/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
     val imageSize = Vector2i(400, 400)
 
@@ -19,7 +19,7 @@ class DrawBackgroundSystem : RenderSystem {
         return emptySet()
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executeRender(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
         val size = resources.get<WindowResource>().window.size
         val camera = resources.get<CameraResource>().camera!!

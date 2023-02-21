@@ -8,6 +8,7 @@ import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
+import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -16,7 +17,7 @@ class CollisionEvent(val normal: Vector2f, val target: EntityId, val with: Entit
 
 class CollisionSystem : System {
 
-    private val radii = hashMapOf<EntityId, Pair<Float, Int>>()
+    private val radii = hashMapOf<UUID, Pair<Float, Int>>()
 
     private val transformMatrix = Matrix4f()
 
@@ -24,7 +25,8 @@ class CollisionSystem : System {
         return listOf(Collider::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+
         val collisionPairs = getCollisionPairs(entities)
 
         val eventQueue = resources.get<EventQueue>()

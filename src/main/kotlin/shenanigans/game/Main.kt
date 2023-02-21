@@ -4,6 +4,9 @@ import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.emptyEventQueues
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
@@ -36,7 +39,7 @@ fun testScene(): Scene {
     // NOTE: in the future, this will not be the recommended way to populate a scene
     //       instead, the engine will have a facility for running systems once
     //       which will be used with a canonical "AddEntities" system
-    scene.runSystems(ResourcesView(), listOf(AddTestEntities()))
+    scene.entities.runSystem(System::executePhysics, AddTestEntities(), ResourcesView(), emptyEventQueues())
 
     scene.defaultSystems.add(MouseMovementSystem())
     scene.defaultSystems.add(InsertEntitiesOngoing())
@@ -53,24 +56,45 @@ class FollowCameraSystem : System {
         return setOf(Player::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
         val first = entities.first()
         val transform = first.component<Transform>().get()
         val camera = resources.get<CameraResource>().camera!!
-        camera.reset().translate(transform.position.x - camera.screenWidth / 2 + 50, transform.position.y - camera.screenHeight / 2 + 50)
+        camera.reset().translate(
+            transform.position.x - camera.screenWidth / 2 + 50,
+            transform.position.y - camera.screenHeight / 2 + 50
+        )
     }
 }
 
-class MousePlayer(var grabbed : Boolean, var dragOffset : Vector2f) : Component{
-    fun grab(){this.grabbed=true}
-    fun drop(){this.grabbed=false}
+class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
+    fun grab() {
+        this.grabbed = true
+    }
+
+    fun drop() {
+        this.grabbed = false
+    }
 }
+
+data class KeyboardPlayer(val speed: Float) : Component
+
 class AddTestEntities : System {
     override fun query(): Iterable<KClass<out Component>> {
         return emptySet()
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
         val shape = Shape(
             arrayOf(
                 Vector2f(0f, 0f),
@@ -88,7 +112,7 @@ class AddTestEntities : System {
                 ),
                 shape,
                 Collider(shape, true),
-                MousePlayer(false, Vector2f(0f,0f)),
+                MousePlayer(false, Vector2f(0f, 0f)),
             )
         )
 
@@ -202,33 +226,44 @@ class MouseMovementSystem : System {
         return setOf(MousePlayer::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
         entities.forEach { entity ->
             val mousePlayer = entity.component<MousePlayer>().get()
-            if(mousePlayer.grabbed){
+            if (mousePlayer.grabbed) {
                 val transform = entity.component<Transform>().get()
                 val position = resources.get<MouseState>().position()
                 val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(position))
-                transform.position.set(transformedPosition.x() + mousePlayer.dragOffset.x(), transformedPosition.y() + mousePlayer.dragOffset.y())
+                transform.position.set(
+                    transformedPosition.x() + mousePlayer.dragOffset.x(),
+                    transformedPosition.y() + mousePlayer.dragOffset.y()
+                )
                 entity.component<Transform>().mutate()
             }
         }
 
-        resources.get<EventQueue>().iterate<MouseButtonEvent>().forEach { event ->
+        eventQueues.own.iterate<MouseButtonEvent>().forEach { event ->
             entities.forEach { entity ->
                 val transform = entity.component<Transform>().get()
                 val mousePosition = resources.get<MouseState>().position()
-                val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(mousePosition))
+                val transformedPosition =
+                    resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(mousePosition))
                 val mousePlayer = entity.component<MousePlayer>().get()
-                if(event.action == MouseButtonAction.PRESS && entity.component<Shape>().get().isPointInside(transformedPosition, transform)){
+                if (event.action == MouseButtonAction.PRESS && entity.component<Shape>().get()
+                        .isPointInside(transformedPosition, transform)
+                ) {
                     mousePlayer.dragOffset.x = transform.position.x - transformedPosition.x()
                     mousePlayer.dragOffset.y = transform.position.y - transformedPosition.y()
                     mousePlayer.grab()
                 }
-                if(event.action == MouseButtonAction.RELEASE){
+                if (event.action == MouseButtonAction.RELEASE) {
                     mousePlayer.drop()
-                    transform.position.x = round(transform.position.x/50)*50
-                    transform.position.y = round(transform.position.y/50)*50
+                    transform.position.x = round(transform.position.x / 50) * 50
+                    transform.position.y = round(transform.position.y / 50) * 50
                 }
             }
         }

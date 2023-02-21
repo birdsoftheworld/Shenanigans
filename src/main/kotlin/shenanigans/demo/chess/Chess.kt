@@ -3,6 +3,8 @@ package shenanigans.demo.chess
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.emptyEventQueues
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.scene.Scene
@@ -16,7 +18,7 @@ fun main() {
 fun makeScene(): Scene {
     val scene = Scene()
 
-    scene.runSystems(ResourcesView(), listOf(AddTiles()))
+    scene.entities.runSystem(System::executePhysics, AddTiles(), ResourcesView(), emptyEventQueues())
 
     return scene
 }
@@ -26,7 +28,7 @@ class AddTiles : System {
         return emptySet()
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val tileSize = 20f
 
         for (i in 0..7) {

@@ -46,3 +46,9 @@ class Resources {
         resources[T::class] = res
     }
 }
+
+fun resourcesOf(vararg resources: Resource): Resources {
+    val res = Resources()
+    resources.forEach { res.resources[it::class] = it }
+    return res
+}

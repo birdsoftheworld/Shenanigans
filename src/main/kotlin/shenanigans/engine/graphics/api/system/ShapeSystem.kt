@@ -1,8 +1,8 @@
 package shenanigans.engine.graphics.api.system
 
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.util.camera.CameraResource
-import shenanigans.engine.graphics.api.RenderSystem
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.util.Transform
@@ -11,12 +11,12 @@ import kotlin.reflect.KClass
 /**
  * draws each entity that has a `Shape` and `Transform` component
  */
-class ShapeSystem : RenderSystem {
+class ShapeSystem : System {
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(Shape::class, Transform::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executeRender(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val renderer = resources.get<ShapeRendererResource>().shapeRenderer
         val camera = resources.get<CameraResource>().camera
         renderer.projection = camera!!.computeProjectionMatrix()

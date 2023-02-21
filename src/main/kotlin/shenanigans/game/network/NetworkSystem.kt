@@ -1,6 +1,7 @@
 package shenanigans.game.network
 
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.EventQueues
 import kotlin.reflect.KClass
 
 class Sendable : Component {}
@@ -12,7 +13,7 @@ class NetworkSystem : System{
         return setOf(Sendable::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         for (entity in entities) {
             client.sendEntity(entity)
         }

@@ -1,7 +1,10 @@
 package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
+import shenanigans.engine.ecs.Resources
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.System
+import shenanigans.engine.ecs.resourcesOf
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.events.control.ControlEvent
@@ -10,54 +13,53 @@ import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
+import kotlin.system.exitProcess
 
-class HeadlessEngine(initScene: Scene) : Engine(initScene){
-    var running = true
-
+class HeadlessEngine(initScene: Scene) : Engine(initScene) {
     override fun init() {
     }
 
     override fun loop() {
-
         var previousTime = GLFW.glfwGetTime()
 
-        while (running) {
-            // shhhhh just pretend this is atomic
-            val events = unprocessedEvents
-            unprocessedEvents = mutableListOf()
-            val eventQueue = EventQueue(events, ::queueEvent)
+        while (true) {
+            handleControlEvents(physicsEvents)
+            handleControlEvents(networkEvents)
 
-            val exit = eventQueue.iterate<ControlEvent>().any { e ->
-                when (e) {
-                    is ExitEvent -> true
-                    is SceneChangeEvent -> {
-                        scene = e.scene
-                        false
-                    }
-                    is UpdateDefaultSystemsEvent -> {
-                        e.update(scene.defaultSystems)
-                        false
-                    }
-                }
-            }
-            if (exit) {
-                break
-            }
-
-            engineResources.set(eventQueue)
-
-            engineResources.resources.forEach { (_, value) ->
-                if (value is StateMachine) {
-                    value.transition(eventQueue)
-                }
-            }
+            transitionStateMachineResources(physicsEvents)
+            transitionStateMachineResources(networkEvents)
 
             val currentTime = GLFW.glfwGetTime()
             engineResources.set(DeltaTime(currentTime - previousTime))
             previousTime = currentTime
 
-            scene.runSystems(ResourcesView(scene.sceneResources, engineResources))
+            val physicsResources = ResourcesView(scene.sceneResources, engineResources)
+            scene.defaultSystems.forEach(
+                scene.runSystem(
+                    System::executePhysics,
+                    physicsResources,
+                    eventQueuesFor(physicsEvents)
+                )
+            )
+
+            val networkResources = ResourcesView(scene.sceneResources, engineResources)
+            scene.defaultSystems.forEach(
+                scene.runSystem(
+                    System::executeNetwork,
+                    networkResources,
+                    eventQueuesFor(networkEvents)
+                )
+            )
+
+            physicsEvents.finish()
+            networkEvents.finish()
+            renderEvents.finish()
         }
     }
 
+    override fun exit() {
+        GLFW.glfwTerminate()
+
+        exitProcess(0)
+    }
 }

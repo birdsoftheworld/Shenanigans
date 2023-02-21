@@ -2,18 +2,18 @@ package shenanigans.engine.ui
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
-import shenanigans.engine.graphics.api.RenderSystem
+import shenanigans.engine.events.EventQueues
 import shenanigans.engine.ui.elements.Box
 import shenanigans.engine.util.toFloat
 import shenanigans.engine.window.WindowResource
 import kotlin.reflect.KClass
 
-class UISystem : RenderSystem {
+class UISystem : System {
     override fun query(): Iterable<KClass<out Component>> {
         return setOf(UIComponent::class)
     }
 
-    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executeRender(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val window = resources.get<WindowResource>().window
 
         entities.forEach {
