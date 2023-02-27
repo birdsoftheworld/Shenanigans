@@ -2,49 +2,67 @@ package shenanigans.game.player
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
-import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.moveTowards
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
+import shenanigans.game.ScaryBlock
+import shenanigans.game.SlipperyBlock
 import shenanigans.game.SpawnPoint
+import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.sign
+import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 
-enum class WallStatus{
-    Off,
-    Left,
-    Right
+enum class WallStatus(val sign: Float) {
+    Off(0f),
+    Left(-1f),
+    Right(1f)
 }
+
+data class PlayerProperties(
+    val maxAcceleration: Float = .50f,
+    val maxAirAcceleration: Float = .75f * maxAcceleration,
+    val maxDeceleration: Float = 15f,
+    val maxAirDeceleration: Float = .1f,
+    val maxTurnSpeed: Float = 20f,
+    val maxAirTurnSpeed: Float = .5f,
+
+    val maxSpeed: Float = .1f,
+
+    val jumpHeight: Float = .03f,
+    val timeToJumpApex: Float = .35f,
+
+    val downwardMovementMultiplier: Float = 1.275f,
+
+    val wallJumpDistance: Float = .125f,
+    val wallJumpHeight: Float = .025f,
+    val wallJumpSlideSpeed: Float = 0.05f,
+
+    val coyoteTime: Float = .1f,
+    val jumpBufferTime: Float = .2f,
+
+    val gravity: Float = .5f,
+    val terminalVelocity: Float = 50f,
+)
 
 data class Player(
-  val groundAccel: Float = .003f,
-  val airAccelRatio: Float = .04f,
-  val xMax : Float = .07f,
-  val jumpSpeed: Float = .15f,
-  val friction : Float = 15f,
-  val drag : Float = 3f,
-  val turnSpeed: Float = 20f,
-  var airTurnSpeed : Float = 5f,
-  var onGround : Boolean = false,
-  var onRoof : Boolean = false,
-  var wall : WallStatus = WallStatus.Off
-) : Component{
-}
+    val properties: PlayerProperties,
+    val velocity: Vector2f = Vector2f(),
+    var onGround: Boolean = false,
+    var wall: WallStatus = WallStatus.Off,
+    var onCeiling: Boolean = false,
+    var coyoteTime: Float = 0f,
+    var jumpBufferTime: Float = 0f
+) : Component
 
-class PlayerOnWallLeftEvent : Event
-class PlayerOnWallRightEvent : Event
-class PlayerOnGroundEvent : Event
-class PlayerOnRoofEvent : Event
-
-class ScaryEvent : Event
-class StickyEvent : Event
-class SlipperyEvent : Event
 class PlayerController : System {
-    val gravity : Float = .5f
-    var velocity = Vector2f()
+
     override fun query(): Iterable<KClass<out Component>> {
         return setOf()
     }
@@ -52,160 +70,174 @@ class PlayerController : System {
     override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTime = resources.get<DeltaTime>().deltaTime
-        val L = WallStatus.Left
-        val R = WallStatus.Right
-        val O = WallStatus.Off
-        val eventQueue = resources.get<EventQueue>()
 
         entities.forEach { entity ->
-            if(entity.componentOpt<Player>() != null) {
-                val player = entity.component<Player>()
-                eventQueue.iterate<PlayerOnGroundEvent>().forEach { event ->
-                    player.get().onGround = true
-                    if (velocity.y > 0f) {
-                        velocity.y = 0f
-                    }
-                }
-                eventQueue.iterate<PlayerOnWallRightEvent>().forEach { event ->
-                    player.get().wall = R
-                }
-                eventQueue.iterate<PlayerOnWallLeftEvent>().forEach { event ->
-                    player.get().wall = L
-                }
-                eventQueue.iterate<PlayerOnRoofEvent>().forEach { event ->
-                    player.get().onRoof = true
-                }
 
+            if (entity.componentOpt<Player>() != null) {
+
+                val player = entity.component<Player>().get()
                 val transform = entity.component<Transform>()
-                val pos = transform.get().position
-                val xMax = player.get().xMax
-                val drag = player.get().drag
-                val friction = player.get().friction
-                val turnSpeed = player.get().turnSpeed
-                val airTurnSpeed = player.get().airTurnSpeed
-                var desiredVelocity = Vector2f(0f, 0f)
-                var deccel = 1f
-                var turnAccel = 0f
-                var maxSpeedChange = 0f
-                var wantToJump = false
-                val jumpSpeed = player.get().jumpSpeed
-                var onGround = player.get().onGround
-                var wall = player.get().wall
-                var onRoof = player.get().onRoof
-                var xAccel = player.get().groundAccel
-                if (!onGround) {
-                    xAccel *= player.get().airAccelRatio
-                }
-                eventQueue.iterate<ScaryEvent>().forEach { event ->
-                    entities.forEach { entity ->
-                        if (entity.componentOpt<SpawnPoint>() != null) {
-                            val resetPos = entity.component<Transform>().get().position
-                            velocity.mul(0f,0f)
-                            pos.add(Vector2f(resetPos.x - pos.x, resetPos.y - pos.y))
+
+                val velocity = player.velocity
+
+                player.onGround = false
+                player.wall = WallStatus.Off
+                player.onCeiling = false
+
+                resources.get<EventQueue>().iterate<CollisionEvent>().forEach { event ->
+                    if (entity.id == event.target) {
+                        if (event.normal.y < 0) {
+                            player.onGround = true
+                            velocity.y = velocity.y.coerceAtMost(0f)
+                        } else if (event.normal.y > 0) {
+                            player.onCeiling = true
+                            velocity.y = max(0f, velocity.y)
+                        }
+                        if (event.normal.x < 0) {
+                            player.wall = WallStatus.Right
+                            velocity.x = velocity.x.coerceAtMost(0f)
+                        } else if (event.normal.x > 0) {
+                            player.wall = WallStatus.Left
+                            velocity.x = velocity.x.coerceAtLeast(0f)
+                        }
+                        if(entities.get(event.with)?.componentOpt<ScaryBlock>() != null){
+                            respawn(entity, entities)
+                        }
+                        if(entities.get(event.with)?.componentOpt<SlipperyBlock>() != null){
+                            respawn(entity, entities)
                         }
                     }
                 }
+
+                val pos = transform.get().position
+
+                val properties = player.properties
+
+                val desiredVelocity = Vector2f(0f, 0f)
+
+                var direction = 0f
+                //left
+                if (keyboard.isPressed(Key.A)) {
+                    direction -= 1f
+                }
+                //right
+                if (keyboard.isPressed(Key.D)) {
+                    direction += 1f
+                }
+
+                if (keyboard.isPressed(Key.R)) {
+                    respawn(entity, entities)
+                }
+                desiredVelocity.add(direction * properties.maxSpeed, 0f)
+
+                var turnSpeed = 0f
+                var acceleration = 0f
+                var deceleration = 0f
+
                 //Deceleration based on whether on ground or in air
-                when (onGround) {
+                when (player.onGround) {
                     true -> {
-                        deccel = friction;
-                        turnAccel = turnSpeed
+                        acceleration = properties.maxAcceleration
+                        deceleration = properties.maxDeceleration
+                        turnSpeed = properties.maxTurnSpeed
                     }
 
                     false -> {
-                        deccel = drag;
-                        turnAccel = airTurnSpeed
+                        acceleration = properties.maxAirAcceleration
+                        deceleration = properties.maxAirDeceleration
+                        turnSpeed = properties.maxAirTurnSpeed
                     }
                 }
 
-
-                eventQueue.iterate<StickyEvent>().forEach { event ->
-                    player.get().onRoof = true
-                }
-                eventQueue.iterate<SlipperyEvent>().forEach { event ->
-                    deccel*=2f
-                    turnAccel*=.5f
-                }
-
-                //left
-                if (keyboard.isPressed(Key.A)) {
-                    desiredVelocity.add(Vector2f(-xMax, 0f))
-                }
-
-                //right
-                if (keyboard.isPressed(Key.D)) {
-                    desiredVelocity.add(Vector2f(xMax, 0f))
-                }
-
-                //jump
-                if (keyboard.isPressed(Key.W)) {
-                    wantToJump = true
-                }
-                //reset
-                if (keyboard.isPressed(Key.R)) {
-                    entities.forEach { entity ->
-                        if (entity.componentOpt<SpawnPoint>() != null) {
-                            val resetPos = entity.component<Transform>().get().position
-                            velocity.mul(0f,0f)
-                            pos.add(Vector2f(resetPos.x - pos.x, resetPos.y - pos.y))
-                        }
-                    }
-                }
-
-
-                fun jump() {
-                    velocity.y = -jumpSpeed
-                    if (wall == R) {
-                        velocity.y = -jumpSpeed
-                        velocity.x -= jumpSpeed
-                    }
-                    if (wall == L) {
-                        velocity.y = -jumpSpeed
-                        velocity.x += jumpSpeed
-                    }
-                    wantToJump = false
-                }
-
-                fun canJump(): Boolean {
-                    return (onGround || wall != WallStatus.Off)
-                }
-
-                if (wantToJump && canJump()) {
-                    jump()
-                }
-
-                if (!onGround) {
-                    if (wall != O && velocity.y > 0) {
-                        velocity.y += gravity / 4 * deltaTime.toFloat()
-                    } else {
-                        velocity.y += gravity * deltaTime.toFloat()
-                    }
-                }
-
-                if (desiredVelocity.x != 0f) {
+                val maxSpeedChange = if (direction != 0f) {
                     if (desiredVelocity.x.sign != velocity.x.sign) {
-                        maxSpeedChange = turnAccel * deltaTime.toFloat()
+                        turnSpeed
                     } else {
-                        maxSpeedChange = xAccel * deltaTime.toFloat()
+                        acceleration
                     }
                 } else {
-                    maxSpeedChange = deccel * deltaTime.toFloat()
-                }
-                velocity.x = velocity.x + (desiredVelocity.x - velocity.x) * maxSpeedChange
+                    deceleration
+                } * deltaTime.toFloat()
 
+                velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
-                if (onRoof) {
-                    velocity.y = .00000001f
+                val gravityMultiplier = if (velocity.y > 0f) {
+                    properties.downwardMovementMultiplier
+                } else {
+                    1f
                 }
+                val adjustedGravity = (-2f * properties.jumpHeight) / (properties.timeToJumpApex * properties.timeToJumpApex)
+                val gravityScale = (adjustedGravity / -properties.gravity) * gravityMultiplier
+
+                var jumped = false
+                val pressedJump = keyboard.isJustPressed(Key.W)
+                val bufferedJump = player.jumpBufferTime > 0f && keyboard.isPressed(Key.W)
+
+                if ((pressedJump || bufferedJump) && player.canJump()) {
+                    jumped = true
+                    player.jump(gravityScale)
+                }
+                if (pressedJump && !jumped) {
+                    player.jumpBufferTime = properties.jumpBufferTime
+                }
+
+                if (player.onGround && !jumped) {
+                    player.coyoteTime = properties.coyoteTime
+                } else {
+                    player.coyoteTime = (player.coyoteTime - deltaTime.toFloat()).coerceAtLeast(0f)
+                }
+                player.jumpBufferTime = (player.jumpBufferTime - deltaTime.toFloat()).coerceAtLeast(0f)
+
+                if (!player.onGround) {
+                    velocity.y += properties.gravity * deltaTime.toFloat()
+                }
+
+                if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
+                    velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
+                }
+
                 pos.add(velocity)
-                if (keyboard.isPressed(Key.LEFT_SHIFT)) {
-                    pos.add(velocity.x, 0f)
-                }
                 transform.mutate()
-                player.get().onGround = false
-                player.get().wall = O
-                player.get().onRoof = false
             }
         }
+    }
+
+    private fun Player.jump(gravityScale: Float) {
+        val targetHeight = if (!this.onGround) {
+            if (this.wall == WallStatus.Right) {
+                velocity.x -= properties.wallJumpDistance
+            } else if (this.wall == WallStatus.Left) {
+                velocity.x += properties.wallJumpDistance
+            }
+            properties.wallJumpHeight
+        } else {
+            properties.jumpHeight
+        }
+
+        var jumpSpeed = sqrt(2f * properties.gravity * gravityScale * targetHeight)
+        if (velocity.y < 0f) {
+            jumpSpeed = max(jumpSpeed + velocity.y, 0f)
+        } else if (velocity.y > 0f) {
+            jumpSpeed += abs(velocity.y)
+        }
+
+        velocity.y -= jumpSpeed
+
+        this.jumpBufferTime = 0f
+        this.coyoteTime = 0f
+    }
+
+    private fun respawn(entityA: EntityView, entities: EntitiesView){
+        entities.forEach{ entity ->
+            if(entity.componentOpt<SpawnPoint>() != null){
+                val targetPos = entity.component<Transform>().get().position
+                val currentPos = entityA.component<Transform>().get().position
+                entityA.component<Transform>().get().position.add(targetPos.x-currentPos.x, targetPos.y-currentPos.y)
+            }
+        }
+    }
+
+    private fun Player.canJump(): Boolean {
+        return (this.onGround || this.wall != WallStatus.Off || this.coyoteTime > 0f)
     }
 }
