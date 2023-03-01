@@ -9,9 +9,7 @@ import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.game.ScaryBlock
-import shenanigans.game.SlipperyBlock
-import shenanigans.game.SpawnPoint
+import shenanigans.game.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sign
@@ -79,10 +77,16 @@ class PlayerController : System {
                 val transform = entity.component<Transform>()
 
                 val velocity = player.velocity
-
+                var sticky = false
+                var slippery = false
                 player.onGround = false
                 player.wall = WallStatus.Off
                 player.onCeiling = false
+
+
+                val pos = transform.get().position
+
+                val properties = player.properties
 
                 resources.get<EventQueue>().iterate<CollisionEvent>().forEach { event ->
                     if (entity.id == event.target) {
@@ -103,15 +107,18 @@ class PlayerController : System {
                         if(entities.get(event.with)?.componentOpt<ScaryBlock>() != null){
                             respawn(entity, entities)
                         }
+                        if(entities.get(event.with)?.componentOpt<StickyBlock>() != null){
+                            sticky = true;
+                        }
                         if(entities.get(event.with)?.componentOpt<SlipperyBlock>() != null){
-                            respawn(entity, entities)
+                            slippery = true;
+                        }
+                        if(entities.get(event.with)?.componentOpt<SpringBlock>() != null){
+                            velocity.y= -properties.maxSpeed*2.5f
                         }
                     }
                 }
 
-                val pos = transform.get().position
-
-                val properties = player.properties
 
                 val desiredVelocity = Vector2f(0f, 0f)
 
@@ -138,8 +145,10 @@ class PlayerController : System {
                 when (player.onGround) {
                     true -> {
                         acceleration = properties.maxAcceleration
+
                         deceleration = properties.maxDeceleration
                         turnSpeed = properties.maxTurnSpeed
+
                     }
 
                     false -> {
@@ -147,6 +156,11 @@ class PlayerController : System {
                         deceleration = properties.maxAirDeceleration
                         turnSpeed = properties.maxAirTurnSpeed
                     }
+                }
+                if(slippery){
+                    acceleration*=.4f
+                    deceleration*=.01f
+                    turnSpeed*=.01f
                 }
 
                 val maxSpeedChange = if (direction != 0f) {
@@ -175,7 +189,7 @@ class PlayerController : System {
 
                 if ((pressedJump || bufferedJump) && player.canJump()) {
                     jumped = true
-                    player.jump(gravityScale)
+                    player.jump(gravityScale,sticky)
                 }
                 if (pressedJump && !jumped) {
                     player.jumpBufferTime = properties.jumpBufferTime
@@ -195,14 +209,18 @@ class PlayerController : System {
                 if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
                     velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
                 }
-
-                pos.add(velocity)
+                if (sticky){
+                    pos.add(velocity.x*.4f,velocity.y*.4f )
+                }
+                else{
+                  pos.add(velocity)
+                }
                 transform.mutate()
             }
         }
     }
 
-    private fun Player.jump(gravityScale: Float) {
+    private fun Player.jump(gravityScale: Float, sticky : Boolean) {
         val targetHeight = if (!this.onGround) {
             if (this.wall == WallStatus.Right) {
                 velocity.x -= properties.wallJumpDistance
@@ -215,6 +233,9 @@ class PlayerController : System {
         }
 
         var jumpSpeed = sqrt(2f * properties.gravity * gravityScale * targetHeight)
+        if (sticky){
+            jumpSpeed*=.6f
+        }
         if (velocity.y < 0f) {
             jumpSpeed = max(jumpSpeed + velocity.y, 0f)
         } else if (velocity.y > 0f) {

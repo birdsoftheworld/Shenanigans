@@ -39,23 +39,29 @@ class CollisionSystem : System {
 
             val collider1 = pair.first.component<Collider>().get()
             val collider2 = pair.second.component<Collider>().get()
-            if (!collider1.static && !collider2.static) {
-                val move = Vector2f(collision.normal).mul(collision.scale).mul(0.5f)
-                transform1.get().position.add(move)
-                transform1.mutate()
-                transform2.get().position.add(move.negate())
-                transform2.mutate()
-            } else if (!collider1.static) {
-                val move = Vector2f(collision.normal).mul(collision.scale)
-                transform1.get().position.add(move)
-                transform1.mutate()
-            } else if (!collider2.static) {
-                val move = Vector2f(collision.normal).mul(collision.scale).negate()
-                transform2.get().position.add(move)
-                transform2.mutate()
+
+            println(" " + collider1.triggerCollider + " " + collider2.triggerCollider)
+            if(!collider1.triggerCollider && !collider2.triggerCollider) {
+                println("#2: " + collider1.triggerCollider + " " + collider2.triggerCollider)
+                if (!collider1.static && !collider2.static) {
+                    val move = Vector2f(collision.normal).mul(collision.scale).mul(0.5f)
+                    transform1.get().position.add(move)
+                    transform1.mutate()
+                    transform2.get().position.add(move.negate())
+                    transform2.mutate()
+                } else if (!collider1.static) {
+                    val move = Vector2f(collision.normal).mul(collision.scale)
+                    transform1.get().position.add(move)
+                    transform1.mutate()
+                } else if (!collider2.static) {
+                    val move = Vector2f(collision.normal).mul(collision.scale).negate()
+                    transform2.get().position.add(move)
+                    transform2.mutate()
+                }
+                maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueue)
+                maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueue)
             }
-            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueue)
-            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueue)
+
         }
         return
     }

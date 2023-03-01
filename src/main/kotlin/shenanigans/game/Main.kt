@@ -71,6 +71,7 @@ class SpawnPoint() : Component
 class ScaryBlock() : Component
 class StickyBlock() : Component
 class SlipperyBlock() : Component
+class SpringBlock() : Component
 enum class direction(sign : Int) {
     Up(0),Right(1),Down(2),Left(3)
 }
@@ -160,8 +161,6 @@ class AddTestEntities : System {
             ), Color(0f, 1f, 1f)
         )
 
-        val sliverShape = newShape(1f,50f, Color(0.56666666666f, 0.60833333333f,0.25555555555f))
-
         val oscillatingShape = Shape(
             arrayOf(
                 Vector2f(0f, 0f),
@@ -173,14 +172,17 @@ class AddTestEntities : System {
 
         val scaryShape = newShape(50f,50f)
 
-        val stickyShape = newShape(5f,50f, Color(.2f,.2f,.2f))
+        val springShape = newShape(50f,50f)
 
-        val slipperyShape = newShape(5f,50f, Color(7f,.7f,.7f))
+        val stickyShape = newShape(4f,50f, Color(0.56666666666f, 0.60833333333f,0.25555555555f))
+
+        val slipperyShape = newShape(5f,50f, Color(0.38333333333f,.62222222222f,.65833333333f))
 
         //Sprites Declaration
         val playerSprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(30f,30f))
         val respawnSprite = Sprite(TextureManager.createTexture("/sprite.png").getRegion(), Vector2f(30f,30f))
         val oscillatingSprite = Sprite(TextureManager.createTexture("/betterArrow.png").getRegion(),Vector2f(50f,50f))
+        val springSprite = Sprite(TextureManager.createTexture("/spring.png").getRegion(),Vector2f(50f,50f))
         val scarySprite = Sprite(TextureManager.createTexture("/hole.png").getRegion(), Vector2f(50f,50f))
         //Oscillating Block
         lifecycle.add((
@@ -208,6 +210,18 @@ class AddTestEntities : System {
             )
         ))
 
+        //springBlock
+        lifecycle.add((
+                sequenceOf(
+                    Transform(
+                        Vector2f(300f, 700f)
+                    ),
+                    springSprite,
+                    Collider(springShape, true, false, tracked = true),
+                    MousePlayer(false, Vector2f(0f,0f)),
+                    SpringBlock(),
+                )
+                ))
 
 
 
@@ -222,14 +236,49 @@ class AddTestEntities : System {
             )
         )
 
+        //slipppery block
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector2f(200f, 600f)
+                ),
+                slipperyShape,
+                SlipperyBlock(),
+                Collider(slipperyShape, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector2f(250f, 600f)
+                ),
+                slipperyShape,
+                SlipperyBlock(),
+                Collider(slipperyShape, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector2f(300f, 600f)
+                ),
+                slipperyShape,
+                SlipperyBlock(),
+                Collider(slipperyShape, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+        //sticky block
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector2f(0f, 600f)
                 ),
-                sliverShape,
-                SlipperyBlock(),
-                Collider(sliverShape, true, false),
+                stickyShape,
+                StickyBlock(),
+                Collider(stickyShape, true, false),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
