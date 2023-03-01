@@ -5,6 +5,7 @@ import org.joml.Vector2fc
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.window.KeyModifier
 import shenanigans.engine.window.MouseButton
@@ -77,6 +78,10 @@ class MouseState : Resource, StateMachine {
     private val pressed = mutableMapOf<MouseButton, Boolean>()
 
     override fun transition(queue: EventQueue) {
+        if (queue !is LocalEventQueue) {
+            return
+        }
+
         queue.receive(MouseEvent::class).forEach { event ->
             when (event) {
                 is MousePositionEvent -> {

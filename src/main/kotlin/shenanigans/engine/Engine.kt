@@ -4,10 +4,7 @@ import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.Resources
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
-import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.events.StateMachine
+import shenanigans.engine.events.*
 import shenanigans.engine.events.control.ControlEvent
 import shenanigans.engine.events.control.ExitEvent
 import shenanigans.engine.events.control.SceneChangeEvent

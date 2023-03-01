@@ -3,6 +3,7 @@ package shenanigans.engine.window.events
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.KeyAction
@@ -28,6 +29,10 @@ class KeyboardState : Resource, StateMachine {
     private val pressed: MutableMap<Key, Boolean> = mutableMapOf()
 
     override fun transition(queue: EventQueue) {
+        if (queue !is LocalEventQueue) {
+            return
+        }
+
         queue.receive(KeyEvent::class).forEach { event ->
             pressed[event.key] = event.action == KeyAction.PRESS || event.action == KeyAction.REPEAT
         }
