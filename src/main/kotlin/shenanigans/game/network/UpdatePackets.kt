@@ -16,5 +16,5 @@ class EntityMovementPacket(val entities: Map<UUID, Transform>): Event {
 
 class EntityRegistrationPacket(val id: UUID, val entity: Map<KClass<out Component>, Component>) : Event {
     constructor(entityView: EntityView) :
-            this(entityView.id, entityView.components.mapValues { it.value.component })
+            this(entityView.id, entityView.components.mapValues { it.value.component }.filterValues {!it.javaClass.isAnnotationPresent(ClientOnly::class.java)})
 }

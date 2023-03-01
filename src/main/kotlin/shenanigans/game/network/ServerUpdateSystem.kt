@@ -5,6 +5,7 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
+import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.game.network.EntityMovementPacket
 import shenanigans.game.network.EntityRegistrationPacket
@@ -47,10 +48,11 @@ class ServerRegistrationSystem : System {
         lifecycle: EntitiesLifecycle
     ) {
 
-        eventQueues.own.receive(EntityRegistrationPacket::class).forEach {entityRegistrationPacket ->
+        eventQueues.network.receive(EntityRegistrationPacket::class).forEach {entityRegistrationPacket ->
             lifecycle.add(
                 entityRegistrationPacket.entity.values.asSequence()
             )
+            Logger.log("Entity Registration", entityRegistrationPacket.id.toString())
             eventQueues.network.queueLater(entityRegistrationPacket)
         }
     }

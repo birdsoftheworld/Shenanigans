@@ -5,7 +5,6 @@ import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.game.network.registerDefaultClasses
-import java.io.IOException
 import com.esotericsoftware.kryonet.Client as KryoClient
 import com.esotericsoftware.kryonet.Server as KryoServer
 
@@ -50,7 +49,7 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
             }
             kryoClient.connect(4500, addresses[0], 40506, 40506)
             println("Connecting to " + addresses[0])
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }

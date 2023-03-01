@@ -5,7 +5,6 @@ import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
@@ -13,12 +12,16 @@ import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.network.ClientOnly
+import shenanigans.game.network.NetworkSystem
+import shenanigans.game.network.Synchronized
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -37,7 +40,7 @@ fun testScene(): Scene {
     scene.defaultSystems.add(KeyboardMovementSystem())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(FollowCameraSystem())
-//    scene.defaultSystems.add(NetworkSystem())
+    scene.defaultSystems.add(NetworkSystem())
 
     return scene
 }
@@ -72,7 +75,7 @@ class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
         this.grabbed = false
     }
 }
-
+@ClientOnly
 data class KeyboardPlayer(val speed: Float) : Component
 
 class AddTestEntities : System {
@@ -116,6 +119,7 @@ class AddTestEntities : System {
                 shape2,
                 Collider(shape2, false),
                 KeyboardPlayer(500f),
+                Synchronized(),
             )
         )
 

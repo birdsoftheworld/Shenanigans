@@ -50,7 +50,7 @@ class NetworkSystem : System {
         }
 
         entities.filter { !it.component<Synchronized>().get().connected }.forEach {
-            eventQueues.network.queueLater(EntityRegistrationPacket(it, ))
+            eventQueues.network.queueLater(EntityRegistrationPacket(it))
         }
 
         eventQueues.network.queueLater(EntityMovementPacket(entities.filter {

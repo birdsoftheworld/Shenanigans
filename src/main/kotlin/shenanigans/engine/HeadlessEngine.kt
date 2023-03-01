@@ -16,7 +16,10 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene, Network(Server())) {
     override fun loop() {
         var previousTime = GLFW.glfwGetTime()
 
+        var lastTick = 0L
+
         while (true) {
+            lastTick = java.lang.System.currentTimeMillis()
             handleControlEvents(physicsEvents)
             handleControlEvents(networkEvents)
 
@@ -48,6 +51,10 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene, Network(Server())) {
             physicsEvents.finish()
             networkEvents.finish()
             renderEvents.finish()
+
+            while(java.lang.System.currentTimeMillis() - lastTick < 50) {
+                continue
+            }
         }
     }
 
