@@ -5,7 +5,7 @@ import java.util.UUID
 import kotlin.reflect.KClass
 
 class Entities {
-    internal val entities: HashMap<UUID, StoredComponents> = hashMapOf()
+    internal val entities: HashMap<UUID, StoredEntity> = hashMapOf()
 
     fun <S : System> runSystem(
         execute: S.(ResourcesView, EventQueues, EntitiesView, EntitiesLifecycle) -> Unit,
@@ -27,26 +27,40 @@ class Entities {
     }
 }
 
-internal typealias StoredComponents = Map<KClass<out Component>, StoredComponent>
+data class StoredEntity(
+    val components: Map<KClass<out Component>, StoredComponent>,
+    var parent: UUID? = null,
+    val children: MutableList<UUID> = mutableListOf(),
+)
 
 data class StoredComponent(val component: Component, var version: Int = 0)
 
 class EntityView internal constructor(
+    private val entities: Entities,
     val id: UUID,
-    @PublishedApi internal val components: StoredComponents,
+    @PublishedApi internal val entity: StoredEntity = entities.entities[id]!!
 ) {
+
     inline fun <reified T : Component> component(): ComponentView<T> {
         return componentOpt()!!
     }
 
     inline fun <reified T : Component> componentOpt(): ComponentView<T>? {
-        val stored = components[T::class]
+        val stored = entity.components[T::class]
 
         return if (stored !== null) {
             ComponentView(stored)
         } else {
             null
         }
+    }
+
+    fun parent(): EntityView? {
+        return entity.parent?.let { EntityView(entities, it) }
+    }
+
+    fun children(): Sequence<EntityView> {
+        return entity.children.asSequence().map { EntityView(entities, it) }
     }
 }
 
@@ -77,13 +91,13 @@ class EntitiesView internal constructor(
     private val query: Iterable<KClass<out Component>>,
 ) : Sequence<EntityView> {
     operator fun get(id: UUID): EntityView? {
-        return entities.entities[id]?.let { EntityView(id, it) }
+        return entities.entities[id]?.let { EntityView(entities, id) }
     }
 
     override fun iterator(): Iterator<EntityView> {
-        return entities.entities.filter { (_, components) ->
-            components.keys.containsAll(query as Collection<KClass<out Component>>)
-        }.map { (id, components) -> EntityView(id, components) }.iterator()
+        return entities.entities.filter { (_, entity) ->
+            entity.components.keys.containsAll(query as Collection<KClass<out Component>>)
+        }.map { (id, _) -> EntityView(entities, id) }.iterator()
     }
 }
 
@@ -91,13 +105,13 @@ class EntitiesLifecycle internal constructor() {
     private val requests: MutableList<LifecycleRequest> = mutableListOf()
 
     sealed class LifecycleRequest {
-        data class Add(val id: UUID, val components: Sequence<Component>) : LifecycleRequest()
+        data class Add(val id: UUID, val components: Sequence<Component>, val parent: UUID?) : LifecycleRequest()
         data class Del(val id: UUID) : LifecycleRequest()
     }
 
-    fun add(components: Sequence<Component>): UUID {
+    fun add(components: Sequence<Component>, parent: UUID? = null): UUID {
         val id = UUID.randomUUID()
-        requests.add(LifecycleRequest.Add(id, components))
+        requests.add(LifecycleRequest.Add(id, components, parent))
         return id
     }
 
@@ -109,11 +123,26 @@ class EntitiesLifecycle internal constructor() {
         requests.forEach { req ->
             when (req) {
                 is LifecycleRequest.Add -> {
-                    entities.entities[req.id] =
-                        req.components.map { StoredComponent(it) }.associateBy { it.component::class }
+                    entities.entities[req.id] = StoredEntity(
+                        components = req.components.map { StoredComponent(it) }.associateBy { it.component::class },
+                        parent = req.parent,
+                        children = mutableListOf(),
+                    )
+
+                    req.parent?.let { parentId ->
+                        entities.entities[parentId]?.children?.add(req.id)
+                    }
                 }
 
                 is LifecycleRequest.Del -> {
+                    entities.entities[req.id]?.parent?.let { parentId ->
+                        entities.entities[parentId]?.children?.remove(req.id)
+                    }
+
+                    entities.entities[req.id]?.children?.forEach { childId ->
+                        entities.entities[childId]?.parent = null
+                    }
+
                     entities.entities.remove(req.id) ?: throw IllegalStateException("Entity ${req.id} not found")
                 }
             }
