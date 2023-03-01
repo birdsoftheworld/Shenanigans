@@ -48,11 +48,11 @@ abstract class AbstractRenderer(attribs: Set<VertexAttribute>, val vertexCapacit
         nIndices++
     }
 
-    protected fun addVertex(x: Float, y: Float) {
-        _temp.set(x, y, 0f, 1f).mul(transformation)
+    protected fun addVertex(x: Float, y: Float, z: Float) {
+        _temp.set(x, y, z, 1f).mul(transformation)
         positions.add(_temp.x / _temp.w)
         positions.add(_temp.y / _temp.w)
-        positions.add(0f)
+        positions.add(_temp.z / _temp.w)
         lowestIndex++
         nVertices++
     }

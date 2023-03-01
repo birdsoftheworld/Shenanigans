@@ -1,7 +1,7 @@
 package shenanigans.engine.graphics.api.system
 
-import org.joml.Vector2f
 import org.joml.Vector2i
+import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.graphics.TextureOptions
@@ -23,14 +23,14 @@ class DrawBackgroundSystem : System {
         val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
         val size = resources.get<WindowResource>().window.size
         val camera = resources.get<CameraResource>().camera!!
-        val translation = camera.untransformPoint(Vector2f())
+        val translation = camera.untransformPoint(Vector3f())
 
         val view = camera.computeViewMatrix()
         textureRenderer.projection = camera.computeProjectionMatrix()
         textureRenderer.start()
 
         textureRenderer.transformation = view
-        textureRenderer.textureRect(translation.x, translation.y, size.x.toFloat(), size.y.toFloat(), background.getRegion(
+        textureRenderer.textureRect(translation.x, translation.y, -1f, size.x.toFloat(), size.y.toFloat(), background.getRegion(
             translation.x / imageSize.x, translation.y / imageSize.y, size.x.toFloat() / imageSize.x, size.y.toFloat() / imageSize.y
         ))
 

@@ -45,9 +45,14 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
     private val alphas = ArrayList<Float>(DEFAULT_MAX_VERTICES)
 
     /**
-     * draw a rectangle at `x`, `y` with size `w`, `h` of the given color, transformed by this renderer's transformation
+     * draw a rectangle at `x`, `y`, `0` with size `w`, `h` of the given color, transformed by this renderer's transformation
      */
-    fun rect(x: Float, y: Float, w: Float, h: Float, color: Color) {
+    fun rect(x: Float, y: Float, w: Float, h: Float, color: Color) = rect(x, y, 0f, w, h, color)
+
+    /**
+     * draw a rectangle at `x`, `y`, `z` with size `w`, `h` of the given color, transformed by this renderer's transformation
+     */
+    fun rect(x: Float, y: Float, z: Float, w: Float, h: Float, color: Color) {
         flushIfFull(4, 6)
 
         addIndex(0)
@@ -58,25 +63,25 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
         addIndex(3)
         addIndex(1)
 
-        addVertex(x, y)
+        addVertex(x, y, z)
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
         alphas.add(color.a)
 
-        addVertex(x + w, y)
+        addVertex(x + w, y, z)
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
         alphas.add(color.a)
 
-        addVertex(x, y + h)
+        addVertex(x, y + h, z)
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
         alphas.add(color.a)
 
-        addVertex(x + w, y + h)
+        addVertex(x + w, y + h, z)
         colors.add(color.r)
         colors.add(color.g)
         colors.add(color.b)
@@ -86,7 +91,7 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
     /**
      * draw a convex polygon with the given vertices, transformed by this renderer's transformation
      */
-    fun polygon(vertices: Array<Vector2f>, color: Color) {
+    fun polygon(vertices: Array<Vector2f>, color: Color, z: Float = 0f) {
         flushIfFull(vertices.size, 3 * (vertices.size - 2))
 
         for (i in 1..vertices.size - 2) {
@@ -96,7 +101,7 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
         }
 
         for (vertex in vertices) {
-            addVertex(vertex.x, vertex.y)
+            addVertex(vertex.x, vertex.y, z)
 
             colors.add(color.r)
             colors.add(color.g)

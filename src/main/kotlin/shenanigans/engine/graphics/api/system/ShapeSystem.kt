@@ -2,10 +2,10 @@ package shenanigans.engine.graphics.api.system
 
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.camera.CameraResource
 import kotlin.reflect.KClass
 
 /**

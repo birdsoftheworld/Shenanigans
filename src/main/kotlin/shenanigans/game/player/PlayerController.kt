@@ -167,7 +167,7 @@ class PlayerController : System {
             val holdingJump = keyboard.isPressed(Key.W)
             val bufferedJump = player.jumpBufferTime > 0f && holdingJump
 
-            val gravityScale = player.getGravity(holdingJump)
+            val gravity = player.getGravity(holdingJump)
 
             val jumpType = player.getJumpType()
             if ((pressedJump || bufferedJump) && jumpType != JumpType.None) {
@@ -192,7 +192,7 @@ class PlayerController : System {
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
             if (!player.onGround && !jumped) {
-                velocity.y += gravityScale * deltaTimeF
+                velocity.y += gravity * deltaTimeF
             }
 
             if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
@@ -201,7 +201,7 @@ class PlayerController : System {
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
 
-            pos.add(velocity)
+            pos.add(velocity.x, velocity.y, 0f)
             transform.mutate()
         }
     }

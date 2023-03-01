@@ -2,11 +2,13 @@ package shenanigans.engine.physics
 
 import org.joml.Matrix4f
 import org.joml.Vector2f
+import org.joml.Vector3f
 import org.joml.Vector4f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.dot
 import shenanigans.engine.util.setToTransform
 import java.util.*
 import kotlin.math.max
@@ -26,7 +28,6 @@ class CollisionSystem : System {
     }
 
     override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
-
         val collisionPairs = getCollisionPairs(entities)
 
         collisionPairs.forEach { pair ->
@@ -37,23 +38,26 @@ class CollisionSystem : System {
 
             val collider1 = pair.first.component<Collider>().get()
             val collider2 = pair.second.component<Collider>().get()
-            if (!collider1.static && !collider2.static) {
-                val move = Vector2f(collision.normal).mul(collision.scale).mul(0.5f)
-                transform1.get().position.add(move)
-                transform1.mutate()
-                transform2.get().position.add(move.negate())
-                transform2.mutate()
-            } else if (!collider1.static) {
-                val move = Vector2f(collision.normal).mul(collision.scale)
-                transform1.get().position.add(move)
-                transform1.mutate()
-            } else if (!collider2.static) {
-                val move = Vector2f(collision.normal).mul(collision.scale).negate()
-                transform2.get().position.add(move)
-                transform2.mutate()
+            if(!collider1.triggerCollider && !collider2.triggerCollider) {
+                if (!collider1.static && !collider2.static) {
+                    val move = Vector3f(collision.normal, 0f).mul(collision.scale).mul(0.5f)
+                    transform1.get().position.add(move)
+                    transform1.mutate()
+                    transform2.get().position.add(move.negate())
+                    transform2.mutate()
+                } else if (!collider1.static) {
+                    val move = Vector3f(collision.normal, 0f).mul(collision.scale)
+                    transform1.get().position.add(move)
+                    transform1.mutate()
+                } else if (!collider2.static) {
+                    val move = Vector3f(collision.normal, 0f).mul(collision.scale).negate()
+                    transform2.get().position.add(move)
+                    transform2.mutate()
+                }
+
+                maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
+                maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
             }
-            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
-            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
         }
         return
     }
@@ -67,7 +71,7 @@ class CollisionSystem : System {
 
             val collider = entity.component<Collider>().get()
 
-            transformMatrix.setToTransform(Vector2f(), transform.rotation, transform.scale)
+            transformMatrix.setToTransform(Vector3f(), transform.rotation, transform.scale)
 
             for (i in 0 until collider.vertices.size) {
                 val vertex = Vector4f(collider.vertices[i], 0f, 1f).mul(transformMatrix)
@@ -84,7 +88,7 @@ class CollisionSystem : System {
             }
 
             prevEntities.forEach { other ->
-                if (Vector2f(transform.position).sub(
+                if (Vector3f(transform.position).sub(
                         other.component<Transform>().get().position
                     ).length() < (radii[entity.id]!!.first + radii[other.id]!!.first)
                 ) {
@@ -154,7 +158,7 @@ private fun testCollision(collisionPair: Pair<EntityView, EntityView>): Collisio
 private fun projectionMinMax(collider: Collider, transform: Transform, normal: Vector2f): Pair<Float, Float> {
     var projectionMin = Float.POSITIVE_INFINITY
     var projectionMax = Float.NEGATIVE_INFINITY
-    val transformProj = normal.dot(transform.position)
+    val transformProj = normal.dot(transform.position.x, transform.position.y)
     for (vertex in collider.transformedVertices) {
         val proj = vertex.dot(normal)
         projectionMin = min(projectionMin, proj)

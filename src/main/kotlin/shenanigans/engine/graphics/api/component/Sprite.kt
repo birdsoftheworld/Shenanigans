@@ -6,5 +6,5 @@ import shenanigans.engine.graphics.api.texture.TextureRegion
 
 data class Sprite(
     val sprite: TextureRegion,
-    val size: Vector2f
+    val size: Vector2f,
 ) : Component

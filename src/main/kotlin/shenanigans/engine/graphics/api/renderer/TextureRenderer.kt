@@ -62,7 +62,9 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         shader.createUniform("projectionMatrix")
     }
 
-    fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) {
+    fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) = textureRect(x, y, 0f, w, h, texture)
+
+    fun textureRect(x: Float, y: Float, z: Float, w: Float, h: Float, texture: TextureRegion) {
         if(this.texture != texture.getKey() && this.texture != null) {
             this.flush()
         }
@@ -77,13 +79,13 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         addIndex(3)
         addIndex(1)
 
-        addVertex(x, y)
+        addVertex(x, y, z)
         addTexCoord(texture.x, texture.y)
-        addVertex(x + w, y)
+        addVertex(x + w, y, z)
         addTexCoord(texture.x + texture.w, texture.y)
-        addVertex(x, y + h)
+        addVertex(x, y + h, z)
         addTexCoord(texture.x, texture.y + texture.h)
-        addVertex(x + w, y + h)
+        addVertex(x + w, y + h, z)
         addTexCoord(texture.x + texture.w, texture.y + texture.h)
 
         for (i in 0..3) {

@@ -23,7 +23,7 @@ data class Shape(
     }
 
     fun width(): Float{
-        return this.vertices[2].x -this.vertices[0].x
+        return this.vertices[2].x - this.vertices[0].x
     }
 
     override fun hashCode(): Int {

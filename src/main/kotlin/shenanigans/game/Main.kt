@@ -1,6 +1,7 @@
 package shenanigans.game
 
 import org.joml.Vector2f
+import org.joml.Vector3f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
@@ -100,7 +101,6 @@ class AddTestEntities : System {
             ), Color(1f, 0f, 0f)
         )
 
-
         lifecycle.add(
             sequenceOf(
                 Transform(
@@ -121,7 +121,7 @@ class AddTestEntities : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector2f(200f, 500f),
+                    Vector3f(200f, 500f, 1f),
                 ),
                 sprite,
                 Collider(shape2, false, tracked = true),
@@ -138,7 +138,7 @@ class AddTestEntities : System {
                     Vector2f(600f, 700f)
                 ),
                 shape,
-                Collider(shape, true),
+                Collider(shape, true, true),
                 MousePlayer(false, Vector2f(0f,0f)),
                 )
         ))
@@ -164,7 +164,7 @@ class AddTestEntities : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector2f(400f, 400f)
+                    Vector3f(400f, 400f, 0.5f)
                 ),
                 shape3,
                 Collider(shape3, true),
@@ -174,7 +174,7 @@ class AddTestEntities : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector2f(300f, 400f)
+                    Vector3f(300f, 400f, 0.5f)
                 ),
                 shape3,
                 Collider(shape3, true),
@@ -238,10 +238,11 @@ class MouseMovementSystem : System {
             if (mousePlayer.grabbed) {
                 val transform = entity.component<Transform>().get()
                 val position = resources.get<MouseState>().position()
-                val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(position))
+                val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector3f(position, 0f))
                 transform.position.set(
                     transformedPosition.x() + mousePlayer.dragOffset.x(),
-                    transformedPosition.y() + mousePlayer.dragOffset.y()
+                    transformedPosition.y() + mousePlayer.dragOffset.y(),
+                    0f
                 )
                 entity.component<Transform>().mutate()
             }
@@ -252,10 +253,10 @@ class MouseMovementSystem : System {
                 val transform = entity.component<Transform>().get()
                 val mousePosition = resources.get<MouseState>().position()
                 val transformedPosition =
-                    resources.get<CameraResource>().camera!!.untransformPoint(Vector2f(mousePosition))
+                    resources.get<CameraResource>().camera!!.untransformPoint(Vector3f(mousePosition, 0f))
                 val mousePlayer = entity.component<MousePlayer>().get()
                 if (event.action == MouseButtonAction.PRESS && entity.component<Shape>().get()
-                        .isPointInside(transformedPosition, transform)
+                        .isPointInside(Vector2f(transformedPosition.x, transformedPosition.y), transform)
                 ) {
                     mousePlayer.dragOffset.x = transform.position.x - transformedPosition.x()
                     mousePlayer.dragOffset.y = transform.position.y - transformedPosition.y()
