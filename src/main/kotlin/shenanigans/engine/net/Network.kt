@@ -45,6 +45,7 @@ class NetworkEventQueue internal constructor(val network: Network) : EventQueue(
         network.receiveLock.withLock {
             receivedMessages =
                 network.receivedMessages.filterIsInstance(EventMessage::class.java)
+            network.receivedMessages.clear()
         }
     }
 }
