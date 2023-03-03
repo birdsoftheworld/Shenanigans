@@ -4,7 +4,6 @@ import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.renderer.FontRenderer
 import shenanigans.engine.graphics.api.renderer.ShapeRenderer
 import shenanigans.engine.graphics.api.renderer.TextureRenderer
@@ -17,6 +16,7 @@ import shenanigans.engine.graphics.api.system.SpriteSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UISystem
+import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.window.Window
 import java.lang.System as JSystem
 
@@ -52,6 +52,8 @@ object Renderer {
         TextureManager.initialize()
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_BLEND)
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     }
 
