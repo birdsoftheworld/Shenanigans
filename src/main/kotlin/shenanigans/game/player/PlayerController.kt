@@ -1,6 +1,7 @@
 package shenanigans.game.player
 
 import org.joml.Vector2f
+import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.physics.CollisionEvent
@@ -22,22 +23,22 @@ enum class WallStatus(val sign: Float) {
 }
 
 data class PlayerProperties(
-    val maxAcceleration: Float = .5f,
+    val maxAcceleration: Float = 1375f,
     val maxAirAcceleration: Float = .75f * maxAcceleration,
-    val maxDeceleration: Float = .6f,
-    val maxAirDeceleration: Float = .1f,
-    val maxTurnSpeed: Float = 1f,
-    val maxAirTurnSpeed: Float = .75f,
+    val maxDeceleration: Float = 1650f,
+    val maxAirDeceleration: Float = 275f,
+    val maxTurnSpeed: Float = 2750f,
+    val maxAirTurnSpeed: Float = 2050f,
 
-    val maxSpeed: Float = .1f,
+    val maxSpeed: Float = 275f,
 
-    val jumpSpeed: Float = .2f,
+    val jumpSpeed: Float = 550f,
 
     val downwardMovementMultiplier: Float = 1f,
 
-    val wallJumpDistance: Float = .1f,
-    val wallJumpSpeed: Float = .175f,
-    val wallJumpSlideSpeed: Float = .05f,
+    val wallJumpDistance: Float = 275f,
+    val wallJumpSpeed: Float = 480f,
+    val wallJumpSlideSpeed: Float = 140f,
 
     val coyoteTime: Float = .1f,
     val wallCoyoteTime: Float = .085f,
@@ -45,8 +46,8 @@ data class PlayerProperties(
 
     val jumpCutoff: Float = .75f,
 
-    val terminalVelocity: Float = .3f,
-    val gravity: Float = .5f,
+    val terminalVelocity: Float = 825f,
+    val gravity: Float = 1375f,
 )
 
 enum class JumpType {
@@ -163,8 +164,8 @@ class PlayerController : System {
             velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
             var jumped = false
-            val pressedJump = keyboard.isJustPressed(Key.W)
-            val holdingJump = keyboard.isPressed(Key.W)
+            val pressedJump = keyboard.isJustPressed(Key.SPACE)
+            val holdingJump = keyboard.isPressed(Key.SPACE)
             val bufferedJump = player.jumpBufferTime > 0f && holdingJump
 
             val gravity = player.getGravity(holdingJump)
@@ -191,8 +192,12 @@ class PlayerController : System {
             }
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
+            pos.add(velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
+            transform.mutate()
+
             if (!player.onGround && !jumped) {
                 velocity.y += gravity * deltaTimeF
+                pos.add(Vector3f(0f, gravity, 0f).mul(1/2 * deltaTimeF * deltaTimeF))
             }
 
             if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
@@ -200,9 +205,6 @@ class PlayerController : System {
             }
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
-
-            pos.add(velocity.x, velocity.y, 0f)
-            transform.mutate()
         }
     }
 
