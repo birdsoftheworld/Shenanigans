@@ -1,6 +1,8 @@
 package shenanigans.game.network
 
 import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsEmptyMapSerializer
+import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsSingletonMapSerializer
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
@@ -41,5 +43,6 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     kryo.register(ClassReference::class.java).setInstantiator { ClassReference(Void::class.java) }
     kryo.register(Class::class.java)
     kryo.register(Color::class.java).setInstantiator { Color(0f, 0f, 0f) }
-    kryo.register(emptyMap<Unit, Unit>()::class.java)
+    kryo.register(emptyMap<Unit, Unit>()::class.java, CollectionsEmptyMapSerializer())
+    kryo.register(Collections.singletonMap<Unit, Unit>(null, null)::class.java, CollectionsSingletonMapSerializer())
 }

@@ -26,7 +26,7 @@ class ServerUpdateSystem : System {
         eventQueues.own.receive(EntityMovementPacket::class).forEach { packet ->
             packet.entities.forEach() { entity ->
                 if(entities[entity.key]?.componentOpt<Transform>() == null) {
-                    println("entity does not have a transform!")
+                    Logger.warn("Server Update","entity does not have a transform!")
                 }
                 entities[entity.key]?.component<Transform>()!!.get().position = (entity.value).position
             }
@@ -49,6 +49,9 @@ class ServerRegistrationSystem : System {
     ) {
 
         eventQueues.network.receive(EntityRegistrationPacket::class).forEach {entityRegistrationPacket ->
+            if(entities.get(entityRegistrationPacket.id) != null) {
+                Logger.warn("Entity Registration", "Duplicate ID: " + entityRegistrationPacket.id)
+            }
             lifecycle.add(
                 entityRegistrationPacket.entity.values.asSequence()
             )

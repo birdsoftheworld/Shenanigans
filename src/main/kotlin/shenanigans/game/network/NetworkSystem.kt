@@ -37,7 +37,7 @@ class NetworkSystem : System {
 
         eventQueues.own.receive(EntityRegistrationPacket::class).forEach registration@{ packet ->
             if (entities[packet.id] != null) {
-                entities[packet.id]!!.component<Synchronized>().get().connected = true
+                entities[packet.id]!!.component<Synchronized>().get().registration = RegistrationStatus.Registered
                 Logger.log("Network System", "WHaHOOO")
                 return@registration
             }
@@ -49,12 +49,13 @@ class NetworkSystem : System {
             Logger.log("Network System", "WahoOO!")
         }
 
-        entities.filter { !it.component<Synchronized>().get().connected }.forEach {
+        entities.filter { it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected }.forEach {
             eventQueues.network.queueLater(EntityRegistrationPacket(it))
+            it.component<Synchronized>().get().registration = RegistrationStatus.Sent
         }
 
         eventQueues.network.queueLater(EntityMovementPacket(entities.filter {
-            it.component<Synchronized>().get().connected
+            it.component<Synchronized>().get().registration == RegistrationStatus.Registered
         }))
     }
 }
