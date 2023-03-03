@@ -40,9 +40,7 @@ class CollisionSystem : System {
             val collider1 = pair.first.component<Collider>().get()
             val collider2 = pair.second.component<Collider>().get()
 
-            println(" " + collider1.triggerCollider + " " + collider2.triggerCollider)
             if(!collider1.triggerCollider && !collider2.triggerCollider) {
-                println("#2: " + collider1.triggerCollider + " " + collider2.triggerCollider)
                 if (!collider1.static && !collider2.static) {
                     val move = Vector2f(collision.normal).mul(collision.scale).mul(0.5f)
                     transform1.get().position.add(move)

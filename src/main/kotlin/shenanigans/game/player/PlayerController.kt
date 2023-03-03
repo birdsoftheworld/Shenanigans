@@ -10,6 +10,7 @@ import shenanigans.engine.util.moveTowards
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.*
+import java.lang.NullPointerException
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sign
@@ -89,6 +90,7 @@ class PlayerController : System {
                 val properties = player.properties
 
                 resources.get<EventQueue>().iterate<CollisionEvent>().forEach { event ->
+                    val e=entities.get(event.with)
                     if (entity.id == event.target) {
                         if (event.normal.y < 0) {
                             player.onGround = true
@@ -113,8 +115,13 @@ class PlayerController : System {
                         if(entities.get(event.with)?.componentOpt<SlipperyBlock>() != null){
                             slippery = true;
                         }
-                        if(entities.get(event.with)?.componentOpt<SpringBlock>() != null){
+                        if(entities.get(event.with)?.componentOpt<SpringBlock>() != null && event.normal.y<0){
                             velocity.y= -properties.maxSpeed*2.5f
+                        }
+                        if(entities.get(event.with)?.componentOpt<TeleporterBlock>() != null){
+                            try {
+                                teleport(entity, e!!.component<Transform>().get().position)
+                            }catch (error:NullPointerException){}
                         }
                     }
                 }
@@ -185,7 +192,7 @@ class PlayerController : System {
 
                 var jumped = false
                 val pressedJump = keyboard.isJustPressed(Key.W)
-                val bufferedJump = player.jumpBufferTime > 0f && keyboard.isPressed(Key.W)
+                val bufferedJump = player.jumpBufferTime > 0f && (keyboard.isPressed(Key.W) || keyboard.isPressed(Key.SPACE))
 
                 if ((pressedJump || bufferedJump) && player.canJump()) {
                     jumped = true
@@ -256,6 +263,11 @@ class PlayerController : System {
                 entityA.component<Transform>().get().position.add(targetPos.x-currentPos.x, targetPos.y-currentPos.y)
             }
         }
+    }
+
+    private fun teleport(entityA: EntityView, target : Vector2f){
+        val currentPos = entityA.component<Transform>().get().position
+        entityA.component<Transform>().get().position.add(target.x-currentPos.x, target.y-currentPos.y)
     }
 
     private fun Player.canJump(): Boolean {

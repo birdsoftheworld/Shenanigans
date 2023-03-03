@@ -107,6 +107,10 @@ class OscillatingBlock(val distanceToOscillate : Float, var startPos : Vector2f,
         this.startPos.set(x,y)
     }
 }
+
+data class TeleporterBlock(val num : Int) : Component{
+    var targetPos = Vector2f(0f,0f)
+}
 data class KeyboardPlayer(val speed: Float) : Component
 
 fun newShape(h : Float, w : Float, color : Color) : Shape{
@@ -178,12 +182,18 @@ class AddTestEntities : System {
 
         val slipperyShape = newShape(5f,50f, Color(0.38333333333f,.62222222222f,.65833333333f))
 
+        val teleportShape =newShape(25f,25f)
+
         //Sprites Declaration
         val playerSprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(30f,30f))
         val respawnSprite = Sprite(TextureManager.createTexture("/sprite.png").getRegion(), Vector2f(30f,30f))
         val oscillatingSprite = Sprite(TextureManager.createTexture("/betterArrow.png").getRegion(),Vector2f(50f,50f))
         val springSprite = Sprite(TextureManager.createTexture("/spring.png").getRegion(),Vector2f(50f,50f))
         val scarySprite = Sprite(TextureManager.createTexture("/hole.png").getRegion(), Vector2f(50f,50f))
+        val teleportarASprite = Sprite(TextureManager.createTexture("/teleporterA.png").getRegion(), Vector2f(25f,25f))
+        val teleportarBSprite = Sprite(TextureManager.createTexture("/teleporterB.png").getRegion(), Vector2f(25f,25f))
+
+
         //Oscillating Block
         lifecycle.add((
             sequenceOf(
@@ -196,6 +206,30 @@ class AddTestEntities : System {
                 OscillatingBlock(50f, Vector2f(100f, 500f), .01f),
             )
         ))
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(50f, 500f)
+                ),
+                teleportarASprite,
+                Collider(teleportShape, true, false, tracked = true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                TeleporterBlock(0),
+            )
+        ))
+
+        lifecycle.add((
+            sequenceOf(
+                Transform(
+                    Vector2f(600f, 500f)
+                ),
+                teleportarBSprite,
+                Collider(teleportShape, true, false, tracked = true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                TeleporterBlock(1),
+            )
+        ))
+
 
         //scaryBlock
         lifecycle.add((
@@ -212,16 +246,16 @@ class AddTestEntities : System {
 
         //springBlock
         lifecycle.add((
-                sequenceOf(
-                    Transform(
-                        Vector2f(300f, 700f)
-                    ),
-                    springSprite,
-                    Collider(springShape, true, false, tracked = true),
-                    MousePlayer(false, Vector2f(0f,0f)),
-                    SpringBlock(),
-                )
-                ))
+            sequenceOf(
+                Transform(
+                    Vector2f(300f, 700f)
+                ),
+                springSprite,
+                Collider(springShape, true, false, tracked = true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                SpringBlock(),
+            )
+        ))
 
 
 
@@ -283,7 +317,18 @@ class AddTestEntities : System {
             )
         )
 
-
+        //sticky block
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector2f(0f, 600f)
+                ),
+                stickyShape,
+                StickyBlock(),
+                Collider(stickyShape, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
 
         val nullShape = Shape(
             arrayOf(
@@ -391,6 +436,24 @@ class InsertEntitiesOngoing : System{
                         MousePlayer(false, Vector2f(0f, 0f)),
                     )
                 )
+            }
+        }
+    }
+}
+class TeleporterSystem : System {
+    override fun query(): Iterable<KClass<out Component>> {
+        return setOf(TeleporterBlock::class, Transform::class)
+    }
+
+    override fun execute(resources: ResourcesView, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+        entities.forEach { entity ->
+            val tpBlock = entity.component<TeleporterBlock>()
+            if(tpBlock.get().num == 0) {
+                entities.forEach { entity2 ->
+                    if (entity2.component<TeleporterBlock>().get().num == 1) {
+                        tpBlock.get().targetPos.set(entity2.component<Transform>().get().position)
+                    }
+                }
             }
         }
     }
