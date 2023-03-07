@@ -10,6 +10,7 @@ import shenanigans.engine.util.moveTowards
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.*
+import shenanigans.game.Blocks.*
 import java.lang.NullPointerException
 import kotlin.math.abs
 import kotlin.math.max
@@ -106,7 +107,7 @@ class PlayerController : System {
                             player.wall = WallStatus.Left
                             velocity.x = velocity.x.coerceAtLeast(0f)
                         }
-                        if(entities.get(event.with)?.componentOpt<ScaryBlock>() != null){
+                        if(entities.get(event.with)?.componentOpt<SpikeBlock>() != null){
                             respawn(entity, entities)
                         }
                         if(entities.get(event.with)?.componentOpt<StickyBlock>() != null){
@@ -115,13 +116,19 @@ class PlayerController : System {
                         if(entities.get(event.with)?.componentOpt<SlipperyBlock>() != null){
                             slippery = true;
                         }
-                        if(entities.get(event.with)?.componentOpt<SpringBlock>() != null && event.normal.y<0){
+                        if(entities.get(event.with)?.componentOpt<TrampolineBlock>() != null && event.normal.y<0){
                             velocity.y= -properties.maxSpeed*2.5f
                         }
-                        if(entities.get(event.with)?.componentOpt<TeleporterBlock>() != null){
-                            try {
-                                teleport(entity, e!!.component<Transform>().get().position)
-                            }catch (error:NullPointerException){}
+                        if(entities.get(event.with)?.componentOpt<TeleporterBlock>() != null && e!!.component<TeleporterBlock>().get().num %2 == 0){
+                            entities.forEach { entity2 ->
+                                if(entity2.componentOpt<TeleporterBlock>() != null && entity2!!.component<TeleporterBlock>().get().num == e!!.component<TeleporterBlock>().get().num+1){
+                                    try {
+                                        teleport(entity, entity2!!.component<Transform>().get().position)
+                                    }catch (error:NullPointerException){}
+                                }
+                            }
+
+
                         }
                     }
                 }
@@ -257,7 +264,7 @@ class PlayerController : System {
 
     private fun respawn(entityA: EntityView, entities: EntitiesView){
         entities.forEach{ entity ->
-            if(entity.componentOpt<SpawnPoint>() != null){
+            if(entity.componentOpt<RespawnBlock>() != null){
                 val targetPos = entity.component<Transform>().get().position
                 val currentPos = entityA.component<Transform>().get().position
                 entityA.component<Transform>().get().position.add(targetPos.x-currentPos.x, targetPos.y-currentPos.y)

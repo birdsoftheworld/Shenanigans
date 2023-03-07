@@ -8,9 +8,6 @@ import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.setToTransform
-import shenanigans.game.ScaryBlock
-import shenanigans.game.player.Player
-import shenanigans.game.player.PlayerController
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -56,10 +53,9 @@ class CollisionSystem : System {
                     transform2.get().position.add(move)
                     transform2.mutate()
                 }
-                maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueue)
-                maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueue)
             }
-
+            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueue)
+            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueue)
         }
         return
     }
