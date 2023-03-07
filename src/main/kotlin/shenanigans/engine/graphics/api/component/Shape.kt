@@ -2,7 +2,7 @@ package shenanigans.engine.graphics.api.component
 
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.util.Polygon
+import shenanigans.engine.util.shapes.Polygon
 
 /**
  * a shape to be rendered by `ShapeSystem`

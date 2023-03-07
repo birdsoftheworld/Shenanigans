@@ -8,7 +8,7 @@ import shenanigans.engine.events.emptyEventQueues
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.scene.Scene
-import shenanigans.engine.util.Polygon
+import shenanigans.engine.util.shapes.Polygon
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 

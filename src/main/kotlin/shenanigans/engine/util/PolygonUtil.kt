@@ -4,6 +4,7 @@ import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.joml.Vector4f
+import shenanigans.engine.util.shapes.Polygon
 
 fun Polygon.isPointInside(point: Vector2fc, transform: Transform) : Boolean{
     val transformMatrix = Matrix4f()
