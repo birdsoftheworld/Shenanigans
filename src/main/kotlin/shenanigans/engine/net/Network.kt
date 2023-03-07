@@ -1,5 +1,6 @@
 package shenanigans.engine.net
 
+import com.esotericsoftware.kryonet.Connection
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
 import java.util.concurrent.locks.ReentrantLock
@@ -35,6 +36,10 @@ class NetworkEventQueue internal constructor(val network: Network) : EventQueue(
 
     override fun queueLater(event: Event) {
         network.impl.sendMessage(EventMessage(event))
+    }
+
+    fun queueToConnection(connection: Connection, event: Event) {
+        network.impl.sendMessageToConnection(connection, EventMessage(event))
     }
 
     fun queueNetwork(event: Event, delivery: MessageDelivery) {

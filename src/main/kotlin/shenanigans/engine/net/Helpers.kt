@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsEmptyMapSerializer
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsSingletonMapSerializer
 import org.joml.Vector2f
+import org.joml.Vector3f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
@@ -45,4 +46,5 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     kryo.register(Color::class.java).setInstantiator { Color(0f, 0f, 0f) }
     kryo.register(emptyMap<Unit, Unit>()::class.java, CollectionsEmptyMapSerializer())
     kryo.register(Collections.singletonMap<Unit, Unit>(null, null)::class.java, CollectionsSingletonMapSerializer())
+    kryo.register(Vector3f::class.java)
 }

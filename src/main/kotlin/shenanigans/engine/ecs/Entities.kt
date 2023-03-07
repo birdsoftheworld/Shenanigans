@@ -98,11 +98,11 @@ class EntitiesLifecycle internal constructor() {
 
     fun add(components: Sequence<Component>): UUID {
         val id = UUID.randomUUID()
-        addWithID(components, id)
+        addWithID(id, components)
         return id
     }
 
-    fun addWithID(components: Sequence<Component>, id: UUID) {
+    fun addWithID(id: UUID, components: Sequence<Component>) {
         requests.add(LifecycleRequest.Add(id, components))
     }
 

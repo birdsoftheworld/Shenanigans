@@ -23,6 +23,7 @@ class NetworkSystem : System {
         eventQueues.own.receive(EntityMovementPacket::class).forEach update@{ packet ->
             packet.entities.forEach() packet@{ entity ->
                 if (entities[entity.key] == null) {
+                    Logger.warn("Entity Movement", "entity does not exist: " + entity.key)
                     return@packet
                 }
 
@@ -30,8 +31,9 @@ class NetworkSystem : System {
                 if (entities[entity.key]!!.componentOpt<KeyboardPlayer>() != null) {
                     return@packet
                 }
+
                 val position = entities[entity.key]!!.component<Transform>().get().position
-                position.lerp((entity.value).position, 1f / 7.5f)
+                position.lerp((entity.value).position, 1f / 3f)
             }
         }
 
@@ -43,7 +45,8 @@ class NetworkSystem : System {
             }
 
             lifecycle.addWithID(
-                packet.entity.values.asSequence(), packet.id
+                packet.id,
+                packet.entity.values.asSequence(),
             )
 
             Logger.log("Network System", "WahoOO!")

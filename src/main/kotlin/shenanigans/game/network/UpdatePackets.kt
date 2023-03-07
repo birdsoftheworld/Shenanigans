@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 class EntityMovementPacket(val entities: Map<UUID, Transform>): Event {
     constructor (entities: Sequence<EntityView>) : this(entities.map { it.id to it.component<Transform>().get()}.toMap())
 
-    constructor (entities: EntitiesView) : this(entities.map { it.id to it.component<Transform>().get()}.toMap())
+    constructor (entities: EntitiesView) : this( entities.iterator().asSequence().map { it.id to it.component<Transform>().get()}.toMap())
 }
 
 class EntityRegistrationPacket(val id: UUID, val entity: Map<KClass<out Component>, Component>) : Event {

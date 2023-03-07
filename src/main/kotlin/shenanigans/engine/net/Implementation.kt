@@ -12,6 +12,8 @@ import com.esotericsoftware.kryonet.Server as KryoServer
 interface NetworkImplementation {
     fun sendMessage(msg: Message)
     fun registerListener(listener: (Message) -> Unit)
+
+    fun sendMessageToConnection(connection: Connection, msg: Message)
 }
 
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
@@ -27,6 +29,13 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
         when (msg.delivery) {
             MessageDelivery.UnreliableUnordered -> kryoServer.sendToAllUDP(msg)
             MessageDelivery.ReliableOrdered -> kryoServer.sendToAllUDP(msg)
+        }
+    }
+
+    override fun sendMessageToConnection(connection: Connection, msg: Message) {
+        when (msg.delivery) {
+            MessageDelivery.UnreliableUnordered -> connection.sendUDP(msg)
+            MessageDelivery.ReliableOrdered -> connection.sendTCP(msg)
         }
     }
 
@@ -51,6 +60,13 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
             println("Connecting to " + addresses[0])
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    override fun sendMessageToConnection(connection: Connection, msg: Message) {
+        when (msg.delivery) {
+            MessageDelivery.UnreliableUnordered -> connection.sendUDP(msg)
+            MessageDelivery.ReliableOrdered -> connection.sendTCP(msg)
         }
     }
 

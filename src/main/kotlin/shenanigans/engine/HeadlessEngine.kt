@@ -52,7 +52,7 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene, Network(Server())) {
             networkEvents.finish()
             renderEvents.finish()
 
-            while(java.lang.System.currentTimeMillis() - lastTick < 50) {
+            while(java.lang.System.currentTimeMillis() - lastTick < 20) {
                 continue
             }
         }
