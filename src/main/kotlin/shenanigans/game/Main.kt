@@ -13,6 +13,7 @@ import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.util.Polygon
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.isPointInside
@@ -92,13 +93,13 @@ class AddTestEntities : System {
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
-        val shape = Shape(
+        val polygon = Polygon(
             arrayOf(
                 Vector2f(0f, 0f),
                 Vector2f(0f, 50f),
                 Vector2f(600f, 50f),
                 Vector2f(600f, 0f)
-            ), Color(1f, 0f, 0f)
+            )
         )
 
         lifecycle.add(
@@ -106,25 +107,25 @@ class AddTestEntities : System {
                 Transform(
                     Vector2f(0f, 600f)
                 ),
-                shape,
-                Collider(shape, true),
+                Shape(polygon, Color(1f, 0f, 0f)),
+                Collider(polygon, true),
                 MousePlayer(false, Vector2f(0f, 0f)),
             )
         )
 
-        val shape2 = Shape(
+        val polygon2 = Polygon(
             arrayOf(
-                Vector2f(0f, 0f), Vector2f(0f, 30f), Vector2f(30f, 30f), Vector2f(30f, 0f)
-            ), Color(0f, 0f, 1f)
+                Vector2f(0f, 0f), Vector2f(0f, 70f), Vector2f(40f, 70f), Vector2f(40f, 0f)
+            )
         )
-        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(30f,30f))
+        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(40f,70f))
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector3f(200f, 500f, 1f),
                 ),
                 sprite,
-                Collider(shape2, false, tracked = true),
+                Collider(polygon2, false, tracked = true),
                 Player(
                     PlayerProperties()
                 ),
@@ -137,8 +138,8 @@ class AddTestEntities : System {
                 Transform(
                     Vector2f(600f, 700f)
                 ),
-                shape,
-                Collider(shape, true, true),
+                Shape(polygon, Color(1f, 0f, 0f)),
+                Collider(polygon, true),
                 MousePlayer(false, Vector2f(0f,0f)),
                 )
         ))
@@ -148,26 +149,26 @@ class AddTestEntities : System {
                 Transform(
                     Vector2f(800f, 600f)
                 ),
-                shape,
-                Collider(shape, true),
+                Shape(polygon, Color(1f, 0f, 0f)),
+                Collider(polygon, true),
                 MousePlayer(false, Vector2f(0f,0f)),
                 )
         ))
-        val shape3 = Shape(
+        val polygon3 = Polygon(
             arrayOf(
                 Vector2f(0f, 0f),
                 Vector2f(0f, 600f),
                 Vector2f(50f, 600f),
                 Vector2f(50f, 0f)
-            ), Color(0f, 1f, 1f)
+            )
         )
         lifecycle.add((
             sequenceOf(
                 Transform(
                     Vector3f(400f, 400f, 0.5f)
                 ),
-                shape3,
-                Collider(shape3, true),
+                Shape(polygon3, Color(0f, 1f, 1f)),
+                Collider(polygon3, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))
@@ -176,8 +177,8 @@ class AddTestEntities : System {
                 Transform(
                     Vector3f(300f, 400f, 0.5f)
                 ),
-                shape3,
-                Collider(shape3, true),
+                Shape(polygon3, Color(0f, 1f, 1f)),
+                Collider(polygon3, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
             ))
@@ -199,12 +200,12 @@ class InsertEntitiesOngoing : System {
         val mousePos = resources.get<MouseState>().position()
         val keyboard = resources.get<KeyboardState>()
         val shape = Shape(
-            arrayOf(
+            Polygon(arrayOf(
                 Vector2f(0f, 0f),
                 Vector2f(0f, 50f),
                 Vector2f(50f, 50f),
                 Vector2f(50f, 0f)
-            ), Color(.5f, .5f, .5f)
+            )), Color(.5f, .5f, .5f)
         )
         eventQueues.own.iterate<MouseButtonEvent>().forEach { event ->
             if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.PRESS) {
@@ -214,7 +215,7 @@ class InsertEntitiesOngoing : System {
                             Vector2f(round((mousePos.x()-25f)/50)*50, round((mousePos.y()-25f)/50)*50)
                         ),
                         shape,
-                        Collider(shape, false),
+                        Collider(shape.polygon, false),
                         MousePlayer(false, Vector2f(0f, 0f)),
                     )
                 )
@@ -256,7 +257,7 @@ class MouseMovementSystem : System {
                     resources.get<CameraResource>().camera!!.untransformPoint(Vector3f(mousePosition, 0f))
                 val mousePlayer = entity.component<MousePlayer>().get()
                 if (event.action == MouseButtonAction.PRESS && entity.component<Shape>().get()
-                        .isPointInside(Vector2f(transformedPosition.x, transformedPosition.y), transform)
+                        .polygon.isPointInside(Vector2f(transformedPosition.x, transformedPosition.y), transform)
                 ) {
                     mousePlayer.dragOffset.x = transform.position.x - transformedPosition.x()
                     mousePlayer.dragOffset.y = transform.position.y - transformedPosition.y()

@@ -73,8 +73,8 @@ class CollisionSystem : System {
 
             transformMatrix.setToTransform(Vector3f(), transform.rotation, transform.scale)
 
-            for (i in 0 until collider.vertices.size) {
-                val vertex = Vector4f(collider.vertices[i], 0f, 1f).mul(transformMatrix)
+            for (i in 0 until collider.polygon.vertices.size) {
+                val vertex = Vector4f(collider.polygon.vertices[i], 0f, 1f).mul(transformMatrix)
                 collider.transformedVertices[i].x = vertex.x
                 collider.transformedVertices[i].y = vertex.y
             }

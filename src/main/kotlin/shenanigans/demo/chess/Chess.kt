@@ -8,6 +8,7 @@ import shenanigans.engine.events.emptyEventQueues
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.util.Polygon
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
@@ -37,12 +38,12 @@ class AddTiles : System {
                     sequenceOf(
                         Transform(Vector2f(i * tileSize, j * tileSize)),
                         Shape(
-                            arrayOf(
+                            Polygon(arrayOf(
                                 Vector2f(0f, 0f),
                                 Vector2f(0f, tileSize),
                                 Vector2f(tileSize, tileSize),
                                 Vector2f(tileSize, 0f),
-                            ),
+                            )),
                             if ((i + j) % 2 == 0) {
                                 Color(0f, 0f, 0f)
                             } else {

@@ -27,7 +27,7 @@ class ShapeSystem : System {
             val shape = entity.component<Shape>().get()
             val transform = entity.component<Transform>().get()
             renderer.transformation = camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
-            renderer.polygon(shape.vertices, shape.color)
+            renderer.polygon(shape.polygon.vertices, shape.color)
         }
 
         renderer.end()
