@@ -4,6 +4,7 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
@@ -24,11 +25,11 @@ enum class WallStatus(val sign: Float) {
 
 data class PlayerProperties(
     val maxAcceleration: Float = 1375f,
-    val maxAirAcceleration: Float = .75f * maxAcceleration,
+    val maxAirAcceleration: Float = .95f * maxAcceleration,
     val maxDeceleration: Float = 1650f,
-    val maxAirDeceleration: Float = 275f,
+    val maxAirDeceleration: Float = 0f,
     val maxTurnSpeed: Float = 2750f,
-    val maxAirTurnSpeed: Float = 2050f,
+    val maxAirTurnSpeed: Float = 2150f,
 
     val maxSpeed: Float = 275f,
 
@@ -36,41 +37,46 @@ data class PlayerProperties(
 
     val downwardMovementMultiplier: Float = 1f,
 
-    val wallJumpDistance: Float = 275f,
-    val wallJumpSpeed: Float = 480f,
+    val wallJumpHSpeed: Float = 400f,
+    val wallJumpVSpeed: Float = 500f,
     val wallJumpSlideSpeed: Float = 140f,
 
     val coyoteTime: Float = .1f,
-    val wallCoyoteTime: Float = .085f,
+    val wallCoyoteTime: Float = .1f,
     val jumpBufferTime: Float = .2f,
 
-    val jumpCutoff: Float = .75f,
+    val jumpCutoff: Float = 2f,
 
     val terminalVelocity: Float = 825f,
     val gravity: Float = 1375f,
 )
 
-enum class JumpType {
-    Wall,
-    Floor,
-    None
-}
+sealed class Jump(val isCoyote: Boolean)
+
+class FloorJump(isCoyote: Boolean) : Jump(isCoyote)
+class WallJump(val wall: WallStatus, isCoyote: Boolean) : Jump(isCoyote)
 
 data class Player(
     val properties: PlayerProperties,
+
     val velocity: Vector2f = Vector2f(),
+
     var onGround: Boolean = false,
-    var wall: WallStatus = WallStatus.Off,
-    var currentJump: JumpType = JumpType.None,
     var onCeiling: Boolean = false,
+    var wall: WallStatus = WallStatus.Off,
+
+    var currentJump: Jump? = null,
+
     var coyoteTime: Float = 0f,
     var wallCoyoteTime: Float = 0f,
+    var lastWallDirectionTouched: WallStatus = WallStatus.Off,
+
     var jumpBufferTime: Float = 0f
 ) : Component
 
 class PlayerController : System {
     override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Player::class, Transform::class)
+        return setOf(Player::class, Transform::class, Collider::class)
     }
 
     override fun executePhysics(
@@ -112,14 +118,12 @@ class PlayerController : System {
             }
 
             if (player.onGround) {
-                player.currentJump = JumpType.None
+                player.currentJump = null
             }
 
             val pos = transform.get().position
 
             val properties = player.properties
-
-            val desiredVelocity = Vector2f(0f, 0f)
 
             var direction = 0f
             //left
@@ -130,7 +134,11 @@ class PlayerController : System {
             if (keyboard.isPressed(Key.D)) {
                 direction += 1f
             }
-            desiredVelocity.add(direction * properties.maxSpeed, 0f)
+
+            val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
+            if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
+                desiredVelocity.x = velocity.x
+            }
 
             var turnSpeed = 0f
             var acceleration = 0f
@@ -170,16 +178,17 @@ class PlayerController : System {
 
             val gravity = player.getGravity(holdingJump)
 
-            val jumpType = player.getJumpType()
-            if ((pressedJump || bufferedJump) && jumpType != JumpType.None) {
+            val jump = player.getJump()
+            if ((pressedJump || bufferedJump) && jump != null) {
                 jumped = true
-                player.jump(jumpType)
+                player.jump(jump)
             }
             if (pressedJump && !jumped) {
                 player.jumpBufferTime = properties.jumpBufferTime
             }
 
             if (player.wall != WallStatus.Off && !jumped) {
+                player.lastWallDirectionTouched = player.wall
                 player.wallCoyoteTime = properties.wallCoyoteTime
             }
             if (player.onGround && !jumped) {
@@ -210,7 +219,7 @@ class PlayerController : System {
 
     private fun Player.getGravity(holdingJump: Boolean): Float {
         val gravityMultiplier = if (velocity.y < 0f) {
-            if (holdingJump && this.currentJump != JumpType.None) {
+            if (holdingJump && this.currentJump != null) {
                 1f
             } else {
                 1f + properties.jumpCutoff
@@ -223,16 +232,16 @@ class PlayerController : System {
         return properties.gravity * gravityMultiplier
     }
 
-    private fun Player.jump(jumpType: JumpType) {
-        this.currentJump = jumpType
+    private fun Player.jump(jump: Jump) {
+        this.currentJump = jump
 
-        val targetSpeed = if (jumpType == JumpType.Wall) {
-            if (this.wall == WallStatus.Right) {
-                velocity.x -= properties.wallJumpDistance
-            } else if (this.wall == WallStatus.Left) {
-                velocity.x += properties.wallJumpDistance
+        val targetSpeed = if (jump is WallJump) {
+            if (jump.wall == WallStatus.Right) {
+                velocity.x -= properties.wallJumpHSpeed
+            } else if (jump.wall == WallStatus.Left) {
+                velocity.x += properties.wallJumpHSpeed
             }
-            properties.wallJumpSpeed
+            properties.wallJumpVSpeed
         } else {
             properties.jumpSpeed
         }
@@ -248,12 +257,17 @@ class PlayerController : System {
         this.coyoteTime = 0f
     }
 
-    private fun Player.getJumpType(): JumpType {
-        if (this.onGround || this.coyoteTime > 0f) {
-            return JumpType.Floor
-        } else if (this.wall != WallStatus.Off || this.wallCoyoteTime > 0f) {
-            return JumpType.Wall
+    private fun Player.getJump(): Jump? {
+        return if (this.onGround) {
+            FloorJump(false)
+        } else if(this.coyoteTime > 0f) {
+            FloorJump(true)
+        } else if (this.wall != WallStatus.Off) {
+            WallJump(this.wall, false)
+        } else if(this.wallCoyoteTime > 0f) {
+            WallJump(this.lastWallDirectionTouched, true)
+        } else {
+            null
         }
-        return JumpType.None
     }
 }
