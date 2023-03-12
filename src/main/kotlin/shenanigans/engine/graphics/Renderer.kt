@@ -64,7 +64,7 @@ object Renderer {
         TextureManager.discard()
     }
 
-    fun renderGame(window: Window, scene: Scene, engineResources: Resources, eventQueues: EventQueues) {
+    fun renderGame(window: Window, scene: Scene, engineResources: Resources, eventQueues: EventQueues<LocalEventQueue>) {
         val width = window.width
         val height = window.height
         glViewport(0, 0, width, height)

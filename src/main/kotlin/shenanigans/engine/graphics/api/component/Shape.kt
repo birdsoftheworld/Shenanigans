@@ -7,6 +7,7 @@ import shenanigans.engine.util.shapes.Polygon
 /**
  * a shape to be rendered by `ShapeSystem`
  */
+
 data class Shape(
     val polygon : Polygon,
     val color: Color,

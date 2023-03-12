@@ -4,6 +4,7 @@ import org.joml.Vector2i
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureOptions
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.graphics.api.texture.TextureManager
@@ -12,14 +13,20 @@ import shenanigans.engine.window.WindowResource
 import kotlin.reflect.KClass
 
 class DrawBackgroundSystem : System {
-    val background = TextureManager.createTexture("/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
+    val background =
+        TextureManager.createTexture("/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
     val imageSize = Vector2i(400, 400)
 
     override fun query(): Iterable<KClass<out Component>> {
         return emptySet()
     }
 
-    override fun executeRender(resources: ResourcesView, eventQueues: EventQueues, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executeRender(
+        resources: ResourcesView,
+        eventQueues: EventQueues<LocalEventQueue>,
+        entities: EntitiesView,
+        lifecycle: EntitiesLifecycle
+    ) {
         val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
         val size = resources.get<WindowResource>().window.size
         val camera = resources.get<CameraResource>().camera!!
@@ -33,6 +40,14 @@ class DrawBackgroundSystem : System {
         textureRenderer.textureRect(translation.x, translation.y, -1f, size.x.toFloat(), size.y.toFloat(), background.getRegion(
             translation.x / imageSize.x, translation.y / imageSize.y, size.x.toFloat() / imageSize.x, size.y.toFloat() / imageSize.y
         ))
+        textureRenderer.textureRect(
+            translation.x, translation.y, size.x.toFloat(), size.y.toFloat(), background.getRegion(
+                translation.x / imageSize.x,
+                translation.y / imageSize.y,
+                size.x.toFloat() / imageSize.x,
+                size.y.toFloat() / imageSize.y
+            )
+        )
 
         textureRenderer.end()
     }

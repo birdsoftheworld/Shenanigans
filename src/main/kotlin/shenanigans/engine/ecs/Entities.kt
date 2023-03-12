@@ -1,17 +1,18 @@
 package shenanigans.engine.ecs
 
+import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
-import java.util.UUID
+import java.util.*
 import kotlin.reflect.KClass
 
 class Entities {
     internal val entities: HashMap<UUID, StoredEntity> = hashMapOf()
 
-    fun <S : System> runSystem(
-        execute: S.(ResourcesView, EventQueues, EntitiesView, EntitiesLifecycle) -> Unit,
+    fun <S : System, Q : EventQueue> runSystem(
+        execute: S.(ResourcesView, EventQueues<Q>, EntitiesView, EntitiesLifecycle) -> Unit,
         system: S,
         resourcesView: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<Q>,
     ) {
         val query = system.query()
 
@@ -112,7 +113,12 @@ class EntitiesLifecycle internal constructor() {
     fun add(components: Sequence<Component>, parent: UUID? = null): UUID {
         val id = UUID.randomUUID()
         requests.add(LifecycleRequest.Add(id, components, parent))
+        addWithID(id, components)
         return id
+    }
+
+    fun addWithID(id: UUID, components: Sequence<Component>) {
+        requests.add(LifecycleRequest.Add(id, components))
     }
 
     fun del(id: UUID) {

@@ -3,6 +3,7 @@ package shenanigans.engine.window.events
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.KeyAction

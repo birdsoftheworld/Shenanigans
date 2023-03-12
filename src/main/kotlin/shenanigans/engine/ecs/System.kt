@@ -1,6 +1,9 @@
 package shenanigans.engine.ecs
 
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.net.NetworkEventQueue
+import java.util.Locale
 import kotlin.reflect.KClass
 
 interface System {
@@ -14,7 +17,7 @@ interface System {
      */
     fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -25,7 +28,7 @@ interface System {
      */
     fun executeNetwork(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<NetworkEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -36,7 +39,7 @@ interface System {
      */
     fun executeRender(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
