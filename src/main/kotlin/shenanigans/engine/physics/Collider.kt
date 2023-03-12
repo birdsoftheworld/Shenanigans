@@ -5,7 +5,7 @@ import shenanigans.engine.ecs.Component
 import shenanigans.engine.util.shapes.Polygon
 
 class Collider constructor(
-    val polygon: Polygon,
+    var polygon: Polygon,
     val static: Boolean,
     val triggerCollider: Boolean = false,
     val tracked: Boolean = false
