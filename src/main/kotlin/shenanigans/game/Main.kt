@@ -97,7 +97,7 @@ class AddTestEntities : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector2f(0f, 600f)
+                    Vector3f(0f, 600f, 0.5f)
                 ),
                 Shape(polygon, Color(1f, 0f, 0f)),
                 Collider(polygon, true),
@@ -110,7 +110,7 @@ class AddTestEntities : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(200f, 500f, 1f),
+                    Vector3f(200f, 500f, 0.5f),
                 ),
                 sprite,
                 Collider(playerShape, false, tracked = true),
@@ -123,7 +123,7 @@ class AddTestEntities : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector2f(600f, 700f)
+                    Vector3f(600f, 700f, 0.5f)
                 ),
                 Shape(polygon, Color(1f, 0f, 0f)),
                 Collider(polygon, true),
@@ -134,7 +134,7 @@ class AddTestEntities : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector2f(800f, 600f)
+                    Vector3f(800f, 600f, 0.5f)
                 ),
                 Shape(polygon, Color(1f, 0f, 0f)),
                 Collider(polygon, true),
@@ -209,7 +209,7 @@ class MouseMovementSystem : System {
                 transform.position.set(
                     transformedPosition.x() + mousePlayer.dragOffset.x(),
                     transformedPosition.y() + mousePlayer.dragOffset.y(),
-                    0f
+                    transform.position.z
                 )
                 entity.component<Transform>().mutate()
             }
