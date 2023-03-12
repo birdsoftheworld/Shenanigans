@@ -11,6 +11,8 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
+import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.net.EventMessage
 import shenanigans.engine.net.MessageDelivery
 import shenanigans.engine.net.events.ConnectionEvent
@@ -18,6 +20,7 @@ import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Polygon
+import shenanigans.engine.util.shapes.Rectangle
 import java.util.*
 import kotlin.jvm.internal.ClassReference
 
@@ -30,7 +33,8 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     kryo.register(Collider::class.java).setInstantiator { Collider(Polygon(arrayOf()), static = false, triggerCollider = false) }
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
-    kryo.register(Polygon::class.java)
+    kryo.register(Polygon::class.java).setInstantiator { Polygon(arrayOf()) }
+    kryo.register(Rectangle::class.java).setInstantiator { Rectangle(0f, 0f) }
 
     // Events
     kryo.register(EventMessage::class.java).setInstantiator { EventMessage(ConnectionEvent(null, ConnectionEventType.Connect)) }

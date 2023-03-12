@@ -23,6 +23,7 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
 import shenanigans.game.network.NetworkSystem
+import shenanigans.game.network.Synchronized
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import shenanigans.game.player.PlayerProperties
@@ -117,6 +118,7 @@ class AddTestEntities : System {
                 Player(
                     PlayerProperties()
                 ),
+                Synchronized()
             )
         )
 
