@@ -1,6 +1,9 @@
 package shenanigans.game.network
 
 import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.Serializer
+import com.esotericsoftware.kryo.io.Input
+import com.esotericsoftware.kryo.io.Output
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsEmptyMapSerializer
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsSingletonMapSerializer
 import org.joml.Vector2f
@@ -41,7 +44,23 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     kryo.register(Vector2f::class.java)
     kryo.register(Array<Vector2f>::class.java)
     kryo.register(Array<Component>::class.java)
-    kryo.register(UUID::class.java).setInstantiator { UUID.randomUUID() }
+    kryo.register(UUID::class.java, object : Serializer<UUID>() {
+        override fun write(kryo: Kryo, output: Output, obj: UUID?) {
+            obj!!
+            output.writeLong(obj.mostSignificantBits)
+            output.writeLong(obj.leastSignificantBits)
+        }
+
+        override fun read(kryo: Kryo, input: Input, type: Class<out UUID>): UUID {
+            val msb = input.readLong()
+            val lsb = input.readLong()
+            return UUID(msb, lsb)
+        }
+
+        override fun getAcceptsNull(): Boolean {
+            return false
+        }
+    })
     kryo.register(LinkedHashMap::class.java)
     kryo.register(ClassReference::class.java).setInstantiator { ClassReference(Void::class.java) }
     kryo.register(Class::class.java)
