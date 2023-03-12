@@ -30,9 +30,8 @@ class SpriteSystem : System {
         for (entity in entities) {
             val sprite = entity.component<Sprite>().get()
             val transform = entity.component<Transform>().get()
-            renderer.transformation =
-                camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
-            renderer.textureRect(0f, 0f, sprite.size.x, sprite.size.y, sprite.sprite)
+            renderer.transformation = camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
+            renderer.textureRect(0f, 0f, sprite.rectangle.width, sprite.rectangle.height, sprite.sprite)
         }
 
         renderer.end()

@@ -65,8 +65,8 @@ class FollowCameraSystem : System {
         val transform = first.component<Transform>().get()
         val camera = resources.get<CameraResource>().camera!!
         camera.reset().translate(
-            transform.position.x - camera.screenWidth / 2 + 50,
-            transform.position.y - camera.screenHeight / 2 + 50
+            transform.position.x - camera.screenWidth / 2 + 20 ,
+            transform.position.y - camera.screenHeight / 2 + 20
         )
     }
 }
@@ -105,15 +105,15 @@ class AddTestEntities : System {
             )
         )
 
-        val polygon2 = Rectangle(40f, 70f)
-        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(40f,70f))
+        val playerShape = PlayerController.SHAPE_BASE
+        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), playerShape)
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector3f(200f, 500f, 1f),
                 ),
                 sprite,
-                Collider(polygon2, false, tracked = true),
+                Collider(playerShape, false, tracked = true),
                 Player(
                     PlayerProperties()
                 ),
