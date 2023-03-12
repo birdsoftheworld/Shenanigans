@@ -5,7 +5,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.emptyEventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
@@ -22,7 +22,7 @@ import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.Sendable
+import shenanigans.game.network.NetworkSystem
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import shenanigans.game.player.PlayerProperties
@@ -30,23 +30,22 @@ import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
-    ClientEngine(testScene()).run()
+    val engine = ClientEngine(testScene())
+
+    engine.runPhysicsOnce(AddTestEntities())
+
+    engine.run()
 }
 
 fun testScene(): Scene {
     val scene = Scene()
-
-    // NOTE: in the future, this will not be the recommended way to populate a scene
-    //       instead, the engine will have a facility for running systems once
-    //       which will be used with a canonical "AddEntities" system
-    scene.entities.runSystem(System::executePhysics, AddTestEntities(), ResourcesView(), emptyEventQueues())
 
     scene.defaultSystems.add(MouseMovementSystem())
     scene.defaultSystems.add(InsertEntitiesOngoing())
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(FollowCameraSystem())
-//    scene.defaultSystems.add(NetworkSystem())
+    scene.defaultSystems.add(NetworkSystem())
 
     return scene
 }
@@ -58,7 +57,7 @@ class FollowCameraSystem : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -66,8 +65,8 @@ class FollowCameraSystem : System {
         val transform = first.component<Transform>().get()
         val camera = resources.get<CameraResource>().camera!!
         camera.reset().translate(
-            transform.position.x - camera.screenWidth / 2 + 50,
-            transform.position.y - camera.screenHeight / 2 + 50
+            transform.position.x - camera.screenWidth / 2 + 20 ,
+            transform.position.y - camera.screenHeight / 2 + 20
         )
     }
 }
@@ -89,7 +88,7 @@ class AddTestEntities : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -98,7 +97,7 @@ class AddTestEntities : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector2f(0f, 600f)
+                    Vector3f(0f, 600f, 0.5f)
                 ),
                 Shape(polygon, Color(1f, 0f, 0f)),
                 Collider(polygon, true),
@@ -106,26 +105,25 @@ class AddTestEntities : System {
             )
         )
 
-        val polygon2 = Rectangle(40f, 70f)
-        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Vector2f(40f,70f))
+        val playerShape = PlayerController.SHAPE_BASE
+        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), playerShape)
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(200f, 500f, 1f),
+                    Vector3f(200f, 500f, 0.5f),
                 ),
                 sprite,
-                Collider(polygon2, false, tracked = true),
+                Collider(playerShape, false, tracked = true),
                 Player(
                     PlayerProperties()
                 ),
-                Sendable(),
             )
         )
 
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector2f(600f, 700f)
+                    Vector3f(600f, 700f, 0.5f)
                 ),
                 Shape(polygon, Color(1f, 0f, 0f)),
                 Collider(polygon, true),
@@ -136,7 +134,7 @@ class AddTestEntities : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector2f(800f, 600f)
+                    Vector3f(800f, 600f, 0.5f)
                 ),
                 Shape(polygon, Color(1f, 0f, 0f)),
                 Collider(polygon, true),
@@ -144,16 +142,6 @@ class AddTestEntities : System {
                 )
         ))
         val polygon3 = Rectangle(50f, 600f)
-        lifecycle.add((
-            sequenceOf(
-                Transform(
-                    Vector3f(400f, 400f, 0.5f)
-                ),
-                Shape(polygon3, Color(0f, 1f, 1f)),
-                Collider(polygon3, true),
-                MousePlayer(false, Vector2f(0f,0f)),
-            )
-        ))
         lifecycle.add((
             sequenceOf(
                 Transform(
@@ -175,7 +163,7 @@ class InsertEntitiesOngoing : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -185,7 +173,7 @@ class InsertEntitiesOngoing : System {
             Rectangle(50f, 50f),
             Color(.5f, .5f, .5f)
         )
-        eventQueues.own.iterate<MouseButtonEvent>().forEach { event ->
+        eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
             if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.PRESS) {
                 lifecycle.add(
                     sequenceOf(
@@ -208,7 +196,7 @@ class MouseMovementSystem : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -221,13 +209,13 @@ class MouseMovementSystem : System {
                 transform.position.set(
                     transformedPosition.x() + mousePlayer.dragOffset.x(),
                     transformedPosition.y() + mousePlayer.dragOffset.y(),
-                    0f
+                    transform.position.z
                 )
                 entity.component<Transform>().mutate()
             }
         }
 
-        eventQueues.own.iterate<MouseButtonEvent>().forEach { event ->
+        eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
             entities.forEach { entity ->
                 val transform = entity.component<Transform>().get()
                 val mousePosition = resources.get<MouseState>().position()

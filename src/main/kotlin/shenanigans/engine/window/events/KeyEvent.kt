@@ -3,6 +3,7 @@ package shenanigans.engine.window.events
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.KeyAction
@@ -30,7 +31,7 @@ class KeyboardState : Resource, StateMachine {
 
     override fun transitionPhysics(queue: EventQueue) {
         justPressed.clear()
-        queue.iterate<KeyEvent>().forEach { event ->
+        queue.receive(KeyEvent::class).forEach { event ->
             val press = event.action == KeyAction.PRESS
             justPressed[event.key] = press && !(pressed[event.key] ?: false)
             pressed[event.key] = press || event.action == KeyAction.REPEAT

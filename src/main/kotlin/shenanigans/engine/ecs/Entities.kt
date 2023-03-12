@@ -1,17 +1,18 @@
 package shenanigans.engine.ecs
 
+import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
-import java.util.UUID
+import java.util.*
 import kotlin.reflect.KClass
 
 class Entities {
     internal val entities: HashMap<UUID, StoredEntity> = hashMapOf()
 
-    fun <S : System> runSystem(
-        execute: S.(ResourcesView, EventQueues, EntitiesView, EntitiesLifecycle) -> Unit,
+    fun <S : System, Q : EventQueue> runSystem(
+        execute: S.(ResourcesView, EventQueues<Q>, EntitiesView, EntitiesLifecycle) -> Unit,
         system: S,
         resourcesView: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<Q>,
     ) {
         val query = system.query()
 
@@ -28,15 +29,13 @@ class Entities {
 }
 
 data class StoredEntity(
-    val components: Map<KClass<out Component>, StoredComponent>,
-    var parent: UUID? = null,
-    val children: MutableList<UUID> = mutableListOf(),
+    val components: Map<KClass<out Component>, StoredComponent>
 )
 
 data class StoredComponent(val component: Component, var version: Int = 0)
 
 class EntityView internal constructor(
-    private val entities: Entities,
+    entities: Entities,
     val id: UUID,
     @PublishedApi internal val entity: StoredEntity = entities.entities[id]!!
 ) {
@@ -53,14 +52,6 @@ class EntityView internal constructor(
         } else {
             null
         }
-    }
-
-    fun parent(): EntityView? {
-        return entity.parent?.let { EntityView(entities, it) }
-    }
-
-    fun children(): Sequence<EntityView> {
-        return entity.children.asSequence().map { EntityView(entities, it) }
     }
 }
 
@@ -105,14 +96,18 @@ class EntitiesLifecycle internal constructor() {
     private val requests: MutableList<LifecycleRequest> = mutableListOf()
 
     sealed class LifecycleRequest {
-        data class Add(val id: UUID, val components: Sequence<Component>, val parent: UUID?) : LifecycleRequest()
+        data class Add(val id: UUID, val components: Sequence<Component>) : LifecycleRequest()
         data class Del(val id: UUID) : LifecycleRequest()
     }
 
     fun add(components: Sequence<Component>, parent: UUID? = null): UUID {
         val id = UUID.randomUUID()
-        requests.add(LifecycleRequest.Add(id, components, parent))
+        addWithID(id, components)
         return id
+    }
+
+    fun addWithID(id: UUID, components: Sequence<Component>) {
+        requests.add(LifecycleRequest.Add(id, components))
     }
 
     fun del(id: UUID) {
@@ -125,24 +120,10 @@ class EntitiesLifecycle internal constructor() {
                 is LifecycleRequest.Add -> {
                     entities.entities[req.id] = StoredEntity(
                         components = req.components.map { StoredComponent(it) }.associateBy { it.component::class },
-                        parent = req.parent,
-                        children = mutableListOf(),
                     )
-
-                    req.parent?.let { parentId ->
-                        entities.entities[parentId]?.children?.add(req.id)
-                    }
                 }
 
                 is LifecycleRequest.Del -> {
-                    entities.entities[req.id]?.parent?.let { parentId ->
-                        entities.entities[parentId]?.children?.remove(req.id)
-                    }
-
-                    entities.entities[req.id]?.children?.forEach { childId ->
-                        entities.entities[childId]?.parent = null
-                    }
-
                     entities.entities.remove(req.id) ?: throw IllegalStateException("Entity ${req.id} not found")
                 }
             }

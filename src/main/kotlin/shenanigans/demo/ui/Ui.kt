@@ -5,8 +5,6 @@ import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.ecs.utils.AddEntitiesSystem
-import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.emptyEventQueues
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UIComponent
@@ -14,11 +12,7 @@ import shenanigans.engine.ui.dsl.buildUI
 import shenanigans.engine.ui.elements.Box
 
 fun main() {
-    ClientEngine(makeScene()).run()
-}
-
-fun makeScene(): Scene {
-    val scene = Scene()
+    val engine = ClientEngine(Scene())
 
     val ui = buildUI {
         coloredBox {
@@ -59,20 +53,7 @@ fun makeScene(): Scene {
         }
     }
 
-    scene.entities.runSystem(
-        System::executePhysics,
-        AddEntitiesSystem(
-            sequenceOf(
-                sequenceOf(
-                    UIComponent(
-                        ui
-                    )
-                )
-            )
-        ),
-        ResourcesView(),
-        emptyEventQueues(),
-    )
+    engine.runPhysicsOnce(AddEntitiesSystem(sequenceOf(sequenceOf(UIComponent(ui)))))
 
-    return scene
+    engine.run()
 }

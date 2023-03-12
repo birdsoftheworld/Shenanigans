@@ -4,13 +4,17 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
+import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
+import shenanigans.game.network.ClientOnly
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
@@ -56,6 +60,8 @@ sealed class Jump(val isCoyote: Boolean)
 class FloorJump(isCoyote: Boolean) : Jump(isCoyote)
 class WallJump(val wall: WallStatus, isCoyote: Boolean) : Jump(isCoyote)
 
+
+@ClientOnly
 data class Player(
     val properties: PlayerProperties,
 
@@ -64,6 +70,8 @@ data class Player(
     var onGround: Boolean = false,
     var onCeiling: Boolean = false,
     var wall: WallStatus = WallStatus.Off,
+
+    var crouching: Boolean = false,
 
     var currentJump: Jump? = null,
 
@@ -81,7 +89,7 @@ class PlayerController : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -98,7 +106,7 @@ class PlayerController : System {
             player.wall = WallStatus.Off
             player.onCeiling = false
 
-            eventQueues.own.iterate<CollisionEvent>().forEach { event ->
+            eventQueues.own.receive(CollisionEvent::class).forEach { event ->
                 if (entity.id == event.target) {
                     if (event.normal.y < 0) {
                         player.onGround = true
@@ -125,6 +133,15 @@ class PlayerController : System {
 
             val properties = player.properties
 
+            val holdingCrouch = keyboard.isPressed(Key.S)
+            if (!player.crouching && holdingCrouch && player.onGround) {
+                player.crouching = true
+                entity.changeCrouch(true)
+            } else if (player.crouching && !holdingCrouch) {
+                player.crouching = false
+                entity.changeCrouch(false)
+            }
+
             var direction = 0f
             //left
             if (keyboard.isPressed(Key.A)) {
@@ -138,6 +155,10 @@ class PlayerController : System {
             val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
             if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
                 desiredVelocity.x = velocity.x
+            }
+
+            if (player.crouching && player.onGround) {
+                desiredVelocity.zero()
             }
 
             var turnSpeed = 0f
@@ -209,12 +230,30 @@ class PlayerController : System {
                 pos.add(Vector3f(0f, gravity, 0f).mul(1/2 * deltaTimeF * deltaTimeF))
             }
 
-            if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign) {
+            if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
                 velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
             }
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+            entity.component<Player>().mutate()
         }
+    }
+
+    private fun EntityView.changeCrouch(crouched: Boolean) {
+        val shape = if (crouched) SHAPE_CROUCHED else SHAPE_BASE
+        val otherShape = if (crouched) SHAPE_BASE else SHAPE_CROUCHED
+
+        val storedTransform = this.component<Transform>()
+        storedTransform.get().position.y -= shape.height - otherShape.height
+        storedTransform.mutate()
+
+        val storedCollider = this.component<Collider>()
+        storedCollider.get().polygon = shape
+        storedCollider.mutate()
+
+        val storedSprite = this.component<Sprite>()
+        storedSprite.get().rectangle = shape
+        storedSprite.mutate()
     }
 
     private fun Player.getGravity(holdingJump: Boolean): Float {
@@ -269,5 +308,10 @@ class PlayerController : System {
         } else {
             null
         }
+    }
+
+    companion object {
+        val SHAPE_BASE: Rectangle = Rectangle(40f, 70f)
+        val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 40f)
     }
 }
