@@ -4,6 +4,7 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
@@ -13,6 +14,7 @@ import shenanigans.engine.util.moveTowards
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
+import shenanigans.game.network.ClientOnly
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
@@ -58,6 +60,8 @@ sealed class Jump(val isCoyote: Boolean)
 class FloorJump(isCoyote: Boolean) : Jump(isCoyote)
 class WallJump(val wall: WallStatus, isCoyote: Boolean) : Jump(isCoyote)
 
+
+@ClientOnly
 data class Player(
     val properties: PlayerProperties,
 
@@ -85,7 +89,7 @@ class PlayerController : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -102,7 +106,7 @@ class PlayerController : System {
             player.wall = WallStatus.Off
             player.onCeiling = false
 
-            eventQueues.own.iterate<CollisionEvent>().forEach { event ->
+            eventQueues.own.receive(CollisionEvent::class).forEach { event ->
                 if (entity.id == event.target) {
                     if (event.normal.y < 0) {
                         player.onGround = true

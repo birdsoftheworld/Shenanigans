@@ -61,7 +61,7 @@ abstract class Engine(initScene: Scene, val network: Network) {
         }
     }
 
-    protected fun transitionStateMachineResources(events: EventQueues) {
+    protected fun transitionStateMachineResources(events: EventQueues<LocalEventQueue>) {
         engineResources.resources.forEach { (_, value) ->
             if (value is StateMachine) {
                 value.transitionPhysics(events.physics)

@@ -4,6 +4,7 @@ import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.opengl.GLUtil
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.renderer.FontRenderer
 import shenanigans.engine.graphics.api.renderer.ShapeRenderer
 import shenanigans.engine.graphics.api.renderer.TextureRenderer

@@ -7,7 +7,6 @@ import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.util.Transform
-import shenanigans.engine.util.camera.CameraResource
 import kotlin.reflect.KClass
 
 /**

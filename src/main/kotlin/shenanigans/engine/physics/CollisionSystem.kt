@@ -115,7 +115,7 @@ private fun maybeEmitEventsFor(
     normal: Vector2f,
     targetEntity: EntityView,
     with: EntityView,
-    eventQueues: EventQueues
+    eventQueues: EventQueues<LocalEventQueue>
 ) {
     if (targetEntity.component<Collider>().get().tracked) {
         eventQueues.own.queueLater(

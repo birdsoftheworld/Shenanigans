@@ -78,7 +78,7 @@ class MouseState : Resource, StateMachine {
     private val pressed = mutableMapOf<MouseButton, Boolean>()
 
     override fun transitionPhysics(queue: EventQueue) {
-        queue.iterate<MouseEvent>().forEach { event ->
+        queue.receive(MouseEvent::class).forEach { event ->
             when (event) {
                 is MousePositionEvent -> {
                     position.set(event.position)

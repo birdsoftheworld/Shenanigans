@@ -5,7 +5,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.emptyEventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
@@ -22,7 +22,7 @@ import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.Sendable
+import shenanigans.game.network.NetworkSystem
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import shenanigans.game.player.PlayerProperties
@@ -117,7 +117,6 @@ class AddTestEntities : System {
                 Player(
                     PlayerProperties()
                 ),
-                Sendable(),
             )
         )
 
@@ -146,20 +145,6 @@ class AddTestEntities : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector3f(400f, 400f, 0.5f)
-                ),
-                shape2,
-                Collider(shape2, false),
-                KeyboardPlayer(500f),
-                Synchronized(),
-                Shape(polygon3, Color(0f, 1f, 1f)),
-                Collider(polygon3, true),
-                MousePlayer(false, Vector2f(0f,0f)),
-            )
-        ))
-        lifecycle.add((
-            sequenceOf(
-                Transform(
                     Vector3f(300f, 400f, 0.5f)
                 ),
                 Shape(polygon3, Color(0f, 1f, 1f)),
@@ -178,7 +163,7 @@ class InsertEntitiesOngoing : System {
 
     override fun executePhysics(
         resources: ResourcesView,
-        eventQueues: EventQueues,
+        eventQueues: EventQueues<LocalEventQueue>,
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -188,7 +173,7 @@ class InsertEntitiesOngoing : System {
             Rectangle(50f, 50f),
             Color(.5f, .5f, .5f)
         )
-        eventQueues.own.iterate<MouseButtonEvent>().forEach { event ->
+        eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
             if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.PRESS) {
                 lifecycle.add(
                     sequenceOf(
