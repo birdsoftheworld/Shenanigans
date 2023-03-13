@@ -4,17 +4,19 @@ import shenanigans.engine.term.Logger
 import javax.sound.sampled.*
 
 class AudioClip(private val stream: AudioInputStream) : AutoCloseable {
-    private fun makeJClip(): Clip = AudioSystem.getClip().apply {
+    private val clip = AudioSystem.getClip().apply {
         open(stream)
-        addLineListener(ClipCloser)
         addLineListener(ClipLogger)
     }
 
     fun play() {
-        makeJClip().start()
+        clip.framePosition = 0
+        clip.start()
+        clip.drain()
     }
 
     override fun close() {
+        clip.close()
         stream.close()
     }
 
@@ -24,14 +26,10 @@ class AudioClip(private val stream: AudioInputStream) : AutoCloseable {
             val audioStream = AudioSystem.getAudioInputStream(inputStream)
             return AudioClip(audioStream)
         }
-    }
-}
 
-internal object ClipCloser : LineListener {
-    override fun update(event: LineEvent) {
-        when (event.type) {
-            LineEvent.Type.STOP -> {
-                event.line.close()
+        init {
+            AudioSystem.getAudioFileTypes().forEach {
+                Logger.log("audio", "supported audio file type: " + it.extension)
             }
         }
     }

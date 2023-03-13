@@ -55,9 +55,9 @@ class ServerRegistrationSystem : System {
             if(entities.get(entityRegistrationPacket.id) != null) {
                 Logger.warn("Entity Registration", "Duplicate ID: " + entityRegistrationPacket.id)
             }
-            lifecycle.addWithID(
+            lifecycle.add(
+                entityRegistrationPacket.entity.values.asSequence(),
                 entityRegistrationPacket.id,
-                entityRegistrationPacket.entity.values.asSequence()
             )
             Logger.log("Entity Registration", entityRegistrationPacket.id.toString())
             eventQueues.network.queueLater(entityRegistrationPacket)

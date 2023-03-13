@@ -100,14 +100,9 @@ class EntitiesLifecycle internal constructor() {
         data class Del(val id: UUID) : LifecycleRequest()
     }
 
-    fun add(components: Sequence<Component>, parent: UUID? = null): UUID {
-        val id = UUID.randomUUID()
-        addWithID(id, components)
-        return id
-    }
-
-    fun addWithID(id: UUID, components: Sequence<Component>) {
+    fun add(components: Sequence<Component>, id: UUID = UUID.randomUUID()): UUID {
         requests.add(LifecycleRequest.Add(id, components))
+        return id
     }
 
     fun del(id: UUID) {

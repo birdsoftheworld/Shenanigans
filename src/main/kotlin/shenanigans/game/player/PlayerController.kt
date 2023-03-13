@@ -2,6 +2,7 @@ package shenanigans.game.player
 
 import org.joml.Vector2f
 import org.joml.Vector3f
+import shenanigans.engine.audio.AudioClip
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
@@ -294,6 +295,8 @@ class PlayerController : System {
 
         this.jumpBufferTime = 0f
         this.coyoteTime = 0f
+
+        AUDIO_JUMP.play()
     }
 
     private fun Player.getJump(): Jump? {
@@ -313,5 +316,7 @@ class PlayerController : System {
     companion object {
         val SHAPE_BASE: Rectangle = Rectangle(40f, 70f)
         val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 40f)
+
+        val AUDIO_JUMP = AudioClip.fromFile("/jump.wav")
     }
 }
