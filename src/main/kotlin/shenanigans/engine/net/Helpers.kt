@@ -9,9 +9,11 @@ import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsSingl
 import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.Component
+import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.net.EventMessage
 import shenanigans.engine.net.MessageDelivery
@@ -30,6 +32,7 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     // Components
     kryo.register(Component::class.java)
     kryo.register(Shape::class.java).setInstantiator { Shape(Polygon(arrayOf()), Color(0f, 0f, 0f)) }
+    kryo.register(Sprite::class.java).setInstantiator { Sprite(TextureRegion(Texture(TextureKey()), 0f, 0f, 0f, 0f), Rectangle(0f, 0f)) }
     kryo.register(Collider::class.java).setInstantiator { Collider(Polygon(arrayOf()), static = false, triggerCollider = false) }
     kryo.register(Transform::class.java)
     kryo.register(Synchronized::class.java)
@@ -72,4 +75,7 @@ internal fun registerDefaultClasses(kryo: Kryo) {
     kryo.register(emptyMap<Unit, Unit>()::class.java, CollectionsEmptyMapSerializer())
     kryo.register(Collections.singletonMap<Unit, Unit>(null, null)::class.java, CollectionsSingletonMapSerializer())
     kryo.register(Vector3f::class.java)
+    kryo.register(Texture::class.java).setInstantiator { Texture(TextureKey()) }
+    kryo.register(TextureKey::class.java)
+    kryo.register(TextureRegion::class.java).setInstantiator { TextureRegion(Texture(TextureKey()), 0f, 0f, 0f, 0f) }
 }

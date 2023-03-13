@@ -8,6 +8,7 @@ import org.lwjgl.stb.STBTTPackedchar
 import org.lwjgl.stb.STBTruetype.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
+import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.TextureOptions
 import shenanigans.engine.graphics.api.renderer.FontRenderer
 import shenanigans.engine.graphics.api.texture.Texture
@@ -19,7 +20,12 @@ import java.util.*
 
 private typealias CodepointConsumer = (codepoint: Int, nextCodepoint: Int?) -> Unit
 
-class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: VerticalMetrics, private val info: STBTTFontinfo, val height: Float) {
+class BitmapFont internal constructor(
+    val data: ByteBuffer,
+    verticalMetrics: VerticalMetrics,
+    private val info: STBTTFontinfo,
+    val height: Float
+) {
     private var bmpTexture: Texture
 
     private var context: STBTTPackContext
@@ -38,7 +44,11 @@ class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: Ver
 
     init {
         val scale = stbtt_ScaleForPixelHeight(info, height)
-        this.verticalMetrics = VerticalMetrics(verticalMetrics.ascent * scale, verticalMetrics.descent * scale, verticalMetrics.lineGap * scale)
+        this.verticalMetrics = VerticalMetrics(
+            verticalMetrics.ascent * scale,
+            verticalMetrics.descent * scale,
+            verticalMetrics.lineGap * scale
+        )
 
         val bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H)
         characterData = STBTTPackedchar.create(NUM_CHARS)
@@ -48,18 +58,24 @@ class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: Ver
         context = STBTTPackContext.create()
 
         val success = stbtt_PackBegin(context, bitmap, BITMAP_W, BITMAP_H, 0, 1)
-        if(!success) {
+        if (!success) {
             throw RuntimeException("Failed to begin font packing")
         }
 
         val success2 = stbtt_PackFontRange(context, data, 0, height, FIRST_CHAR, characterData)
-        if(!success2) {
+        if (!success2) {
             throw RuntimeException("Failed to pack font range")
         }
 
         stbtt_PackEnd(context)
 
-        bmpTexture = TextureManager.createTextureFromData(bitmap, BITMAP_W, BITMAP_H, TextureOptions(TextureOptions.TextureType.RED, TextureOptions.FilterType.LINEAR))
+        bmpTexture = TextureManager.createTextureFromData(
+            TextureKey(),
+            bitmap,
+            BITMAP_W,
+            BITMAP_H,
+            TextureOptions(TextureOptions.TextureType.RED, TextureOptions.FilterType.LINEAR)
+        )
     }
 
     private fun iterateCodepoints(text: String, stack: MemoryStack, func: CodepointConsumer) {
@@ -71,7 +87,7 @@ class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: Ver
             charIndex += getNextCodepoint(text, length, charIndex, codepointBuf)
             val codepoint: Int = codepointBuf.get(0)
             var next: Int? = null
-            if(charIndex < length) {
+            if (charIndex < length) {
                 next = getNextCodepoint(text, length, charIndex, codepointBuf)
             }
             func(codepoint, next)
@@ -98,9 +114,11 @@ class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: Ver
                 val height = quad.y1() - quad.y0()
                 val texWidth = quad.s1() - quad.s0()
                 val texHeight = quad.t1() - quad.t0()
-                renderer.textureRect(quad.x0() + posX, quad.y0() + posY, width, height, bmpTexture.getRegion(
-                    quad.s0(), quad.t0(), texWidth, texHeight
-                ))
+                renderer.textureRect(
+                    quad.x0() + posX, quad.y0() + posY, width, height, bmpTexture.getRegion(
+                        quad.s0(), quad.t0(), texWidth, texHeight
+                    )
+                )
             }
         }
     }
@@ -119,7 +137,7 @@ class BitmapFont internal constructor(val data: ByteBuffer, verticalMetrics: Ver
     }
 
     fun measureText(text: String): Float {
-        if(measuredTextCache.containsKey(text)) {
+        if (measuredTextCache.containsKey(text)) {
             return measuredTextCache[text]!!
         }
 

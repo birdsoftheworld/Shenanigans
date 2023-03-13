@@ -6,6 +6,7 @@ import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
@@ -107,7 +108,7 @@ class AddTestEntities : System {
         )
 
         val playerShape = PlayerController.SHAPE_BASE
-        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), playerShape)
+        val sprite = Sprite(TextureManager.createTexture(TextureKey("player"), "/playerTexture.png").getRegion(), playerShape)
         lifecycle.add(
             sequenceOf(
                 Transform(
