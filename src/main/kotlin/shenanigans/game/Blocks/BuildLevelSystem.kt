@@ -32,13 +32,13 @@ class BuildLevelSystem : System {
         //Shapes
         val oscillatingShape = shapes.oscillatingShape
         val teleportShape = shapes.teleportShape
-        val spikeShape = shapes.scaryShape
+        val spikeShape = shapes.spikeShape
         val floorShape = shapes.floorShape
         val wallShape = shapes.wallShape
         val playerShape = shapes.playerShape
         val slipperyShape = shapes.slipperyShape
         val stickyShape = shapes.stickyShape
-        val trampolineShape = shapes.springShape
+        val trampolineShape = shapes.trampolineShape
         //Oscillating Block
         lifecycle.add((
                 sequenceOf(

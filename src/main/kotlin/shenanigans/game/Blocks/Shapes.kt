@@ -1,14 +1,25 @@
 package shenanigans.game.Blocks
 
 import org.joml.Vector2f
+import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.game.newShape
 
 class Shapes {
-    val scaryShape = newShape(50f,50f)
 
-    val springShape = newShape(50f,50f)
+    fun getShape(block : Component): Shape{
+        when(block){
+            is SpikeBlock -> return spikeShape
+            is TrampolineBlock -> return trampolineShape
+            is OscillatingBlock -> return oscillatingShape
+            is TeleporterBlock -> return teleportShape
+        }
+        return newShape(10000f,10000f)
+    }
+    val spikeShape = newShape(50f,50f)
+
+    val trampolineShape = newShape(50f,50f)
 
     val stickyShape = newShape(4f,50f, Color(0.56666666666f, 0.60833333333f,0.25555555555f))
 

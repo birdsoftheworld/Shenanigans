@@ -10,6 +10,7 @@ import kotlin.reflect.KClass
 
 class OscillatingBlock(val distanceToOscillate : Float, var startPos : Vector2f, var speed : Float, var dir : direction = direction.Right) :
     Component {
+    constructor() : this(50f,Vector2f(100f, 500f), .01f )
 
     fun rotate(clockwise : Boolean){
         if(clockwise){

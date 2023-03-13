@@ -3,6 +3,7 @@ package shenanigans.game.player
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
+import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
@@ -93,19 +94,21 @@ class PlayerController : System {
                 resources.get<EventQueue>().iterate<CollisionEvent>().forEach { event ->
                     val e=entities.get(event.with)
                     if (entity.id == event.target) {
-                        if (event.normal.y < 0) {
-                            player.onGround = true
-                            velocity.y = velocity.y.coerceAtMost(0f)
-                        } else if (event.normal.y > 0) {
-                            player.onCeiling = true
-                            velocity.y = max(0f, velocity.y)
-                        }
-                        if (event.normal.x < 0) {
-                            player.wall = WallStatus.Right
-                            velocity.x = velocity.x.coerceAtMost(0f)
-                        } else if (event.normal.x > 0) {
-                            player.wall = WallStatus.Left
-                            velocity.x = velocity.x.coerceAtLeast(0f)
+                        if(!e!!.component<Collider>().get().triggerCollider){
+                            if (event.normal.y < 0) {
+                                player.onGround = true
+                                velocity.y = velocity.y.coerceAtMost(0f)
+                            } else if (event.normal.y > 0) {
+                                player.onCeiling = true
+                                velocity.y = max(0f, velocity.y)
+                            }
+                            if (event.normal.x < 0) {
+                                player.wall = WallStatus.Right
+                                velocity.x = velocity.x.coerceAtMost(0f)
+                            } else if (event.normal.x > 0) {
+                                player.wall = WallStatus.Left
+                                velocity.x = velocity.x.coerceAtLeast(0f)
+                            }
                         }
                         if(entities.get(event.with)?.componentOpt<SpikeBlock>() != null){
                             respawn(entity, entities)
