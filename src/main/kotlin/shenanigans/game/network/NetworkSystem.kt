@@ -44,9 +44,9 @@ class NetworkSystem : System {
                 return@registration
             }
 
-            lifecycle.addWithID(
-                packet.id,
+            lifecycle.add(
                 packet.entity.values.asSequence(),
+                packet.id,
             )
 
             Logger.log("Network System", "WahoOO!")
