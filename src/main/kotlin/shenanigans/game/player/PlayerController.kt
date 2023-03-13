@@ -301,9 +301,9 @@ class PlayerController : System {
             FloorJump(false)
         } else if(this.coyoteTime > 0f) {
             FloorJump(true)
-        } else if (this.wall != WallStatus.Off) {
+        } else if (this.wall != WallStatus.Off && !this.crouching) {
             WallJump(this.wall, false)
-        } else if(this.wallCoyoteTime > 0f) {
+        } else if(this.wallCoyoteTime > 0f && !this.crouching) {
             WallJump(this.lastWallDirectionTouched, true)
         } else {
             null
