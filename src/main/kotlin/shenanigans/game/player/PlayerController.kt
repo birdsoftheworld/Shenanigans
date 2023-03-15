@@ -15,7 +15,7 @@ import shenanigans.engine.util.moveTowards
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.game.network.ClientOnly
+import shenanigans.engine.net.ClientOnly
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign

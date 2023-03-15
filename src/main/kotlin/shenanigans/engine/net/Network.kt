@@ -36,7 +36,7 @@ import kotlin.jvm.internal.ClassReference
 
 class Network(
     internal val impl: NetworkImplementation,
-    private val userSendables: Set<SendableClass<Any>> = emptySet()
+    userSendables: Set<SendableClass<Any>> = emptySet()
 ) {
     internal var receivedMessages: MutableList<Message> = mutableListOf()
     internal val receiveLock: ReentrantLock = ReentrantLock()
@@ -97,7 +97,7 @@ data class SendableClass<T : Any>(
     }
 
     internal fun registerKryo(kryo: Kryo) {
-        val registration = kryo.register(cl.java, serializer, hash())
+        val registration = kryo.register(cl.java, serializer ?: DefaultSerializers.ClassSerializer(), hash().and(0xFFFFFFF))
 
         if (serializer == null) {
             registration.setInstantiator { instantiator?.invoke() }
