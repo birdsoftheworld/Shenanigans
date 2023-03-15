@@ -24,7 +24,6 @@ class ClientEngine(initScene: Scene) : Engine(initScene = initScene, Network(Cli
     override fun init() {
         window = Window("game", 640, 640)
 
-
         window.onEvent { e -> physicsEvents.queueLater(e) }
 
         engineResources.set(WindowResource(window))
