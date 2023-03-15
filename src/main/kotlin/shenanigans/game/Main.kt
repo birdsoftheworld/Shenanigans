@@ -23,6 +23,7 @@ import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
+import shenanigans.game.network.ClientOnly
 import shenanigans.game.network.NetworkSystem
 import shenanigans.game.network.Synchronized
 import shenanigans.game.player.Player
@@ -52,9 +53,12 @@ fun testScene(): Scene {
     return scene
 }
 
+@ClientOnly
+class Followed(val func: () -> Vector3f) : Component
+
 class FollowCameraSystem : System {
     override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Player::class, Transform::class)
+        return setOf(Followed::class)
     }
 
     override fun executePhysics(
@@ -64,11 +68,11 @@ class FollowCameraSystem : System {
         lifecycle: EntitiesLifecycle
     ) {
         val first = entities.first()
-        val transform = first.component<Transform>().get()
         val camera = resources.get<CameraResource>().camera!!
+        val pos = first.component<Followed>().get().func()
         camera.reset().translate(
-            transform.position.x - camera.screenWidth / 2 + 20 ,
-            transform.position.y - camera.screenHeight / 2 + 20
+            pos.x - camera.screenWidth / 2,
+            pos.y - camera.screenHeight / 2
         )
     }
 }
@@ -109,16 +113,27 @@ class AddTestEntities : System {
 
         val playerShape = PlayerController.SHAPE_BASE
         val sprite = Sprite(TextureManager.createTexture(TextureKey("player"), "/playerTexture.png").getRegion(), playerShape)
+        val player = Player(
+            PlayerProperties()
+        )
+        val playerTransform = Transform(
+            Vector3f(200f, 500f, 0.5f),
+        )
         lifecycle.add(
             sequenceOf(
-                Transform(
-                    Vector3f(200f, 500f, 0.5f),
-                ),
+                playerTransform,
                 sprite,
                 Collider(playerShape, false, tracked = true),
-                Player(
-                    PlayerProperties()
-                ),
+                player,
+                Followed {
+                    val p = Vector3f(playerTransform.position)
+                    p.x += PlayerController.SHAPE_BASE.width / 2
+                    p.y += PlayerController.SHAPE_BASE.height / 2
+                    if (player.crouching) {
+                        p.y -= PlayerController.SHAPE_BASE.height - PlayerController.SHAPE_CROUCHED.height
+                    }
+                    p
+                },
                 Synchronized()
             )
         )
