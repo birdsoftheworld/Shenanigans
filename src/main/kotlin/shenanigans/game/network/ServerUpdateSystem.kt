@@ -11,18 +11,16 @@ import shenanigans.game.network.EntityRegistrationPacket
 import kotlin.reflect.KClass
 
 class ServerUpdateSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf()
-    }
-
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(emptySet())
+
         eventQueues.own.receive(EntityMovementPacket::class).forEach { packet ->
-            packet.entities.forEach() { entity ->
+            packet.entities.forEach { entity ->
                 if(entities[entity.key] != null) {
                     if(entities[entity.key]?.componentOpt<Transform>() == null) {
                         Logger.warn("Server Update","entity does not have a transform!")
@@ -40,19 +38,16 @@ class ServerUpdateSystem : System {
 }
 
 class ServerRegistrationSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf()
-    }
-
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(emptySet())
 
         eventQueues.network.receive(EntityRegistrationPacket::class).forEach {entityRegistrationPacket ->
-            if(entities.get(entityRegistrationPacket.id) != null) {
+            if(entities[entityRegistrationPacket.id] != null) {
                 Logger.warn("Entity Registration", "Duplicate ID: " + entityRegistrationPacket.id)
             }
             lifecycle.add(
@@ -67,14 +62,13 @@ class ServerRegistrationSystem : System {
 
 
 class FullEntitySyncSystem : System {
-    override fun query(): Iterable<KClass<out Component>> = setOf()
-
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(emptySet())
 
         eventQueues.own.receive(ConnectionEvent::class).forEach { connectionEvent ->
             val connection = connectionEvent.connection

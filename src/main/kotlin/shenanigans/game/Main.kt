@@ -57,17 +57,13 @@ fun testScene(): Scene {
 class Followed(val func: () -> Vector3f) : Component
 
 class FollowCameraSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Followed::class)
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        val first = entities.first()
+        val first = query(setOf(Followed::class)).first()
         val camera = resources.get<CameraResource>().camera!!
         val pos = first.component<Followed>().get().func()
         camera.reset().translate(
@@ -88,14 +84,10 @@ class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
 }
 
 class AddTestEntities : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val polygon = Rectangle(600f, 50f)
@@ -175,14 +167,10 @@ class AddTestEntities : System {
 
 
 class InsertEntitiesOngoing : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Shape::class,Transform::class)
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val mousePos = resources.get<MouseState>().position()
@@ -208,16 +196,14 @@ class InsertEntitiesOngoing : System {
     }
 }
 class MouseMovementSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(MousePlayer::class, Transform::class)
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(setOf(MousePlayer::class, Transform::class))
+
         entities.forEach { entity ->
             val mousePlayer = entity.component<MousePlayer>().get()
             if (mousePlayer.grabbed) {

@@ -10,18 +10,17 @@ import kotlin.reflect.KClass
 
 class NetworkSystem : System {
 
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Synchronized::class)
-    }
-
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(setOf(Synchronized::class))
+
         eventQueues.own.receive(EntityMovementPacket::class).forEach update@{ packet ->
-            packet.entities.forEach() packet@{ entity ->
+            val entities = query(setOf(Synchronized::class))
+            packet.entities.forEach packet@{ entity ->
                 if (entities[entity.key] == null) {
                     Logger.warn("Entity Movement", "entity does not exist: " + entity.key)
                     return@packet

@@ -84,20 +84,16 @@ data class Player(
 ) : Component
 
 class PlayerController : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Player::class, Transform::class, Collider::class)
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
 
-        entities.forEach { entity ->
+        query(setOf(Player::class, Transform::class, Collider::class)).forEach { entity ->
             val player = entity.component<Player>().get()
             val transform = entity.component<Transform>()
 

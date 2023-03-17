@@ -24,18 +24,14 @@ class CollisionSystem : System {
 
     private val transformMatrix = Matrix4f()
 
-    override fun query(): Iterable<KClass<out Component>> {
-        return listOf(Collider::class, Transform::class)
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
 
-        val collisionPairs = getCollisionPairs(entities)
+        val collisionPairs = getCollisionPairs(query(setOf(Collider::class, Transform::class)))
 
         collisionPairs.forEach { pair ->
             val collision = testCollision(pair) ?: return@forEach

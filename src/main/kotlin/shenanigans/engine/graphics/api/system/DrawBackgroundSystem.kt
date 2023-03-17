@@ -18,14 +18,10 @@ class DrawBackgroundSystem : System {
         TextureManager.createTexture(TextureKey("background"), "/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
     private val imageSize = Vector2i(400, 400)
 
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
-
     override fun executeRender(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val textureRenderer = resources.get<TextureRendererResource>().textureRenderer
