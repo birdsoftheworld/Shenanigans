@@ -13,9 +13,6 @@ interface NetworkImplementation {
 
     fun sendMessage(msg: Message)
     fun registerListener(listener: (Message) -> Unit)
-
-    fun sendMessageToConnection(connection: Connection, msg: Message)
-
     fun registerSendable(sendable: SendableClass<out Any>)
 }
 
@@ -29,16 +26,16 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
     }
 
     override fun sendMessage(msg: Message) {
-        when (msg.delivery) {
-            MessageDelivery.UnreliableUnordered -> kryoServer.sendToAllUDP(msg)
-            MessageDelivery.ReliableOrdered -> kryoServer.sendToAllUDP(msg)
-        }
-    }
-
-    override fun sendMessageToConnection(connection: Connection, msg: Message) {
-        when (msg.delivery) {
-            MessageDelivery.UnreliableUnordered -> connection.sendUDP(msg)
-            MessageDelivery.ReliableOrdered -> connection.sendTCP(msg)
+        if (msg.recipient != null) {
+            when (msg.delivery) {
+                MessageDelivery.UnreliableUnordered -> kryoServer.sendToUDP(msg.recipient!!, msg)
+                MessageDelivery.ReliableOrdered -> kryoServer.sendToTCP(msg.recipient!!, msg)
+            }
+        } else {
+            when (msg.delivery) {
+                MessageDelivery.UnreliableUnordered -> kryoServer.sendToAllUDP(msg)
+                MessageDelivery.ReliableOrdered -> kryoServer.sendToAllUDP(msg)
+            }
         }
     }
 
@@ -102,10 +99,10 @@ internal class KryoListener(val cb: (Message) -> Unit) : Listener {
     }
 
     override fun connected(connection: Connection?) {
-        cb(EventMessage(ConnectionEvent(connection, ConnectionEventType.Connect)))
+        cb(EventMessage(ConnectionEvent(connection?.id, ConnectionEventType.Connect)))
     }
 
     override fun disconnected(connection: Connection?) {
-        cb(EventMessage(ConnectionEvent(connection, ConnectionEventType.Disconnect)))
+        cb(EventMessage(ConnectionEvent(connection?.id, ConnectionEventType.Disconnect)))
     }
 }

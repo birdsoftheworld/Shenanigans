@@ -3,25 +3,24 @@ package shenanigans.engine.ecs
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
 import java.util.*
+import javax.management.Query
 import kotlin.reflect.KClass
 
 class Entities {
     internal val entities: HashMap<UUID, StoredEntity> = hashMapOf()
 
     fun <S : System, Q : EventQueue> runSystem(
-        execute: S.(ResourcesView, EventQueues<Q>, EntitiesView, EntitiesLifecycle) -> Unit,
+        execute: S.(ResourcesView, EventQueues<Q>, (Iterable<KClass<out Component>>) -> QueryView, EntitiesLifecycle) -> Unit,
         system: S,
         resourcesView: ResourcesView,
         eventQueues: EventQueues<Q>,
     ) {
-        val query = system.query()
-
         val lifecycle = EntitiesLifecycle()
         execute(
             system,
             resourcesView,
             eventQueues,
-            EntitiesView(this, query),
+            { query -> QueryView(this, query) },
             lifecycle
         )
         lifecycle.finish(this)
@@ -77,7 +76,7 @@ class ComponentView<T : Component>(private val stored: StoredComponent) {
     }
 }
 
-class EntitiesView internal constructor(
+class QueryView internal constructor(
     private val entities: Entities,
     private val query: Iterable<KClass<out Component>>,
 ) : Sequence<EntityView> {

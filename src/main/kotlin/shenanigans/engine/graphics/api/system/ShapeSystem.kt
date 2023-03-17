@@ -13,14 +13,10 @@ import kotlin.reflect.KClass
  * draws each entity that has a `Shape` and `Transform` component
  */
 class ShapeSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Shape::class, Transform::class)
-    }
-
     override fun executeRender(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val renderer = resources.get<ShapeRendererResource>().shapeRenderer
@@ -29,7 +25,7 @@ class ShapeSystem : System {
         renderer.start()
         val view = camera.computeViewMatrix()
 
-        for (entity in entities) {
+        for (entity in query(setOf(Shape::class, Transform::class))) {
             val shape = entity.component<Shape>().get()
             val transform = entity.component<Transform>().get()
             renderer.transformation = camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
