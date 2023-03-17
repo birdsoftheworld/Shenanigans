@@ -9,6 +9,8 @@ import com.esotericsoftware.kryonet.Server as KryoServer
 
 
 interface NetworkImplementation {
+    fun connect()
+
     fun sendMessage(msg: Message)
     fun registerListener(listener: (Message) -> Unit)
 
@@ -19,7 +21,9 @@ interface NetworkImplementation {
 
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
-    constructor() : this(KryoServer()) {
+    constructor() : this(KryoServer())
+
+    override fun connect() {
         kryoServer.start()
         kryoServer.bind(40506, 40506)
     }
@@ -49,7 +53,9 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
 class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
-    constructor() : this(KryoClient()) {
+    constructor() : this(KryoClient())
+
+    override fun connect() {
         kryoClient.start()
 
         try {
@@ -63,7 +69,6 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
             e.printStackTrace()
         }
     }
-
 
     override fun sendMessageToConnection(connection: Connection, msg: Message) {
         when (msg.delivery) {

@@ -28,11 +28,9 @@ import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.Synchronized
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 import kotlin.concurrent.withLock
-import kotlin.reflect.KClass
 import kotlin.jvm.internal.ClassReference
+import kotlin.reflect.KClass
 
 class Network(
     internal val impl: NetworkImplementation,
@@ -93,11 +91,11 @@ data class SendableClass<T : Any>(
     val serializer: Serializer<T>? = null
 ) {
     internal fun hash(): Int {
-        return cl.qualifiedName.hashCode()
+        return cl.java.name.hashCode()
     }
 
     internal fun registerKryo(kryo: Kryo) {
-        val registration = kryo.register(cl.java, serializer ?: DefaultSerializers.ClassSerializer(), hash().and(0xFFFFFFF))
+        val registration = kryo.register(cl.java, serializer ?: kryo.getDefaultSerializer(cl.java), hash().and(0x7FFFFFFF))
 
         if (serializer == null) {
             registration.setInstantiator { instantiator?.invoke() }

@@ -18,6 +18,8 @@ class HeadlessEngine(initScene: Scene) : Engine(initScene, Network(Server())) {
 
         var lastTick = 0L
 
+        network.impl.connect()
+
         while (true) {
             lastTick = java.lang.System.currentTimeMillis()
             handleControlEvents(physicsEvents)
