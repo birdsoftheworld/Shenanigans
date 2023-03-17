@@ -23,7 +23,7 @@ import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.ClientOnly
+import shenanigans.engine.net.ClientOnly
 import shenanigans.game.network.NetworkSystem
 import shenanigans.game.network.Synchronized
 import shenanigans.game.player.Player

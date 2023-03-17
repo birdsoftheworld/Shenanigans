@@ -4,7 +4,6 @@ import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
-import shenanigans.game.network.registerDefaultClasses
 import com.esotericsoftware.kryonet.Client as KryoClient
 import com.esotericsoftware.kryonet.Server as KryoServer
 
@@ -14,13 +13,13 @@ interface NetworkImplementation {
     fun registerListener(listener: (Message) -> Unit)
 
     fun sendMessageToConnection(connection: Connection, msg: Message)
+
+    fun registerSendable(sendable: SendableClass<out Any>)
 }
 
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
     constructor() : this(KryoServer()) {
-        registerDefaultClasses(kryoServer.kryo)
-
         kryoServer.start()
         kryoServer.bind(40506, 40506)
     }
@@ -42,13 +41,15 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
     override fun registerListener(listener: (Message) -> Unit) {
         kryoServer.addListener(KryoListener(listener))
     }
+
+    override fun registerSendable(sendable: SendableClass<out Any>) {
+        sendable.registerKryo(kryoServer.kryo)
+    }
 }
 
 class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
     constructor() : this(KryoClient()) {
-        registerDefaultClasses(kryoClient.kryo)
-
         kryoClient.start()
 
         try {
@@ -62,6 +63,7 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
             e.printStackTrace()
         }
     }
+
 
     override fun sendMessageToConnection(connection: Connection, msg: Message) {
         when (msg.delivery) {
@@ -79,7 +81,10 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
     override fun registerListener(listener: (Message) -> Unit) {
         kryoClient.addListener(KryoListener(listener))
+    }
 
+    override fun registerSendable(sendable: SendableClass<out Any>) {
+        sendable.registerKryo(kryoClient.kryo)
     }
 }
 
