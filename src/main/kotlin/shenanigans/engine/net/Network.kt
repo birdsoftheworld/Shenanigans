@@ -70,11 +70,11 @@ class NetworkEventQueue internal constructor(val network: Network) : EventQueue(
         network.impl.sendMessage(EventMessage(event))
     }
 
-    fun queueToConnection(connection: Connection, event: Event) {
-        network.impl.sendMessageToConnection(connection, EventMessage(event))
-    }
-
-    fun queueNetwork(event: Event, delivery: MessageDelivery) {
+    fun queueNetwork(
+        event: Event,
+        delivery: MessageDelivery = MessageDelivery.UnreliableUnordered,
+        recipient: Int? = null
+    ) {
         network.impl.sendMessage(EventMessage(event, delivery))
     }
 
@@ -92,12 +92,13 @@ data class SendableClass<T : Any>(
     val instantiator: (() -> T)? = null,
     val serializer: Serializer<T>? = null
 ) {
-    internal fun hash(): Int {
+    private fun hash(): Int {
         return cl.qualifiedName.hashCode()
     }
 
     internal fun registerKryo(kryo: Kryo) {
-        val registration = kryo.register(cl.java, serializer ?: DefaultSerializers.ClassSerializer(), hash().and(0xFFFFFFF))
+        val registration =
+            kryo.register(cl.java, serializer ?: DefaultSerializers.ClassSerializer(), hash().and(0xFFFFFFF))
 
         if (serializer == null) {
             registration.setInstantiator { instantiator?.invoke() }

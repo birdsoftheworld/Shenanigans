@@ -2,6 +2,7 @@ package shenanigans.engine.network
 
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.net.MessageDelivery
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.term.Logger
@@ -21,13 +22,12 @@ class ServerUpdateSystem : System {
 
         eventQueues.own.receive(EntityMovementPacket::class).forEach { packet ->
             packet.entities.forEach { entity ->
-                if(entities[entity.key] != null) {
-                    if(entities[entity.key]?.componentOpt<Transform>() == null) {
-                        Logger.warn("Server Update","entity does not have a transform!")
+                if (entities[entity.key] != null) {
+                    if (entities[entity.key]?.componentOpt<Transform>() == null) {
+                        Logger.warn("Server Update", "entity does not have a transform!")
                     }
                     entities[entity.key]?.component<Transform>()!!.get().position = (entity.value).position
-                }
-                else {
+                } else {
                     Logger.warn("Entity Update", "entity does not exist: " + entity.key)
                 }
             }
@@ -46,8 +46,8 @@ class ServerRegistrationSystem : System {
     ) {
         val entities = query(emptySet())
 
-        eventQueues.network.receive(EntityRegistrationPacket::class).forEach {entityRegistrationPacket ->
-            if(entities[entityRegistrationPacket.id] != null) {
+        eventQueues.network.receive(EntityRegistrationPacket::class).forEach { entityRegistrationPacket ->
+            if (entities[entityRegistrationPacket.id] != null) {
                 Logger.warn("Entity Registration", "Duplicate ID: " + entityRegistrationPacket.id)
             }
             lifecycle.add(
@@ -71,9 +71,12 @@ class FullEntitySyncSystem : System {
         val entities = query(emptySet())
 
         eventQueues.own.receive(ConnectionEvent::class).forEach { connectionEvent ->
-            val connection = connectionEvent.connection
             entities.forEach {
-                eventQueues.network.queueToConnection(connection!!, EntityRegistrationPacket(it))
+                eventQueues.network.queueNetwork(
+                    EntityRegistrationPacket(it),
+                    delivery = MessageDelivery.ReliableOrdered,
+                    recipient = connectionEvent.connectionId
+                )
             }
         }
     }
