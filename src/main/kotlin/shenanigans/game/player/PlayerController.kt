@@ -15,6 +15,8 @@ import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.network.ClientOnly
+import shenanigans.game.Blocks.*
+import java.lang.NullPointerException
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
@@ -93,94 +95,132 @@ class PlayerController : System {
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
-        val keyboard = resources.get<KeyboardState>()
-        val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+    val keyboard = resources.get<KeyboardState>()
+    val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
 
-        entities.forEach { entity ->
-            val player = entity.component<Player>().get()
-            val transform = entity.component<Transform>()
+    entities.forEach { entity ->
+        val player = entity.component<Player>().get()
+        val transform = entity.component<Transform>()
 
-            val velocity = player.velocity
+        val velocity = player.velocity
+        var sticky = false
+        var slippery = false
 
-            player.onGround = false
-            player.wall = WallStatus.Off
-            player.onCeiling = false
+        player.onGround = false
+        player.wall = WallStatus.Off
+        player.onCeiling = false
 
-            eventQueues.own.receive(CollisionEvent::class).forEach { event ->
-                if (entity.id == event.target) {
-                    if (event.normal.y < 0) {
-                        player.onGround = true
-                        velocity.y = velocity.y.coerceAtMost(0f)
-                    } else if (event.normal.y > 0) {
-                        player.onCeiling = true
-                        velocity.y = max(0f, velocity.y)
-                    }
-                    if (event.normal.x < 0) {
-                        player.wall = WallStatus.Right
-                        velocity.x = velocity.x.coerceAtMost(0f)
-                    } else if (event.normal.x > 0) {
-                        player.wall = WallStatus.Left
-                        velocity.x = velocity.x.coerceAtLeast(0f)
-                    }
+        eventQueues.own.receive(CollisionEvent::class).forEach { event ->
+            val e=entities.get(event.with)
+            if (entity.id == event.target) {
+                if (event.normal.y < 0) {
+                    player.onGround = true
+                    velocity.y = velocity.y.coerceAtMost(0f)
+                } else if (event.normal.y > 0) {
+                    player.onCeiling = true
+                    velocity.y = max(0f, velocity.y)
+                }
+                if (event.normal.x < 0) {
+                    player.wall = WallStatus.Right
+                    velocity.x = velocity.x.coerceAtMost(0f)
+                } else if (event.normal.x > 0) {
+                    player.wall = WallStatus.Left
+                    velocity.x = velocity.x.coerceAtLeast(0f)
+                }
+                if(entities.get(event.with)?.componentOpt<SpikeBlock>() != null){
+                    respawn(entity, entities)
+                }
+                if(entities.get(event.with)?.componentOpt<StickyBlock>() != null){
+                    sticky = true;
+                }
+                if(entities.get(event.with)?.componentOpt<SlipperyBlock>() != null){
+                    slippery = true;
+                }
+                if(entities.get(event.with)?.componentOpt<TrampolineBlock>() != null && event.normal.y<0){
+                    velocity.y= -PlayerProperties().maxSpeed*2.5f
+                }
+                if(entities.get(event.with)?.componentOpt<TeleporterBlock>() != null && e!!.component<TeleporterBlock>().get().num %2 == 0) {
+//                    entities.forEach { entity2 ->
+//                        if (entity2.componentOpt<TeleporterBlock>() != null && entity2!!.component<TeleporterBlock>()
+//                                .get().num == !!.component<TeleporterBlock>().get().num + 1
+//                        ) {
+//                            try {
+//                                teleport(entity, entity2!!.component<Transform>().get().position)
+//                            } catch (error: NullPointerException) {
+//                            }
+//                        }
+//                    }
+                    println("teleport")
                 }
             }
+        }
 
-            if (player.onGround) {
-                player.currentJump = null
+        if (player.onGround) {
+            player.currentJump = null
+        }
+
+        val pos = transform.get().position
+
+        val properties = player.properties
+
+        val holdingCrouch = keyboard.isPressed(Key.S)
+        if (!player.crouching && holdingCrouch && player.onGround) {
+            player.crouching = true
+            entity.changeCrouch(true)
+        } else if (player.crouching && !holdingCrouch) {
+            player.crouching = false
+            entity.changeCrouch(false)
+        }
+
+        var direction = 0f
+        //left
+        if (keyboard.isPressed(Key.A)) {
+            direction -= 1f
+        }
+        //right
+        if (keyboard.isPressed(Key.D)) {
+            direction += 1f
+        }
+
+        if (keyboard.isPressed(Key.R)) {
+            respawn(entity, entities)
+        }
+
+        val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
+        if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
+            desiredVelocity.x = velocity.x
+        }
+
+        if (player.crouching && player.onGround) {
+            desiredVelocity.zero()
+        }
+
+        var turnSpeed = 0f
+        var acceleration = 0f
+        var deceleration = 0f
+
+        //Deceleration based on whether on ground or in air
+        when (player.onGround) {
+            true -> {
+                acceleration = properties.maxAcceleration
+                deceleration = properties.maxDeceleration
+                turnSpeed = properties.maxTurnSpeed
             }
 
-            val pos = transform.get().position
+            false -> {
+                acceleration = properties.maxAirAcceleration
+                deceleration = properties.maxAirDeceleration
+                turnSpeed = properties.maxAirTurnSpeed
+            }
+        }
 
-            val properties = player.properties
-
-            val holdingCrouch = keyboard.isPressed(Key.S)
-            if (!player.crouching && holdingCrouch && player.onGround) {
-                player.crouching = true
-                entity.changeCrouch(true)
-            } else if (player.crouching && !holdingCrouch) {
-                player.crouching = false
-                entity.changeCrouch(false)
+            if (slippery) {
+                acceleration *= .4f
+                deceleration *= .01f
+                turnSpeed *= .01f
             }
 
-            var direction = 0f
-            //left
-            if (keyboard.isPressed(Key.A)) {
-                direction -= 1f
-            }
-            //right
-            if (keyboard.isPressed(Key.D)) {
-                direction += 1f
-            }
-
-            val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
-            if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
-                desiredVelocity.x = velocity.x
-            }
-
-            if (player.crouching && player.onGround) {
-                desiredVelocity.zero()
-            }
-
-            var turnSpeed = 0f
-            var acceleration = 0f
-            var deceleration = 0f
-
-            //Deceleration based on whether on ground or in air
-            when (player.onGround) {
-                true -> {
-                    acceleration = properties.maxAcceleration
-                    deceleration = properties.maxDeceleration
-                    turnSpeed = properties.maxTurnSpeed
-                }
-
-                false -> {
-                    acceleration = properties.maxAirAcceleration
-                    deceleration = properties.maxAirDeceleration
-                    turnSpeed = properties.maxAirTurnSpeed
-                }
-            }
-
-            val maxSpeedChange = if (direction != 0f) {
+                val maxSpeedChange = if (direction != 0f) {
                 if (desiredVelocity.x.sign != velocity.x.sign) {
                     turnSpeed
                 } else {
@@ -192,19 +232,20 @@ class PlayerController : System {
 
             velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
-            var jumped = false
-            val pressedJump = keyboard.isJustPressed(Key.SPACE)
-            val holdingJump = keyboard.isPressed(Key.SPACE)
-            val bufferedJump = player.jumpBufferTime > 0f && holdingJump
+                var jumped = false
 
-            val gravity = player.getGravity(holdingJump)
+                val pressedJump = keyboard.isJustPressed(Key.SPACE) || keyboard.isJustPressed(Key.W)
+                val holdingJump = keyboard.isPressed(Key.SPACE)|| keyboard.isPressed(Key.W)
+                val bufferedJump = player.jumpBufferTime > 0f && holdingJump
 
-            val jump = player.getJump()
+                val gravity = player.getGravity(holdingJump)
+
+                val jump = player.getJump()
             if ((pressedJump || bufferedJump) && jump != null) {
                 jumped = true
                 player.jump(jump)
             }
-            if (pressedJump && !jumped) {
+                if (pressedJump && !jumped) {
                 player.jumpBufferTime = properties.jumpBufferTime
             }
 
@@ -212,7 +253,7 @@ class PlayerController : System {
                 player.lastWallDirectionTouched = player.wall
                 player.wallCoyoteTime = properties.wallCoyoteTime
             }
-            if (player.onGround && !jumped) {
+                if (player.onGround && !jumped) {
                 player.coyoteTime = properties.coyoteTime
             }
 
@@ -220,22 +261,22 @@ class PlayerController : System {
                 player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
                 player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
             }
-            player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
+                    player . jumpBufferTime =(player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
-            pos.add(velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
-            transform.mutate()
+                    pos . add (velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
+                transform.mutate()
 
             if (!player.onGround && !jumped) {
                 velocity.y += gravity * deltaTimeF
-                pos.add(Vector3f(0f, gravity, 0f).mul(1/2 * deltaTimeF * deltaTimeF))
+                pos.add(Vector3f(0f, gravity, 0f).mul(1 / 2 * deltaTimeF * deltaTimeF))
             }
 
-            if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
+                if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
                 velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
             }
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
-            entity.component<Player>().mutate()
+                    entity.component < Player >().mutate()
         }
     }
 
@@ -299,11 +340,11 @@ class PlayerController : System {
     private fun Player.getJump(): Jump? {
         return if (this.onGround) {
             FloorJump(false)
-        } else if(this.coyoteTime > 0f) {
+        } else if (this.coyoteTime > 0f) {
             FloorJump(true)
         } else if (this.wall != WallStatus.Off && !this.crouching) {
             WallJump(this.wall, false)
-        } else if(this.wallCoyoteTime > 0f && !this.crouching) {
+        } else if (this.wallCoyoteTime > 0f && !this.crouching) {
             WallJump(this.lastWallDirectionTouched, true)
         } else {
             null
@@ -313,5 +354,25 @@ class PlayerController : System {
     companion object {
         val SHAPE_BASE: Rectangle = Rectangle(40f, 70f)
         val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 40f)
+    }
+
+
+    private fun respawn(entityA: EntityView, entities: EntitiesView) {
+        entities.forEach { entity ->
+            if (entity.componentOpt<RespawnBlock>() != null) {
+                val targetPos = entity.component<Transform>().get().position
+                val currentPos = entityA.component<Transform>().get().position
+                entityA.component<Transform>().get().position.add(
+                    targetPos.x - currentPos.x,
+                    targetPos.y - currentPos.y,
+                    0f
+                )
+            }
+        }
+    }
+
+    private fun teleport(entityA: EntityView, target: Vector3f) {
+        val currentPos = entityA.component<Transform>().get().position
+        entityA.component<Transform>().get().position.add(target.x - currentPos.x, target.y - currentPos.y, 0f)
     }
 }

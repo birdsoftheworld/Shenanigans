@@ -5,13 +5,16 @@ import org.joml.Vector3f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.events.eventQueues
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
+import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.camera.CameraResource
@@ -24,6 +27,8 @@ import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
 import shenanigans.game.network.NetworkSystem
 import shenanigans.game.network.Synchronized
+import shenanigans.engine.window.events.*
+import shenanigans.game.Blocks.*
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import shenanigans.game.player.PlayerProperties
@@ -33,7 +38,7 @@ import kotlin.reflect.KClass
 fun main() {
     val engine = ClientEngine(testScene())
 
-    engine.runPhysicsOnce(AddTestEntities())
+    engine.runPhysicsOnce(BuildLevelSystem())
 
     engine.run()
 }
@@ -41,12 +46,13 @@ fun main() {
 fun testScene(): Scene {
     val scene = Scene()
 
+    scene.defaultSystems.add(InsertNewEntitiesSystem())
+    scene.defaultSystems.add(OscillatingBlocksSystem())
     scene.defaultSystems.add(MouseMovementSystem())
-    scene.defaultSystems.add(InsertEntitiesOngoing())
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(FollowCameraSystem())
-    scene.defaultSystems.add(NetworkSystem())
+//    scene.defaultSystems.add(NetworkSystem())
 
     return scene
 }
@@ -81,6 +87,7 @@ class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
         this.grabbed = false
     }
 }
+data class KeyboardPlayer(val speed: Float) : Component
 
 class AddTestEntities : System {
     override fun query(): Iterable<KClass<out Component>> {
@@ -208,11 +215,31 @@ class MouseMovementSystem : System {
                 val transform = entity.component<Transform>().get()
                 val position = resources.get<MouseState>().position()
                 val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(Vector3f(position, 0f))
-                transform.position.set(
-                    transformedPosition.x() + mousePlayer.dragOffset.x(),
-                    transformedPosition.y() + mousePlayer.dragOffset.y(),
-                    transform.position.z
-                )
+                val dragOffset = mousePlayer.dragOffset
+                val x = dragOffset.x
+                val y = dragOffset.y
+                var scroll: Float
+                eventQueues.own.receive(MouseScrollEvent::class).forEach{ event ->
+                    scroll = event.offset.y()
+                    if(scroll > 0){
+                        transform.rotation -= (Math.PI/2).toFloat()
+                        dragOffset.x = y
+                        dragOffset.y = -x
+                        if(entity.componentOpt<OscillatingBlock>() != null){
+                            entity.component<OscillatingBlock>().get().rotate(false)
+                        }
+                    }
+                    if(scroll < 0){
+                        transform.rotation += (Math.PI/2).toFloat()
+                        dragOffset.x = -y
+                        dragOffset.y = x
+                        if(entity.componentOpt<OscillatingBlock>() != null){
+                            entity.component<OscillatingBlock>().get().rotate(true)
+                        }
+                    }
+                }
+
+                transform.position.set(transformedPosition.x() + mousePlayer.dragOffset.x(), transformedPosition.y() + mousePlayer.dragOffset.y(),transform.position.z)
                 entity.component<Transform>().mutate()
             }
         }
@@ -224,17 +251,22 @@ class MouseMovementSystem : System {
                 val transformedPosition =
                     resources.get<CameraResource>().camera!!.untransformPoint(Vector3f(mousePosition, 0f))
                 val mousePlayer = entity.component<MousePlayer>().get()
-                if (event.action == MouseButtonAction.PRESS && entity.component<Shape>().get()
+                if (event.action == MouseButtonAction.PRESS && entity.component<Collider>().get()
                         .polygon.isPointInside(Vector2f(transformedPosition.x, transformedPosition.y), transform)
                 ) {
                     mousePlayer.dragOffset.x = transform.position.x - transformedPosition.x()
                     mousePlayer.dragOffset.y = transform.position.y - transformedPosition.y()
                     mousePlayer.grab()
                 }
-                if (event.action == MouseButtonAction.RELEASE) {
+                if (event.action == MouseButtonAction.RELEASE && entity.component<MousePlayer>().get().grabbed) {
                     mousePlayer.drop()
                     transform.position.x = round(transform.position.x / 50) * 50
                     transform.position.y = round(transform.position.y / 50) * 50
+                    if (entity.componentOpt<OscillatingBlock>() != null) {
+                        entity.component<OscillatingBlock>().get().reset()
+                        entity.component<OscillatingBlock>().get()
+                            .newStartPos(transform.position.x, transform.position.y)
+                    }
                 }
             }
         }

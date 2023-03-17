@@ -37,6 +37,7 @@ class CollisionSystem : System {
 
         val collisionPairs = getCollisionPairs(entities)
 
+        val eventQueue = eventQueues.physics
         collisionPairs.forEach { pair ->
             val collision = testCollision(pair) ?: return@forEach
 
@@ -61,10 +62,9 @@ class CollisionSystem : System {
                     transform2.get().position.add(move)
                     transform2.mutate()
                 }
-
-                maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
-                maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
             }
+            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
+            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
         }
         return
     }
@@ -158,7 +158,6 @@ private fun testCollision(collisionPair: Pair<EntityView, EntityView>): Collisio
             minNormal = normal
         }
     }
-
     return Collision(minNormal, minOverlap)
 }
 
