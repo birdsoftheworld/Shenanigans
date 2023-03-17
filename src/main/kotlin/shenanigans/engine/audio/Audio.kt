@@ -12,7 +12,6 @@ class AudioClip(private val stream: AudioInputStream) : AutoCloseable {
     fun play() {
         clip.framePosition = 0
         clip.start()
-        clip.drain()
     }
 
     override fun close() {
