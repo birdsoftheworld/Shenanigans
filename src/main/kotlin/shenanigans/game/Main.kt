@@ -11,6 +11,10 @@ import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.net.Client
+import shenanigans.engine.net.ClientOnly
+import shenanigans.engine.net.Network
+import shenanigans.engine.net.SendableClass
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
@@ -23,17 +27,22 @@ import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.engine.net.ClientOnly
-import shenanigans.game.network.NetworkSystem
-import shenanigans.game.network.Synchronized
+import shenanigans.game.network.*
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import shenanigans.game.player.PlayerProperties
+import java.util.*
 import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
-    val engine = ClientEngine(testScene())
+    val engine = ClientEngine(testScene(), Network(Client(), setOf(
+        SendableClass(EntityMovementPacket::class, instantiator = { EntityMovementPacket(mapOf()) }),
+        SendableClass(
+            EntityRegistrationPacket::class,
+            instantiator = { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }),
+        SendableClass(EntityDeRegistrationPacket::class, instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) })
+    )))
 
     engine.runPhysicsOnce(AddTestEntities())
 

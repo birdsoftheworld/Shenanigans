@@ -22,16 +22,12 @@ import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Polygon
 import shenanigans.engine.util.shapes.Rectangle
-import shenanigans.game.network.EntityMovementPacket
-import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.Synchronized
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 import kotlin.concurrent.withLock
-import kotlin.reflect.KClass
 import kotlin.jvm.internal.ClassReference
+import kotlin.reflect.KClass
 
 class Network(
     internal val impl: NetworkImplementation,
@@ -91,16 +87,15 @@ data class SendableClass<T : Any>(
     val instantiator: (() -> T)? = null,
     val serializer: Serializer<T>? = null
 ) {
-    private fun hash(): Int {
-        return cl.qualifiedName.hashCode()
+    internal fun hash(): Int {
+        return cl.java.name.hashCode()
     }
 
     internal fun registerKryo(kryo: Kryo) {
-        val registration =
-            kryo.register(cl.java, serializer ?: DefaultSerializers.ClassSerializer(), hash().and(0xFFFFFFF))
+        val registration = kryo.register(cl.java, serializer ?: kryo.getDefaultSerializer(cl.java), hash().and(0x7FFFFFFF))
 
-        if (serializer == null) {
-            registration.setInstantiator { instantiator?.invoke() }
+        if (instantiator != null) {
+            registration.setInstantiator { instantiator.invoke() }
         }
     }
 }
@@ -126,10 +121,6 @@ fun builtinSendables(): Set<SendableClass<out Any>> {
             EventMessage::class,
             instantiator = { EventMessage(ConnectionEvent(null, ConnectionEventType.Connect)) }),
         SendableClass(MessageDelivery::class),
-        SendableClass(EntityMovementPacket::class, instantiator = { EntityMovementPacket(mapOf()) }),
-        SendableClass(
-            EntityRegistrationPacket::class,
-            instantiator = { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }),
 
         // Utils
         SendableClass(Map::class),

@@ -4,12 +4,13 @@ import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
-import shenanigans.engine.term.Logger
 import com.esotericsoftware.kryonet.Client as KryoClient
 import com.esotericsoftware.kryonet.Server as KryoServer
 
 
 interface NetworkImplementation {
+    fun connect()
+
     fun sendMessage(msg: Message)
 
     fun getEndpoint(): MessageEndpoint
@@ -20,7 +21,9 @@ interface NetworkImplementation {
 
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
-    constructor() : this(KryoServer()) {
+    constructor() : this(KryoServer())
+
+    override fun connect() {
         kryoServer.start()
         kryoServer.bind(40506, 40506)
     }
@@ -88,7 +91,9 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
 class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
-    constructor() : this(KryoClient()) {
+    constructor() : this(KryoClient())
+
+    override fun connect() {
         kryoClient.start()
 
         try {

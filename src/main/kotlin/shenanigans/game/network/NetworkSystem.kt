@@ -5,7 +5,6 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
-import shenanigans.game.player.Player
 import kotlin.reflect.KClass
 
 class NetworkSystem : System {
@@ -27,7 +26,7 @@ class NetworkSystem : System {
                 }
 
                 //FIXME
-                if (entities[entity.key]!!.componentOpt<Player>() != null) {
+                if (entities[entity.key]!!.componentOpt<Transform>() == null) {
                     return@packet
                 }
 

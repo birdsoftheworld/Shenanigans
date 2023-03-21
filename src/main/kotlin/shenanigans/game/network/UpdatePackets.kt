@@ -1,8 +1,8 @@
 package shenanigans.game.network
 
 import shenanigans.engine.ecs.Component
-import shenanigans.engine.ecs.QueryView
 import shenanigans.engine.ecs.EntityView
+import shenanigans.engine.ecs.QueryView
 import shenanigans.engine.events.Event
 import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.util.Transform
@@ -20,3 +20,5 @@ class EntityRegistrationPacket(val id: UUID, val entity: Map<KClass<out Componen
             this(entityView.id, entityView.entity.components.mapValues { it.value.component }.filterValues {!it.javaClass.isAnnotationPresent(
                 ClientOnly::class.java)})
 }
+
+class EntityDeRegistrationPacket(val id: UUID) : Event
