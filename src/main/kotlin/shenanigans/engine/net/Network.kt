@@ -5,7 +5,6 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.esotericsoftware.kryo.serializers.DefaultSerializers
-import com.esotericsoftware.kryonet.Connection
 import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.Component
@@ -73,7 +72,7 @@ class NetworkEventQueue internal constructor(val network: Network) : EventQueue(
     fun queueNetwork(
         event: Event,
         delivery: MessageDelivery = MessageDelivery.UnreliableUnordered,
-        recipient: Int? = null
+        recipient: MessageEndpoint? = null
     ) {
         network.impl.sendMessage(EventMessage(event, delivery, recipient))
     }

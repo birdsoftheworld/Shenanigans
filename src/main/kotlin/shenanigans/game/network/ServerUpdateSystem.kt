@@ -75,7 +75,7 @@ class FullEntitySyncSystem : System {
                 eventQueues.network.queueNetwork(
                     EntityRegistrationPacket(it),
                     delivery = MessageDelivery.ReliableOrdered,
-                    recipient = connectionEvent.connectionId
+                    recipient = connectionEvent.endpoint
                 )
             }
         }
