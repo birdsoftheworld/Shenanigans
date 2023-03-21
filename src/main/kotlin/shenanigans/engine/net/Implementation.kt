@@ -13,6 +13,9 @@ interface NetworkImplementation {
 
     fun sendMessage(msg: Message)
     fun registerListener(listener: (Message) -> Unit)
+
+    fun sendMessageToConnection(connection: Connection, msg: Message)
+
     fun registerSendable(sendable: SendableClass<out Any>)
 }
 
@@ -36,6 +39,13 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
                 MessageDelivery.UnreliableUnordered -> kryoServer.sendToAllUDP(msg)
                 MessageDelivery.ReliableOrdered -> kryoServer.sendToAllUDP(msg)
             }
+        }
+    }
+
+    override fun sendMessageToConnection(connection: Connection, msg: Message) {
+        when (msg.delivery) {
+            MessageDelivery.UnreliableUnordered -> connection.sendUDP(msg)
+            MessageDelivery.ReliableOrdered -> connection.sendTCP(msg)
         }
     }
 

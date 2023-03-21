@@ -5,7 +5,6 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.esotericsoftware.kryo.serializers.DefaultSerializers
-import com.esotericsoftware.kryonet.Connection
 import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.Component
@@ -97,8 +96,8 @@ data class SendableClass<T : Any>(
     internal fun registerKryo(kryo: Kryo) {
         val registration = kryo.register(cl.java, serializer ?: kryo.getDefaultSerializer(cl.java), hash().and(0x7FFFFFFF))
 
-        if (serializer == null) {
-            registration.setInstantiator { instantiator?.invoke() }
+        if (instantiator != null) {
+            registration.setInstantiator { instantiator.invoke() }
         }
     }
 }
