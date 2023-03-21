@@ -9,7 +9,7 @@ import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import kotlin.system.exitProcess
 
-class HeadlessEngine(initScene: Scene) : Engine(initScene, Network(Server())) {
+class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : Engine(initScene, network) {
     override fun init() {
     }
 

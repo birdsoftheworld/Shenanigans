@@ -4,6 +4,7 @@ import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
+import shenanigans.engine.term.Logger
 import com.esotericsoftware.kryonet.Client as KryoClient
 import com.esotericsoftware.kryonet.Server as KryoServer
 
@@ -62,6 +63,7 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
         override fun received(connection: Connection?, `object`: Any?) {
             if (`object` is Message) {
                 `object`.sender = if (connection !== null) MessageEndpoint.Client(connection.id) else null
+                cb(`object`)
             }
         }
 
@@ -133,6 +135,7 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
         override fun received(connection: Connection?, `object`: Any?) {
             if (`object` is Message) {
                 if (`object`.sender == null) `object`.sender = MessageEndpoint.Server
+                cb(`object`)
             }
         }
 

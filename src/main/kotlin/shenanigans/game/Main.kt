@@ -36,13 +36,7 @@ import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
-    val engine = ClientEngine(testScene(), Network(Client(), setOf(
-        SendableClass(EntityMovementPacket::class, instantiator = { EntityMovementPacket(mapOf()) }),
-        SendableClass(
-            EntityRegistrationPacket::class,
-            instantiator = { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }),
-        SendableClass(EntityDeRegistrationPacket::class, instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) })
-    )))
+    val engine = ClientEngine(testScene(), Network(Client(), sendables()))
 
     engine.runPhysicsOnce(AddTestEntities())
 

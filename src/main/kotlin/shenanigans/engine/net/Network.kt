@@ -92,7 +92,8 @@ data class SendableClass<T : Any>(
     }
 
     internal fun registerKryo(kryo: Kryo) {
-        val registration = kryo.register(cl.java, serializer ?: kryo.getDefaultSerializer(cl.java), hash().and(0x7FFFFFFF))
+        val registration =
+            kryo.register(cl.java, serializer ?: kryo.getDefaultSerializer(cl.java), hash().and(0x7FFFFFFF))
 
         if (instantiator != null) {
             registration.setInstantiator { instantiator.invoke() }
@@ -121,6 +122,8 @@ fun builtinSendables(): Set<SendableClass<out Any>> {
             EventMessage::class,
             instantiator = { EventMessage(ConnectionEvent(null, ConnectionEventType.Connect)) }),
         SendableClass(MessageDelivery::class),
+        SendableClass(MessageEndpoint.Server::class),
+        SendableClass(MessageEndpoint.Client::class, instantiator = { MessageEndpoint.Client(-1) }),
 
         // Utils
         SendableClass(Map::class),

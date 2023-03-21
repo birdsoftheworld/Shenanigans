@@ -40,7 +40,7 @@ class ServerUpdateSystem : System {
 
         eventQueues.own.receive(ConnectionEvent::class).filter { it.type == ConnectionEventType.Disconnect }.forEach { disconnectionEvent ->
             query.invoke(setOf(Synchronized::class)).forEach { entity ->
-                if(entity.component<Synchronized>().get().ownerID == disconnectionEvent.connectionId) {
+                if(entity.component<Synchronized>().get().ownerEndpoint == disconnectionEvent.endpoint) {
                     eventQueues.own.queueNetwork(EntityDeRegistrationPacket(entity.id))
                 }
             }
