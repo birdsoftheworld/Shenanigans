@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 
 class DrawBackgroundSystem : System {
     val background =
-        TextureManager.createTexture("/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
+        TextureManager.createTexture("/checkers.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
     val imageSize = Vector2i(400, 400)
 
     override fun query(): Iterable<KClass<out Component>> {

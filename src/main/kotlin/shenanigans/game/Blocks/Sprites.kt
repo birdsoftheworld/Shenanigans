@@ -3,9 +3,11 @@ package shenanigans.game.Blocks
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.ecs.ComponentView
+import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.shapes.Rectangle
+import shenanigans.game.player.Player
 
 class Sprites {
     fun getSprite(block : Component): Sprite {
@@ -18,9 +20,8 @@ class Sprites {
         return nullSprite
     }
 
-    val nullSprite = Sprite(TextureManager.createTexture("/nullSprite.png").getRegion(), Rectangle(30f,30f))
-    val playerSprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Rectangle(30f,30f))
-    val respawnSprite = Sprite(TextureManager.createTexture("/sprite.png").getRegion(), Rectangle(30f,30f))
+    val nullSprite = Sprite(TextureManager.createTexture("/nullSprite.png").getRegion(), Rectangle(50f,50f))
+    val playerSprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), Rectangle(25f,25f))
     val oscillatingSprite = Sprite(TextureManager.createTexture("/betterArrow.png").getRegion(), Rectangle(50f,50f))
     val trampolineSprite = Sprite(TextureManager.createTexture("/spring.png").getRegion(), Rectangle(50f,50f))
     val spikeSprite = Sprite(TextureManager.createTexture("/hole.png").getRegion(), Rectangle(50f,50f))

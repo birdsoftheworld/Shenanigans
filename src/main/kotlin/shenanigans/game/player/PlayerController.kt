@@ -86,7 +86,7 @@ data class Player(
 
 class PlayerController : System {
     override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Player::class, Transform::class, Collider::class)
+        return setOf()
     }
 
     override fun executePhysics(
@@ -95,188 +95,194 @@ class PlayerController : System {
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
-    val keyboard = resources.get<KeyboardState>()
-    val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+        val keyboard = resources.get<KeyboardState>()
+        val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
 
-    entities.forEach { entity ->
-        val player = entity.component<Player>().get()
-        val transform = entity.component<Transform>()
+        entities.forEach { entity ->
 
-        val velocity = player.velocity
-        var sticky = false
-        var slippery = false
+            if (entity.componentOpt<Player>() != null) {
 
-        player.onGround = false
-        player.wall = WallStatus.Off
-        player.onCeiling = false
+                val player = entity.component<Player>().get()
+                val transform = entity.component<Transform>()
 
-        eventQueues.own.receive(CollisionEvent::class).forEach { event ->
-            val e=entities.get(event.with)
-            if (entity.id == event.target) {
-                if (event.normal.y < 0) {
-                    player.onGround = true
-                    velocity.y = velocity.y.coerceAtMost(0f)
-                } else if (event.normal.y > 0) {
-                    player.onCeiling = true
-                    velocity.y = max(0f, velocity.y)
+                val velocity = player.velocity
+                var sticky = false
+                var slippery = false
+
+                player.onGround = false
+                player.wall = WallStatus.Off
+                player.onCeiling = false
+
+                eventQueues.own.receive(CollisionEvent::class).forEach { event ->
+                    val e = entities.get(event.with)
+                    if (entity.id == event.target) {
+                        if (event.normal.y < 0) {
+                            player.onGround = true
+                            velocity.y = velocity.y.coerceAtMost(0f)
+                        } else if (event.normal.y > 0) {
+                            player.onCeiling = true
+                            velocity.y = max(0f, velocity.y)
+                        }
+                        if (event.normal.x < 0) {
+                            player.wall = WallStatus.Right
+                            velocity.x = velocity.x.coerceAtMost(0f)
+                        } else if (event.normal.x > 0) {
+                            player.wall = WallStatus.Left
+                            velocity.x = velocity.x.coerceAtLeast(0f)
+                        }
+                        if (entities.get(event.with)?.componentOpt<SpikeBlock>() != null) {
+                            respawn(entity, entities)
+                        }
+                        if (entities.get(event.with)?.componentOpt<StickyBlock>() != null) {
+                            sticky = true;
+                        }
+                        if (entities.get(event.with)?.componentOpt<SlipperyBlock>() != null) {
+                            slippery = true;
+                        }
+                        if (entities.get(event.with)?.componentOpt<TrampolineBlock>() != null && event.normal.y < 0) {
+                            velocity.y = -PlayerProperties().maxSpeed * 2.5f
+                        }
+                        if (entities.get(event.with)
+                                ?.componentOpt<TeleporterBlock>() != null && e!!.component<TeleporterBlock>()
+                                .get().num % 2 == 0
+                        ) {
+                            //                    entities.forEach { entity2 ->
+                            //                        if (entity2.componentOpt<TeleporterBlock>() != null && entity2!!.component<TeleporterBlock>()
+                            //                                .get().num == !!.component<TeleporterBlock>().get().num + 1
+                            //                        ) {
+                            //                            try {
+                            //                                teleport(entity, entity2!!.component<Transform>().get().position)
+                            //                            } catch (error: NullPointerException) {
+                            //                            }
+                            //                        }
+                            //                    }
+                        }
+                    }
                 }
-                if (event.normal.x < 0) {
-                    player.wall = WallStatus.Right
-                    velocity.x = velocity.x.coerceAtMost(0f)
-                } else if (event.normal.x > 0) {
-                    player.wall = WallStatus.Left
-                    velocity.x = velocity.x.coerceAtLeast(0f)
+
+                if (player.onGround) {
+                    player.currentJump = null
                 }
-                if(entities.get(event.with)?.componentOpt<SpikeBlock>() != null){
+
+                val pos = transform.get().position
+
+                val properties = player.properties
+
+                val holdingCrouch = keyboard.isPressed(Key.S)
+                if (!player.crouching && holdingCrouch && player.onGround) {
+                    player.crouching = true
+                    entity.changeCrouch(true)
+                } else if (player.crouching && !holdingCrouch) {
+                    player.crouching = false
+                    entity.changeCrouch(false)
+                }
+
+                var direction = 0f
+                //left
+                if (keyboard.isPressed(Key.A)) {
+                    direction -= 1f
+                }
+                //right
+                if (keyboard.isPressed(Key.D)) {
+                    direction += 1f
+                }
+
+                if (keyboard.isPressed(Key.R)) {
                     respawn(entity, entities)
                 }
-                if(entities.get(event.with)?.componentOpt<StickyBlock>() != null){
-                    sticky = true;
+
+                val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
+                if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
+                    desiredVelocity.x = velocity.x
                 }
-                if(entities.get(event.with)?.componentOpt<SlipperyBlock>() != null){
-                    slippery = true;
+
+                if (player.crouching && player.onGround) {
+                    desiredVelocity.zero()
                 }
-                if(entities.get(event.with)?.componentOpt<TrampolineBlock>() != null && event.normal.y<0){
-                    velocity.y= -PlayerProperties().maxSpeed*2.5f
+
+                var turnSpeed = 0f
+                var acceleration = 0f
+                var deceleration = 0f
+
+                //Deceleration based on whether on ground or in air
+                when (player.onGround) {
+                    true -> {
+                        acceleration = properties.maxAcceleration
+                        deceleration = properties.maxDeceleration
+                        turnSpeed = properties.maxTurnSpeed
+                    }
+
+                    false -> {
+                        acceleration = properties.maxAirAcceleration
+                        deceleration = properties.maxAirDeceleration
+                        turnSpeed = properties.maxAirTurnSpeed
+                    }
                 }
-                if(entities.get(event.with)?.componentOpt<TeleporterBlock>() != null && e!!.component<TeleporterBlock>().get().num %2 == 0) {
-//                    entities.forEach { entity2 ->
-//                        if (entity2.componentOpt<TeleporterBlock>() != null && entity2!!.component<TeleporterBlock>()
-//                                .get().num == !!.component<TeleporterBlock>().get().num + 1
-//                        ) {
-//                            try {
-//                                teleport(entity, entity2!!.component<Transform>().get().position)
-//                            } catch (error: NullPointerException) {
-//                            }
-//                        }
-//                    }
-                    println("teleport")
+
+                if (slippery) {
+                    acceleration *= .4f
+                    deceleration *= .01f
+                    turnSpeed *= .2f
                 }
-            }
-        }
-
-        if (player.onGround) {
-            player.currentJump = null
-        }
-
-        val pos = transform.get().position
-
-        val properties = player.properties
-
-        val holdingCrouch = keyboard.isPressed(Key.S)
-        if (!player.crouching && holdingCrouch && player.onGround) {
-            player.crouching = true
-            entity.changeCrouch(true)
-        } else if (player.crouching && !holdingCrouch) {
-            player.crouching = false
-            entity.changeCrouch(false)
-        }
-
-        var direction = 0f
-        //left
-        if (keyboard.isPressed(Key.A)) {
-            direction -= 1f
-        }
-        //right
-        if (keyboard.isPressed(Key.D)) {
-            direction += 1f
-        }
-
-        if (keyboard.isPressed(Key.R)) {
-            respawn(entity, entities)
-        }
-
-        val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
-        if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
-            desiredVelocity.x = velocity.x
-        }
-
-        if (player.crouching && player.onGround) {
-            desiredVelocity.zero()
-        }
-
-        var turnSpeed = 0f
-        var acceleration = 0f
-        var deceleration = 0f
-
-        //Deceleration based on whether on ground or in air
-        when (player.onGround) {
-            true -> {
-                acceleration = properties.maxAcceleration
-                deceleration = properties.maxDeceleration
-                turnSpeed = properties.maxTurnSpeed
-            }
-
-            false -> {
-                acceleration = properties.maxAirAcceleration
-                deceleration = properties.maxAirDeceleration
-                turnSpeed = properties.maxAirTurnSpeed
-            }
-        }
-
-            if (slippery) {
-                acceleration *= .4f
-                deceleration *= .01f
-                turnSpeed *= .01f
-            }
 
                 val maxSpeedChange = if (direction != 0f) {
-                if (desiredVelocity.x.sign != velocity.x.sign) {
-                    turnSpeed
+                    if (desiredVelocity.x.sign != velocity.x.sign) {
+                        turnSpeed
+                    } else {
+                        acceleration
+                    }
                 } else {
-                    acceleration
-                }
-            } else {
-                deceleration
-            } * deltaTimeF
+                    deceleration
+                } * deltaTimeF
 
-            velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
+                velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
                 var jumped = false
 
                 val pressedJump = keyboard.isJustPressed(Key.SPACE) || keyboard.isJustPressed(Key.W)
-                val holdingJump = keyboard.isPressed(Key.SPACE)|| keyboard.isPressed(Key.W)
+                val holdingJump = keyboard.isPressed(Key.SPACE) || keyboard.isPressed(Key.W)
                 val bufferedJump = player.jumpBufferTime > 0f && holdingJump
 
                 val gravity = player.getGravity(holdingJump)
 
                 val jump = player.getJump()
-            if ((pressedJump || bufferedJump) && jump != null) {
-                jumped = true
-                player.jump(jump)
-            }
+                if ((pressedJump || bufferedJump) && jump != null) {
+                    jumped = true
+                    player.jump(jump,sticky)
+                }
                 if (pressedJump && !jumped) {
-                player.jumpBufferTime = properties.jumpBufferTime
-            }
+                    player.jumpBufferTime = properties.jumpBufferTime
+                }
 
-            if (player.wall != WallStatus.Off && !jumped) {
-                player.lastWallDirectionTouched = player.wall
-                player.wallCoyoteTime = properties.wallCoyoteTime
-            }
+                if (player.wall != WallStatus.Off && !jumped) {
+                    player.lastWallDirectionTouched = player.wall
+                    player.wallCoyoteTime = properties.wallCoyoteTime
+                }
                 if (player.onGround && !jumped) {
-                player.coyoteTime = properties.coyoteTime
-            }
+                    player.coyoteTime = properties.coyoteTime
+                }
 
-            if (!player.onGround) {
-                player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
-                player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
-            }
-                    player . jumpBufferTime =(player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
+                if (!player.onGround) {
+                    player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
+                    player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
+                }
+                player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
-                    pos . add (velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
+                pos.add(velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
                 transform.mutate()
 
-            if (!player.onGround && !jumped) {
-                velocity.y += gravity * deltaTimeF
-                pos.add(Vector3f(0f, gravity, 0f).mul(1 / 2 * deltaTimeF * deltaTimeF))
-            }
+                if (!player.onGround && !jumped) {
+                    velocity.y += gravity * deltaTimeF
+                    pos.add(Vector3f(0f, gravity, 0f).mul(1 / 2 * deltaTimeF * deltaTimeF))
+                }
 
                 if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
-                velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
-            }
+                    velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
+                }
 
-            velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
-                    entity.component < Player >().mutate()
+                velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+                entity.component<Player>().mutate()
+            }
         }
     }
 
@@ -312,9 +318,8 @@ class PlayerController : System {
         return properties.gravity * gravityMultiplier
     }
 
-    private fun Player.jump(jump: Jump) {
+    private fun Player.jump(jump: Jump, sticky : Boolean) {
         this.currentJump = jump
-
         val targetSpeed = if (jump is WallJump) {
             if (jump.wall == WallStatus.Right) {
                 velocity.x -= properties.wallJumpHSpeed
@@ -327,6 +332,9 @@ class PlayerController : System {
         }
 
         var jumpSpeed = -targetSpeed
+        if(sticky){
+            jumpSpeed*=.5f
+        }
         if (velocity.y < 0f) {
             jumpSpeed = min(jumpSpeed, velocity.y)
         }

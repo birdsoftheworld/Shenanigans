@@ -32,9 +32,7 @@ class InsertNewEntitiesSystem : System {
         entities: EntitiesView,
         lifecycle: EntitiesLifecycle
     ) {
-        val keyboard = resources.get<KeyboardState>()
         val mouse = resources.get<MouseState>()
-        val eventQueue = eventQueues.physics
 
         if (mouse.isPressed(MouseButton.RIGHT)){
             eventQueues.own.receive(shenanigans.engine.window.events.KeyEvent:: class).forEach { event->
@@ -54,8 +52,9 @@ class InsertNewEntitiesSystem : System {
 }
 
 fun insertBlock(blockType : Component, lifecycle: EntitiesLifecycle, pos : Vector3f){
-    pos.x = round(pos.x / 50) * 50
-    pos.y = round(pos.y / 50) * 50
+    println(pos)
+    pos.x = round((pos.x-25) / 50) * 50
+    pos.y = round((pos.y-25) / 50) * 50
     lifecycle.add(
         sequenceOf(
             Transform(

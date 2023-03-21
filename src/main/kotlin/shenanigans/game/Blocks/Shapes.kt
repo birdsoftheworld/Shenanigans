@@ -1,5 +1,6 @@
 package shenanigans.game.Blocks
 
+import jdk.nashorn.internal.ir.Block
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.api.Color
@@ -8,6 +9,8 @@ import shenanigans.engine.util.shapes.Polygon
 import shenanigans.engine.util.shapes.Rectangle
 
 class Shapes {
+    val smallRect = Rectangle(25f,25f)
+    val bigRect = Rectangle(50f,50f)
 
     fun getPolygon(block : Component) : Polygon{
         when(block){
@@ -15,18 +18,32 @@ class Shapes {
             is TrampolineBlock -> return trampolineShape.polygon
             is OscillatingBlock -> return oscillatingShape.polygon
             is TeleporterBlock -> return teleportShape.polygon
+            is NormalBlock -> return  normalShape.polygon
         }
         return Rectangle(0f,0f)
     }
-    val spikeShape = Shape(Rectangle(50f,50f),Color(1f,1f,1f))
+    fun getRectangle(block : Component) : Rectangle{
+        when(block){
+            is SpikeBlock -> return bigRect
+            is TrampolineBlock -> return bigRect
+            is OscillatingBlock -> return bigRect
+            is TeleporterBlock -> return smallRect
+            is NormalBlock -> return  bigRect
+        }
+        return Rectangle(0f,0f)
+    }
+    val spikeShape = Shape(bigRect,Color(1f,1f,1f))
 
-    val trampolineShape = Shape(Rectangle(50f,50f),Color(1f,1f,1f))
+    val trampolineShape = Shape(bigRect,Color(1f,1f,1f))
 
-    val stickyShape = Shape(Rectangle(4f,50f), Color(0.56666666666f, 0.60833333333f,0.25555555555f))
 
-    val slipperyShape = Shape(Rectangle(5f,50f), Color(0.38333333333f,.62222222222f,.65833333333f))
+    val normalShape = Shape(bigRect,Color(1f,1f,1f))
 
-    val teleportShape = Shape(Rectangle(25f,25f),Color(1f,1f,1f))
+    val stickyShape = Shape(bigRect, Color(0.56666666666f, 0.60833333333f,0.25555555555f))
+
+    val slipperyShape = Shape(bigRect, Color(0.38333333333f,.62222222222f,.65833333333f))
+
+    val teleportShape = Shape(smallRect,Color(1f,1f,1f))
 
     val floorShape = Shape(
         Polygon(
