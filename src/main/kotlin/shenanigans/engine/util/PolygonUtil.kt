@@ -36,17 +36,3 @@ private fun pointProjectionIntersectsLine(point: Vector2fc, line: Pair<Vector2fc
             (line.first.y() < point.y() && line.second.y() > point.y()))) &&
             (point.x() < line.first.x() || point.x() < line.second.x()))
 }
-
-fun pointProjectionCollisionDistance(lineSegment : Pair<Vector2fc, Vector2fc>, point : Vector2fc, direction : Vector2fc) : Float {
-    val p0 : Vector2f = lineSegment.first.sub(point, Vector2f())
-    val p1 : Vector2f = lineSegment.second.sub(point, Vector2f())
-    val t = direction.dot(p0) / direction.dot(p0.add(p1, Vector2f()))
-
-    if(t < 0 || t > 1) {
-        return -1f
-    }
-
-    val collisionPoint = p0.mul(1-t).add(p1.mul(t))
-
-    return direction.normalize(Vector2f()).dot(collisionPoint)
-}
