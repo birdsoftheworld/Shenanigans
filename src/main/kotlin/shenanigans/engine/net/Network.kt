@@ -22,8 +22,6 @@ import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Polygon
 import shenanigans.engine.util.shapes.Rectangle
-import shenanigans.game.network.EntityMovementPacket
-import shenanigans.game.network.EntityRegistrationPacket
 import shenanigans.game.network.Synchronized
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -123,10 +121,6 @@ fun builtinSendables(): Set<SendableClass<out Any>> {
             EventMessage::class,
             instantiator = { EventMessage(ConnectionEvent(null, ConnectionEventType.Connect)) }),
         SendableClass(MessageDelivery::class),
-        SendableClass(EntityMovementPacket::class, instantiator = { EntityMovementPacket(mapOf()) }),
-        SendableClass(
-            EntityRegistrationPacket::class,
-            instantiator = { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }),
 
         // Utils
         SendableClass(Map::class),

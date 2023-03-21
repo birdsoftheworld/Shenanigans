@@ -5,10 +5,13 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.net.MessageDelivery
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
+import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
+import shenanigans.game.network.EntityDeRegistrationPacket
 import shenanigans.game.network.EntityMovementPacket
 import shenanigans.game.network.EntityRegistrationPacket
+import shenanigans.game.network.Synchronized
 import kotlin.reflect.KClass
 
 class ServerUpdateSystem : System {
@@ -33,7 +36,15 @@ class ServerUpdateSystem : System {
             }
         }
 
-        eventQueues.network.queueLater(EntityMovementPacket(entities))
+        eventQueues.own.queueLater(EntityMovementPacket(entities))
+
+        eventQueues.own.receive(ConnectionEvent::class).filter { it.type == ConnectionEventType.Disconnect }.forEach { disconnectionEvent ->
+            query.invoke(setOf(Synchronized::class)).forEach { entity ->
+                if(entity.component<Synchronized>().get().ownerID == disconnectionEvent.connectionId) {
+                    eventQueues.own.queueNetwork(EntityDeRegistrationPacket(entity.id))
+                }
+            }
+        }
     }
 }
 

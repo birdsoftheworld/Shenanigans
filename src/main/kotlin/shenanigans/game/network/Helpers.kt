@@ -1,11 +1,11 @@
 package shenanigans.game.network
 
 import shenanigans.engine.ecs.Component
-import shenanigans.engine.net.ClientOnly
 
-@ClientOnly
 class Synchronized : Component {
-    var registration : RegistrationStatus = RegistrationStatus.Disconnected
+    @Transient
+    var registration = RegistrationStatus.Disconnected
+    var ownerID : Int? = -1
 }
 
 enum class RegistrationStatus {

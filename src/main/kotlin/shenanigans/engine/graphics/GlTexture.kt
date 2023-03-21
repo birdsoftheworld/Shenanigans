@@ -1,6 +1,7 @@
 package shenanigans.engine.graphics
 import de.matthiasmann.twl.utils.PNGDecoder
 import org.lwjgl.opengl.GL30C.*
+import java.nio.Buffer
 import java.nio.ByteBuffer
 
 class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, options: TextureOptions = TextureOptions()) {
@@ -39,7 +40,7 @@ class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, op
             val decoder = PNGDecoder(GlTexture::class.java.getResourceAsStream(path))
             val buf = ByteBuffer.allocateDirect(4 * decoder.width * decoder.height)
             decoder.decode(buf, decoder.width * 4, PNGDecoder.Format.RGBA)
-            buf.flip()
+            (buf as Buffer).flip()
 
             return GlTexture(decoder.width, decoder.height, buf, options)
         }
