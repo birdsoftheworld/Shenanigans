@@ -7,15 +7,17 @@ import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
+import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
+import shenanigans.engine.util.raycast
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.engine.net.ClientOnly
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
@@ -135,8 +137,36 @@ class PlayerController : System {
                 player.crouching = true
                 entity.changeCrouch(true)
             } else if (player.crouching && !holdingCrouch) {
-                player.crouching = false
-                entity.changeCrouch(false)
+                val things = query(setOf(Collider::class, Transform::class))
+                    .filter { e -> e.id != entity.id && !e.component<Collider>().get().triggerCollider }
+                val topPosition = Vector2f(pos.x, pos.y + SHAPE_CROUCHED.height)
+//                val topPosition = Vector2f(pos.x, pos.y)
+//                val height = SHAPE_BASE.height - SHAPE_CROUCHED.height
+                val height = 1f
+                var hit = raycast(
+                    things,
+                    topPosition,
+                    Vector2f(0f, 1f),
+                    height
+                )
+//                if (hit == null) {
+//                    topPosition.add(SHAPE_CROUCHED.width, 0f)
+//                    hit = raycast(
+//                        things,
+//                        topPosition,
+//                        Vector2f(0f, -1f),
+//                        height
+//                    )
+//                }
+                if (hit != null) {
+//                    query(setOf())[hit.thing.id]?.component<Shape>()?.get()?.color = Color(0f, 1f, 0f)
+                }
+                if (hit == null) {
+                    player.crouching = false
+                    entity.changeCrouch(false)
+                } else {
+                    Logger.log("player", "" + hit.distance)
+                }
             }
 
             var direction = 0f

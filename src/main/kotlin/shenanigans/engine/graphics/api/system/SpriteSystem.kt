@@ -3,10 +3,10 @@ package shenanigans.engine.graphics.api.system
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.camera.CameraResource
 import kotlin.reflect.KClass
 
 class SpriteSystem : System {
@@ -27,6 +27,7 @@ class SpriteSystem : System {
             val transform = entity.component<Transform>().get()
             renderer.transformation = camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
             renderer.textureRect(0f, 0f, sprite.rectangle.width, sprite.rectangle.height, sprite.sprite)
+            renderer.textureRect(0f, 0f, 10f, 10f, 10f, sprite.sprite)
         }
 
         renderer.end()
