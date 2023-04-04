@@ -8,6 +8,7 @@ import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.events.eventQueues
+import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.camera.CameraResource
@@ -52,18 +53,32 @@ class InsertNewEntitiesSystem : System {
 }
 
 fun insertBlock(blockType : Component, lifecycle: EntitiesLifecycle, pos : Vector3f){
-    println(pos)
     pos.x = round((pos.x-25) / 50) * 50
     pos.y = round((pos.y-25) / 50) * 50
-    lifecycle.add(
-        sequenceOf(
-            Transform(
-                pos
-            ),
-            Sprites().getSprite(blockType),
-            Collider(Shapes().getPolygon(blockType), true, false, true),
-            MousePlayer(false, Vector2f(0f,0f)),
-            blockType
+    if(Sprites().getSprite(blockType) != Sprites().nullSprite){
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    pos
+                ),
+                Sprites().getSprite(blockType),
+                Collider(Shapes().getPolygon(blockType), true, false, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                blockType
+            )
         )
-    )
+    }else{
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    pos
+                ),
+                Sprites().getSprite(blockType),
+                Collider(Shapes().getPolygon(blockType), true, false, true),
+                MousePlayer(false, Vector2f(0f,0f)),
+                blockType
+            )
+        )
+    }
+
 }

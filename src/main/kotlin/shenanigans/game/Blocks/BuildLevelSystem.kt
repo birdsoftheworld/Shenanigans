@@ -148,65 +148,65 @@ class BuildLevelSystem : System {
             )
         )
 
-        //slipppery blocks
-//        lifecycle.add(
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(200f, 600f,0.5f)
-//                ),
-//                slipperyShape,
-//                SlipperyBlock(),
-//                Collider(slipperyShape.polygon, true, false),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//            )
-//        )
-//        lifecycle.add(
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(250f, 600f,0.5f)
-//                ),
-//                slipperyShape,
-//                SlipperyBlock(),
-//                Collider(slipperyShape.polygon, true, false),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//            )
-//        )
-//        lifecycle.add(
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(300f, 600f,0.5f)
-//                ),
-//                slipperyShape,
-//                SlipperyBlock(),
-//                Collider(slipperyShape.polygon, true, false),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//            )
-//        )
-//        //sticky block
-//        lifecycle.add(
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(0f, 600f,0.5f)
-//                ),
-//                stickyShape,
-//                StickyBlock(),
-//                Collider(stickyShape.polygon, true, false),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//            )
-//        )
-//
-//        //sticky block
-//        lifecycle.add(
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(0f, 600f,0.5f)
-//                ),
-//                stickyShape,
-//                StickyBlock(),
-//                Collider(stickyShape.polygon, true, false),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//            )
-//        )
+//        slipppery blocks
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector3f(200f, 600f,0.5f)
+                ),
+                slipperyShape,
+                SlipperyBlock(),
+                Collider(slipperyShape.polygon, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector3f(250f, 600f,0.5f)
+                ),
+                slipperyShape,
+                SlipperyBlock(),
+                Collider(slipperyShape.polygon, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector3f(300f, 600f,0.5f)
+                ),
+                slipperyShape,
+                SlipperyBlock(),
+                Collider(slipperyShape.polygon, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+        //sticky block
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector3f(0f, 600f,0.5f)
+                ),
+                stickyShape,
+                StickyBlock(),
+                Collider(stickyShape.polygon, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
+
+        //sticky block
+        lifecycle.add(
+            sequenceOf(
+                Transform(
+                    Vector3f(0f, 600f,0.5f)
+                ),
+                stickyShape,
+                StickyBlock(),
+                Collider(stickyShape.polygon, true, false),
+                MousePlayer(false, Vector2f(0f,0f)),
+            )
+        )
 
         //Player Respawn Block
         lifecycle.add((
@@ -226,7 +226,7 @@ class BuildLevelSystem : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(200f, 500f,0.5f)
+                    Vector3f(200f, 500f,.9f)
                 ),
                 playerSprite,
                 Collider(playerShape.polygon, false, tracked = true),
@@ -242,7 +242,7 @@ class BuildLevelSystem : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector3f(600f, 700f,0.5f)
+                    Vector3f(600f, 700f,0.8f)
                 ),
                 floorShape,
                 Collider(floorShape.polygon, true, false),
@@ -253,7 +253,7 @@ class BuildLevelSystem : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector3f(800f, 600f,0.5f)
+                    Vector3f(800f, 600f,0.8f)
                 ),
                 floorShape,
                 Collider(floorShape.polygon, true, false),
@@ -265,7 +265,7 @@ class BuildLevelSystem : System {
         lifecycle.add((
             sequenceOf(
                 Transform(
-                    Vector3f(400f, 400f,0.5f)
+                    Vector3f(400f, 400f,0.8f)
                 ),
                 wallShape,
                 Collider(wallShape.polygon, true, false),

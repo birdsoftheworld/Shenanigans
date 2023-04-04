@@ -140,7 +140,7 @@ class PlayerController : System {
                             slippery = true;
                         }
                         if (entities.get(event.with)?.componentOpt<TrampolineBlock>() != null && event.normal.y < 0) {
-                            velocity.y = -PlayerProperties().maxSpeed * 2.5f
+                            velocity.y = -PlayerProperties().maxSpeed * 3f
                         }
                         if (entities.get(event.with)
                                 ?.componentOpt<TeleporterBlock>() != null && e!!.component<TeleporterBlock>()
