@@ -1,24 +1,41 @@
 package shenanigans.engine.util
 
-import org.joml.Vector2f
-import org.joml.Vector2fc
-import org.joml.Vector2ic
+import org.joml.*
 
 fun Vector2ic.toFloat() = Vector2f(this.x().toFloat(), this.y().toFloat())
 
 // not provided by JOML
 fun Vector2fc.dot(a: Float, b: Float) = this.x() * a + this.y() * b
 
-fun pointProjectionCollisionDistance(lineSegment : Pair<Vector2fc, Vector2fc>, point : Vector2fc, direction : Vector2fc) : Float {
-    val p0 : Vector2f = lineSegment.first.sub(point, Vector2f())
-    val p1 : Vector2f = lineSegment.second.sub(point, Vector2f())
-    val t = direction.dot(p0) / direction.dot(p0.add(p1, Vector2f()))
+fun pointProjectionCollisionDistance(
+    lineSegment: Pair<Vector2fc, Vector2fc>,
+    point: Vector2fc,
+    direction: Vector2fc
+): Float {
+    val worldToEmitter = Matrix3f(
+        Matrix2f(
+            rotate90Degrees(direction),
+            direction,
+        ).transpose()
+    ).mul(Matrix3f().apply { setColumn(2, Vector3f(point.negate(Vector2f()), 1f)) })
 
-    if(t < 0 || t > 1) {
-        return -1f
+    val endpoints = Pair(
+        worldToEmitter.transformHomogenous(lineSegment.first),
+        worldToEmitter.transformHomogenous(lineSegment.second)
+    )
+
+    val t = -endpoints.first.x() / (endpoints.second.x() - endpoints.first.x())
+
+    return if (t in 0f..1f) {
+        endpoints.first.y() + t * (endpoints.second.y() - endpoints.first.y())
+    } else {
+        Float.POSITIVE_INFINITY
     }
+}
 
-    val collisionPoint = p0.mul(1-t).add(p1.mul(t))
+fun rotate90Degrees(vector: Vector2fc) = Vector2f(-vector.y(), vector.x())
 
-    return direction.normalize(Vector2f()).dot(collisionPoint)
+fun Matrix3f.transformHomogenous(vector: Vector2fc): Vector2f {
+    val homogenousImage = this.transform(Vector3f(vector, 1f))
+    return Vector2f(homogenousImage.x(), homogenousImage.y()).div(homogenousImage.z())
 }
