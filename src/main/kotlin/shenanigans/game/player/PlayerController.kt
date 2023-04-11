@@ -236,10 +236,10 @@ class PlayerController : System {
                 if (!jumped) {
                     player.lastWallDirectionTouched = player.wall
                     player.wallCoyoteTime = properties.wallCoyoteTime
-                    player.jumps = properties.maxJumps
                 }
                 if (player.currentJump != null && player.velocity.y >= 0) {
                     player.currentJump = null
+                    player.jumps = properties.maxJumps
                 }
             }
             if (player.onGround && !jumped) {
