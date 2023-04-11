@@ -49,6 +49,10 @@ class Network(
     fun createEventQueue(): NetworkEventQueue {
         return NetworkEventQueue(this)
     }
+
+    fun getEndpoint(): MessageEndpoint {
+        return impl.getEndpoint()
+    }
 }
 
 class NetworkEventQueue internal constructor(val network: Network) : EventQueue() {
@@ -79,6 +83,10 @@ class NetworkEventQueue internal constructor(val network: Network) : EventQueue(
                 network.receivedMessages.filterIsInstance(EventMessage::class.java)
             network.receivedMessages.clear()
         }
+    }
+
+    fun getEndpoint(): MessageEndpoint {
+        return network.getEndpoint()
     }
 }
 

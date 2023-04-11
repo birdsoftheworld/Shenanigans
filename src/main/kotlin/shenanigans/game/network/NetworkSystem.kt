@@ -19,25 +19,35 @@ class NetworkSystem : System {
 
         eventQueues.own.receive(EntityMovementPacket::class).forEach update@{ packet ->
             val entities = query(setOf(Synchronized::class))
-            packet.entities.forEach packet@{ entity ->
-                if (entities[entity.key] == null) {
-                    Logger.warn("Entity Movement", "entity does not exist: " + entity.key)
+            packet.entities.forEach packet@{ packetEntity ->
+                val entity = entities[packetEntity.key]
+
+                if (entity == null) {
+                    Logger.warn("Entity Movement", "entity does not exist: " + packetEntity.key)
                     return@packet
                 }
+
+
 
                 //FIXME
-                if (entities[entity.key]!!.componentOpt<Transform>() == null) {
+                if (entity.component<Synchronized>().get().ownerEndpoint == eventQueues.network.getEndpoint()) {
                     return@packet
                 }
 
-                val position = entities[entity.key]!!.component<Transform>().get().position
-                position.lerp((entity.value).position, 1f / 3f)
+                val position = entity.component<Transform>().get().position
+                position.lerp((packetEntity.value).position, 1f / 3f)
+
+                entities[packetEntity.key]!!.component<Transform>().mutate()
             }
         }
 
         eventQueues.own.receive(EntityRegistrationPacket::class).forEach registration@{ packet ->
             if (entities[packet.id] != null) {
-                entities[packet.id]!!.component<Synchronized>().get().registration = RegistrationStatus.Registered
+                val entitySynchronization = entities[packet.id]!!.component<Synchronized>();
+                entitySynchronization.get().registration = (packet.entity[Synchronized::class]!! as Synchronized).registration
+                entitySynchronization.get().ownerEndpoint = (packet.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
+                entitySynchronization.mutate()
+
                 Logger.log("Network System", "WHaHOOO")
                 return@registration
             }
@@ -51,12 +61,14 @@ class NetworkSystem : System {
         }
 
         entities.filter { it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected }.forEach {
+            it.component<Synchronized>().get().registration = RegistrationStatus.Registered
+            it.component<Synchronized>().get().ownerEndpoint = eventQueues.network.getEndpoint()
             eventQueues.network.queueLater(EntityRegistrationPacket(it))
-            it.component<Synchronized>().get().registration = RegistrationStatus.Sent
         }
 
         eventQueues.network.queueLater(EntityMovementPacket(entities.filter {
-            it.component<Synchronized>().get().registration == RegistrationStatus.Registered
+            it.component<Synchronized>().get().registration == RegistrationStatus.Registered &&
+            it.component<Synchronized>().get().ownerEndpoint == eventQueues.network.getEndpoint()
         }))
     }
 }
