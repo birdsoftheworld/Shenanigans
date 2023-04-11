@@ -38,13 +38,14 @@ class ClientEngine(initScene: Scene, network: Network = Network(Client())) : Eng
         Renderer.init()
 
         GL30C.glClearColor(0.5f, 1.0f, 0.5f, 0.5f)
-        var previousTime = GLFW.glfwGetTime()
 
         window.onResize { _, _ ->
             Renderer.renderGame(window, scene, engineResources, eventQueuesFor(renderEvents))
         }
 
         network.impl.connect()
+
+        var previousTime = GLFW.glfwGetTime()
 
         while (!window.shouldClose) {
             GLFW.glfwPollEvents()
