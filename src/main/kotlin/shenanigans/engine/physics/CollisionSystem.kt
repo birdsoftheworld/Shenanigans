@@ -24,20 +24,15 @@ class CollisionSystem : System {
 
     private val transformMatrix = Matrix4f()
 
-    override fun query(): Iterable<KClass<out Component>> {
-        return listOf(Collider::class, Transform::class)
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
 
-        val collisionPairs = getCollisionPairs(entities)
+        val collisionPairs = getCollisionPairs(query(setOf(Collider::class, Transform::class)))
 
-        val eventQueue = eventQueues.physics
         collisionPairs.forEach { pair ->
             val collision = testCollision(pair) ?: return@forEach
 
@@ -62,9 +57,10 @@ class CollisionSystem : System {
                     transform2.get().position.add(move)
                     transform2.mutate()
                 }
+
+                maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
+                maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
             }
-            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
-            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
         }
         return
     }
@@ -158,6 +154,7 @@ private fun testCollision(collisionPair: Pair<EntityView, EntityView>): Collisio
             minNormal = normal
         }
     }
+
     return Collision(minNormal, minOverlap)
 }
 

@@ -49,16 +49,15 @@ class OscillatingBlock(val distanceToOscillate : Float, var startPos : Vector2f,
 }
 
 class OscillatingBlocksSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(OscillatingBlock::class, Transform::class)
-    }
 
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(setOf(MousePlayer::class, Transform::class))
+
         entities.forEach { entity ->
             val pos = entity.component<Transform>().get().position
             val oscillatingBlock = entity.component<OscillatingBlock>().get()

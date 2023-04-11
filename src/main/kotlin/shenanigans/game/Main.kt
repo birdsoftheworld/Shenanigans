@@ -7,11 +7,15 @@ import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.events.eventQueues
+import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.net.Client
+import shenanigans.engine.net.ClientOnly
+import shenanigans.engine.net.Network
+import shenanigans.engine.net.SendableClass
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.physics.DeltaTime
@@ -25,19 +29,22 @@ import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
+import shenanigans.engine.window.events.MouseScrollEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.network.NetworkSystem
-import shenanigans.game.network.Synchronized
-import shenanigans.engine.window.events.*
-import shenanigans.game.Blocks.*
+import shenanigans.game.Blocks.BuildLevelSystem
+import shenanigans.game.Blocks.InsertNewEntitiesSystem
+import shenanigans.game.Blocks.OscillatingBlock
+import shenanigans.game.Blocks.OscillatingBlocksSystem
+import shenanigans.game.network.*
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import shenanigans.game.player.PlayerProperties
+import java.util.*
 import kotlin.math.round
 import kotlin.reflect.KClass
 
 fun main() {
-    val engine = ClientEngine(testScene())
+    val engine = ClientEngine(testScene(), Network(Client(), sendables()))
 
     engine.runPhysicsOnce(BuildLevelSystem())
 
@@ -58,23 +65,22 @@ fun testScene(): Scene {
     return scene
 }
 
-class FollowCameraSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Player::class, Transform::class)
-    }
+@ClientOnly
+class Followed(val func: () -> Vector3f) : Component
 
+class FollowCameraSystem : System {
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        val first = entities.first()
-        val transform = first.component<Transform>().get()
+        val first = query(setOf(Followed::class)).first()
         val camera = resources.get<CameraResource>().camera!!
+        val pos = first.component<Followed>().get().func()
         camera.reset().translate(
-            transform.position.x - camera.screenWidth / 2 + 20 ,
-            transform.position.y - camera.screenHeight / 2 + 20
+            pos.x - camera.screenWidth / 2,
+            pos.y - camera.screenHeight / 2
         )
     }
 }
@@ -90,126 +96,15 @@ class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
 }
 data class KeyboardPlayer(val speed: Float) : Component
 
-//class AddTestEntities : System {
-//    override fun query(): Iterable<KClass<out Component>> {
-//        return emptySet()
-//    }
-//
-//    override fun executePhysics(
-//        resources: ResourcesView,
-//        eventQueues: EventQueues<LocalEventQueue>,
-//        entities: EntitiesView,
-//        lifecycle: EntitiesLifecycle
-//    ) {
-//        val polygon = Rectangle(600f, 50f)
-//
-//        lifecycle.add(
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(0f, 600f, 0.5f)
-//                ),
-//                Shape(polygon, Color(1f, 0f, 0f)),
-//                Collider(polygon, true),
-//                MousePlayer(false, Vector2f(0f, 0f)),
-//            )
-//        )
-//
-//        val playerShape = PlayerController.SHAPE_BASE
-//        val sprite = Sprite(TextureManager.createTexture("/playerTexture.png").getRegion(), playerShape)
-//        lifecycle.add(
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(200f, 500f, 0.5f),
-//                ),
-//                sprite,
-//                Collider(playerShape, false, tracked = true),
-//                Player(
-//                    PlayerProperties()
-//                ),
-//                Synchronized()
-//            )
-//        )
-//
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(600f, 700f, 0.5f)
-//                ),
-//                Shape(polygon, Color(1f, 0f, 0f)),
-//                Collider(polygon, true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                )
-//        ))
-//
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(800f, 600f, 0.5f)
-//                ),
-//                Shape(polygon, Color(1f, 0f, 0f)),
-//                Collider(polygon, true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                )
-//        ))
-//        val polygon3 = Rectangle(50f, 600f)
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(300f, 400f, 0.5f)
-//                ),
-//                Shape(polygon3, Color(0f, 1f, 1f)),
-//                Collider(polygon3, true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//            )
-//        ))
-//    }
-//}
-
-
-//class InsertEntitiesOngoing : System {
-//    override fun query(): Iterable<KClass<out Component>> {
-//        return setOf(Shape::class,Transform::class)
-//    }
-//
-//    override fun executePhysics(
-//        resources: ResourcesView,
-//        eventQueues: EventQueues<LocalEventQueue>,
-//        entities: EntitiesView,
-//        lifecycle: EntitiesLifecycle
-//    ) {
-//        val mousePos = resources.get<MouseState>().position()
-//        val keyboard = resources.get<KeyboardState>()
-//        val shape = Shape(
-//            Rectangle(50f, 50f),
-//            Color(.5f, .5f, .5f)
-//        )
-//        eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
-//            if (keyboard.isPressed(Key.SPACE) && event.action == MouseButtonAction.PRESS) {
-//                lifecycle.add(
-//                    sequenceOf(
-//                        Transform(
-//                            Vector2f(round((mousePos.x()-25f)/50)*50, round((mousePos.y()-25f)/50)*50)
-//                        ),
-//                        shape,
-//                        Collider(shape.polygon, false),
-//                        MousePlayer(false, Vector2f(0f, 0f)),
-//                    )
-//                )
-//            }
-//        }
-//    }
-//}
 class MouseMovementSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(MousePlayer::class, Transform::class)
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(setOf(MousePlayer::class, Transform::class))
+
         entities.forEach { entity ->
             val mousePlayer = entity.component<MousePlayer>().get()
             if (mousePlayer.grabbed) {

@@ -18,12 +18,11 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 import kotlin.system.exitProcess
 
-class ClientEngine(initScene: Scene) : Engine(initScene = initScene, Network(Client())) {
+class ClientEngine(initScene: Scene, network: Network = Network(Client())) : Engine(initScene = initScene, network) {
     private lateinit var window: Window
 
     override fun init() {
         window = Window("game", 640, 640)
-
 
         window.onEvent { e -> physicsEvents.queueLater(e) }
 
@@ -44,6 +43,8 @@ class ClientEngine(initScene: Scene) : Engine(initScene = initScene, Network(Cli
         window.onResize { _, _ ->
             Renderer.renderGame(window, scene, engineResources, eventQueuesFor(renderEvents))
         }
+
+        network.impl.connect()
 
         while (!window.shouldClose) {
             GLFW.glfwPollEvents()

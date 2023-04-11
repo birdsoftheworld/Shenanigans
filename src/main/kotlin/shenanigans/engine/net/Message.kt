@@ -4,13 +4,22 @@ import shenanigans.engine.events.Event
 
 sealed class Message(
     val delivery: MessageDelivery = MessageDelivery.UnreliableUnordered,
-    var sender: Int? = null,
+    var sender: MessageEndpoint? = null,
+    var recipient: MessageEndpoint? = null
 )
 
 enum class MessageDelivery {
-    ReliableOrdered,
-    UnreliableUnordered,
+    ReliableOrdered, UnreliableUnordered,
 }
 
-class EventMessage<E : Event>(val event: E, reliable: MessageDelivery = MessageDelivery.UnreliableUnordered) :
-    Message(reliable)
+sealed class MessageEndpoint {
+    data class Client(val id: Int) : MessageEndpoint()
+    object Server : MessageEndpoint()
+}
+
+class EventMessage<E : Event>(
+    val event: E,
+    delivery: MessageDelivery = MessageDelivery.UnreliableUnordered,
+    sender: MessageEndpoint? = null,
+    recipient: MessageEndpoint? = null
+) : Message(delivery = delivery, sender = sender, recipient = recipient)

@@ -6,14 +6,10 @@ import shenanigans.engine.events.LocalEventQueue
 import kotlin.reflect.KClass
 
 class AddEntitiesSystem(val entities: Sequence<Sequence<Component>>) : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        _entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         entities.forEach { lifecycle.add(it) }

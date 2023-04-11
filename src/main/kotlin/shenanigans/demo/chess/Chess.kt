@@ -19,11 +19,12 @@ fun main() {
 }
 
 class AddTiles : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
-
-    override fun executePhysics(resources: ResourcesView, eventQueues: EventQueues<LocalEventQueue>, entities: EntitiesView, lifecycle: EntitiesLifecycle) {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues<LocalEventQueue>,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
+        lifecycle: EntitiesLifecycle
+    ) {
         val tileSize = 20f
 
         for (i in 0..7) {
@@ -32,12 +33,14 @@ class AddTiles : System {
                     sequenceOf(
                         Transform(Vector2f(i * tileSize, j * tileSize)),
                         Shape(
-                            Polygon(arrayOf(
-                                Vector2f(0f, 0f),
-                                Vector2f(0f, tileSize),
-                                Vector2f(tileSize, tileSize),
-                                Vector2f(tileSize, 0f),
-                            )),
+                            Polygon(
+                                arrayOf(
+                                    Vector2f(0f, 0f),
+                                    Vector2f(0f, tileSize),
+                                    Vector2f(tileSize, tileSize),
+                                    Vector2f(tileSize, 0f),
+                                )
+                            ),
                             if ((i + j) % 2 == 0) {
                                 Color(0f, 0f, 0f)
                             } else {

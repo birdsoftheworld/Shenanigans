@@ -10,14 +10,10 @@ import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 class SpriteSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Sprite::class)
-    }
-
     override fun executeRender(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val renderer = resources.get<TextureRendererResource>().textureRenderer
@@ -26,7 +22,7 @@ class SpriteSystem : System {
         renderer.start()
         val view = camera.computeViewMatrix()
 
-        for (entity in entities) {
+        for (entity in query(setOf(Sprite::class))) {
             val sprite = entity.component<Sprite>().get()
             val transform = entity.component<Transform>().get()
             renderer.transformation = camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)

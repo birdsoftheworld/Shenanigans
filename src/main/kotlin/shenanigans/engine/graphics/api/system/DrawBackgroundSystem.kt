@@ -5,6 +5,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.TextureOptions
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
 import shenanigans.engine.graphics.api.texture.TextureManager
@@ -13,18 +14,14 @@ import shenanigans.engine.window.WindowResource
 import kotlin.reflect.KClass
 
 class DrawBackgroundSystem : System {
-    val background =
-        TextureManager.createTexture("/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
-    val imageSize = Vector2i(400, 400)
-
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
+    private val background =
+        TextureManager.createTexture(TextureKey("background"), "/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
+    private val imageSize = Vector2i(400, 400)
 
     override fun executeRender(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val textureRenderer = resources.get<TextureRendererResource>().textureRenderer

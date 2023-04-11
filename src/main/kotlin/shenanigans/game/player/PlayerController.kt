@@ -2,6 +2,7 @@ package shenanigans.game.player
 
 import org.joml.Vector2f
 import org.joml.Vector3f
+import shenanigans.engine.audio.AudioClip
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
@@ -14,9 +15,9 @@ import shenanigans.engine.util.moveTowards
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.game.network.ClientOnly
 import shenanigans.game.Blocks.*
-import java.lang.NullPointerException
+import shenanigans.engine.net.ClientOnly
+import shenanigans.game.MousePlayer
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
@@ -85,18 +86,16 @@ data class Player(
 ) : Component
 
 class PlayerController : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf()
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+
+        val entities = query(setOf(MousePlayer::class, Transform::class))
 
         entities.forEach { entity ->
 
@@ -365,7 +364,7 @@ class PlayerController : System {
     }
 
 
-    private fun respawn(entityA: EntityView, entities: EntitiesView) {
+    private fun respawn(entityA: EntityView, entities: QueryView) {
         entities.forEach { entity ->
             if (entity.componentOpt<RespawnBlock>() != null) {
                 val targetPos = entity.component<Transform>().get().position

@@ -11,8 +11,7 @@ object TextureManager {
     private val queuedTextures = mutableListOf<Pair<TextureKey, TextureCreatable>>()
     private val keyedTextures = mutableMapOf<TextureKey, GlTexture>()
 
-    fun createTexture(path: String, options: TextureOptions = TextureOptions()) : Texture {
-        val key = TextureKey()
+    fun createTexture(key: TextureKey, path: String, options: TextureOptions = TextureOptions()) : Texture {
         queuedTextures.add(Pair(key, PathTexture(options, path)))
         if(GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
@@ -20,8 +19,7 @@ object TextureManager {
         return Texture(key)
     }
 
-    fun createTextureFromData(data: ByteBuffer, width: Int, height: Int, options: TextureOptions = TextureOptions()) : Texture {
-        val key = TextureKey()
+    fun createTextureFromData(key: TextureKey, data: ByteBuffer, width: Int, height: Int, options: TextureOptions = TextureOptions()) : Texture {
         queuedTextures.add(Pair(key, RawTexture(options, data, Vector2i(width, height))))
         if(GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()

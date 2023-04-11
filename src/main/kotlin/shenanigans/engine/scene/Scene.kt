@@ -3,6 +3,7 @@ package shenanigans.engine.scene
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
+import kotlin.reflect.KClass
 
 data class Scene(
     val entities: Entities = Entities(),
@@ -10,7 +11,7 @@ data class Scene(
     val sceneResources: Resources = Resources()
 ) {
     fun <S : System, Q : EventQueue> runSystem(
-        execute: S.(ResourcesView, EventQueues<Q>, EntitiesView, EntitiesLifecycle) -> Unit,
+        execute: S.(ResourcesView, EventQueues<Q>, (Iterable<KClass<out Component>>) -> QueryView, EntitiesLifecycle) -> Unit,
         resources: ResourcesView,
         eventQueues: EventQueues<Q>,
     ): (S) -> Unit {

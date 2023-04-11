@@ -5,30 +5,28 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
-import shenanigans.game.player.Player
 import kotlin.reflect.KClass
 
 class NetworkSystem : System {
 
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(Synchronized::class)
-    }
-
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(setOf(Synchronized::class))
+
         eventQueues.own.receive(EntityMovementPacket::class).forEach update@{ packet ->
-            packet.entities.forEach() packet@{ entity ->
+            val entities = query(setOf(Synchronized::class))
+            packet.entities.forEach packet@{ entity ->
                 if (entities[entity.key] == null) {
                     Logger.warn("Entity Movement", "entity does not exist: " + entity.key)
                     return@packet
                 }
 
                 //FIXME
-                if (entities[entity.key]!!.componentOpt<Player>() != null) {
+                if (entities[entity.key]!!.componentOpt<Transform>() == null) {
                     return@packet
                 }
 
@@ -44,9 +42,9 @@ class NetworkSystem : System {
                 return@registration
             }
 
-            lifecycle.addWithID(
-                packet.id,
+            lifecycle.add(
                 packet.entity.values.asSequence(),
+                packet.id,
             )
 
             Logger.log("Network System", "WahoOO!")

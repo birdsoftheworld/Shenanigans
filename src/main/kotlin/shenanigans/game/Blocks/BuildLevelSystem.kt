@@ -16,14 +16,10 @@ import shenanigans.game.player.PlayerProperties
 import kotlin.reflect.KClass
 
 class BuildLevelSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val shapes = Shapes()

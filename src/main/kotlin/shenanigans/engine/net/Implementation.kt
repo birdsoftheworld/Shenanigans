@@ -4,51 +4,98 @@ import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
-import shenanigans.game.network.registerDefaultClasses
+import shenanigans.engine.term.Logger
 import com.esotericsoftware.kryonet.Client as KryoClient
 import com.esotericsoftware.kryonet.Server as KryoServer
 
 
 interface NetworkImplementation {
-    fun sendMessage(msg: Message)
-    fun registerListener(listener: (Message) -> Unit)
+    fun connect()
 
-    fun sendMessageToConnection(connection: Connection, msg: Message)
+    fun sendMessage(msg: Message)
+
+    fun getEndpoint(): MessageEndpoint
+
+    fun registerListener(listener: (Message) -> Unit)
+    fun registerSendable(sendable: SendableClass<out Any>)
 }
 
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
-    constructor() : this(KryoServer()) {
-        registerDefaultClasses(kryoServer.kryo)
+    constructor() : this(KryoServer())
 
+    override fun connect() {
         kryoServer.start()
         kryoServer.bind(40506, 40506)
     }
 
     override fun sendMessage(msg: Message) {
-        when (msg.delivery) {
-            MessageDelivery.UnreliableUnordered -> kryoServer.sendToAllUDP(msg)
-            MessageDelivery.ReliableOrdered -> kryoServer.sendToAllUDP(msg)
+        val connId: Int? = when (msg.recipient) {
+            is MessageEndpoint.Client -> (msg.recipient as MessageEndpoint.Client).id
+            is MessageEndpoint.Server -> throw RuntimeException("server cannot send message to itself")
+            else -> null
+        }
+
+        if (connId !== null) {
+            when (msg.delivery) {
+                MessageDelivery.UnreliableUnordered -> kryoServer.sendToUDP(connId, msg)
+                MessageDelivery.ReliableOrdered -> kryoServer.sendToTCP(connId, msg)
+            }
+        } else {
+            when (msg.delivery) {
+                MessageDelivery.UnreliableUnordered -> kryoServer.sendToAllUDP(msg)
+                MessageDelivery.ReliableOrdered -> kryoServer.sendToAllUDP(msg)
+            }
         }
     }
 
-    override fun sendMessageToConnection(connection: Connection, msg: Message) {
-        when (msg.delivery) {
-            MessageDelivery.UnreliableUnordered -> connection.sendUDP(msg)
-            MessageDelivery.ReliableOrdered -> connection.sendTCP(msg)
-        }
-    }
+    override fun getEndpoint(): MessageEndpoint = MessageEndpoint.Server
 
     override fun registerListener(listener: (Message) -> Unit) {
         kryoServer.addListener(KryoListener(listener))
+    }
+
+    override fun registerSendable(sendable: SendableClass<out Any>) {
+        sendable.registerKryo(kryoServer.kryo)
+    }
+
+    private class KryoListener(val cb: (Message) -> Unit) : Listener {
+        override fun received(connection: Connection?, `object`: Any?) {
+            if (`object` is Message) {
+                `object`.sender = if (connection !== null) MessageEndpoint.Client(connection.id) else null
+                cb(`object`)
+            }
+        }
+
+        override fun connected(connection: Connection?) {
+            cb(
+                EventMessage(
+                    ConnectionEvent(
+                        if (connection !== null) MessageEndpoint.Client(connection.id) else null,
+                        ConnectionEventType.Connect
+                    )
+                )
+            )
+        }
+
+        override fun disconnected(connection: Connection?) {
+            cb(
+                EventMessage(
+                    ConnectionEvent(
+                        if (connection !== null) MessageEndpoint.Client(connection.id) else null,
+                        ConnectionEventType.Disconnect
+                    )
+                )
+            )
+        }
     }
 }
 
 class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
-    constructor() : this(KryoClient()) {
-        registerDefaultClasses(kryoClient.kryo)
+    constructor() : this(KryoClient())
 
+    override fun connect() {
         kryoClient.start()
 
         try {
@@ -63,39 +110,41 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
         }
     }
 
-    override fun sendMessageToConnection(connection: Connection, msg: Message) {
-        when (msg.delivery) {
-            MessageDelivery.UnreliableUnordered -> connection.sendUDP(msg)
-            MessageDelivery.ReliableOrdered -> connection.sendTCP(msg)
-        }
-    }
-
     override fun sendMessage(msg: Message) {
+        if (msg.recipient is MessageEndpoint.Client) {
+            throw RuntimeException("client cannot send message to other clients")
+        }
+
         when (msg.delivery) {
             MessageDelivery.UnreliableUnordered -> kryoClient.sendUDP(msg)
             MessageDelivery.ReliableOrdered -> kryoClient.sendTCP(msg)
         }
     }
 
+    override fun getEndpoint(): MessageEndpoint = MessageEndpoint.Client(kryoClient.id)
+
     override fun registerListener(listener: (Message) -> Unit) {
         kryoClient.addListener(KryoListener(listener))
-
     }
-}
 
-internal class KryoListener(val cb: (Message) -> Unit) : Listener {
-    override fun received(connection: Connection?, `object`: Any?) {
-        if (`object` is Message) {
-            `object`.sender = connection?.id
-            cb(`object`)
+    override fun registerSendable(sendable: SendableClass<out Any>) {
+        sendable.registerKryo(kryoClient.kryo)
+    }
+
+    private class KryoListener(val cb: (Message) -> Unit) : Listener {
+        override fun received(connection: Connection?, `object`: Any?) {
+            if (`object` is Message) {
+                if (`object`.sender == null) `object`.sender = MessageEndpoint.Server
+                cb(`object`)
+            }
         }
-    }
 
-    override fun connected(connection: Connection?) {
-        cb(EventMessage(ConnectionEvent(connection, ConnectionEventType.Connect)))
-    }
+        override fun connected(connection: Connection?) {
+            cb(EventMessage(ConnectionEvent(MessageEndpoint.Server, ConnectionEventType.Connect)))
+        }
 
-    override fun disconnected(connection: Connection?) {
-        cb(EventMessage(ConnectionEvent(connection, ConnectionEventType.Disconnect)))
+        override fun disconnected(connection: Connection?) {
+            cb(EventMessage(ConnectionEvent(MessageEndpoint.Server, ConnectionEventType.Disconnect)))
+        }
     }
 }

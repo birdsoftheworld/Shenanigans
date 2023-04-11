@@ -23,14 +23,11 @@ import kotlin.math.round
 import kotlin.reflect.KClass
 
 class InsertNewEntitiesSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return emptySet()
-    }
 
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val mouse = resources.get<MouseState>()

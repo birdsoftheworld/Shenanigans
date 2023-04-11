@@ -6,6 +6,7 @@ import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.util.Transform
+import shenanigans.game.MousePlayer
 import kotlin.reflect.KClass
 
 data class TeleporterBlock(val num : Int) : Component {
@@ -13,16 +14,16 @@ data class TeleporterBlock(val num : Int) : Component {
 }
 
 class TeleporterSystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(TeleporterBlock::class, Transform::class)
-    }
+
 
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val entities = query(setOf(MousePlayer::class, Transform::class))
+
         entities.forEach { entity ->
             val tpBlock = entity.component<TeleporterBlock>()
             if(tpBlock.get().num == 0) {

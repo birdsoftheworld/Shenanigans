@@ -10,19 +10,15 @@ import shenanigans.engine.window.WindowResource
 import kotlin.reflect.KClass
 
 class UISystem : System {
-    override fun query(): Iterable<KClass<out Component>> {
-        return setOf(UIComponent::class)
-    }
-
     override fun executeRender(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
-        entities: EntitiesView,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
         val window = resources.get<WindowResource>().window
 
-        entities.forEach {
+        query(setOf(UIComponent::class)).forEach {
             val ui = it.component<UIComponent>().get()
             ui.root.computeLayout(window.size.toFloat())
             ui.root.renderRecursive(resources, Box.Layout(Vector2f(), window.size.toFloat()))
