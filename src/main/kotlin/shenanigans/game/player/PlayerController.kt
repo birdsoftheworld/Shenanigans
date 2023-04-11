@@ -53,14 +53,18 @@ data class PlayerProperties(
 
     val jumpCutoff: Float = 2f,
 
+    val maxJumps: Int = 1,
+    val fallingCountsAsJumping: Boolean = true,
+
     val terminalVelocity: Float = 825f,
     val gravity: Float = 1375f,
 )
 
 sealed class Jump(val isCoyote: Boolean)
-
 class FloorJump(isCoyote: Boolean) : Jump(isCoyote)
 class WallJump(val wall: WallStatus, isCoyote: Boolean) : Jump(isCoyote)
+object AirJump : Jump(false)
+object FallJump : Jump(false)
 
 
 @ClientOnly
@@ -76,6 +80,7 @@ data class Player(
     var crouching: Boolean = false,
 
     var currentJump: Jump? = null,
+    var jumps: Int = 0,
 
     var coyoteTime: Float = 0f,
     var wallCoyoteTime: Float = 0f,
@@ -227,17 +232,28 @@ class PlayerController : System {
                 player.jumpBufferTime = properties.jumpBufferTime
             }
 
-            if (player.wall != WallStatus.Off && !jumped) {
-                player.lastWallDirectionTouched = player.wall
-                player.wallCoyoteTime = properties.wallCoyoteTime
+            if (player.wall != WallStatus.Off) {
+                if (!jumped) {
+                    player.lastWallDirectionTouched = player.wall
+                    player.wallCoyoteTime = properties.wallCoyoteTime
+                    player.jumps = properties.maxJumps
+                }
+                if (player.currentJump != null && player.velocity.y >= 0) {
+                    player.currentJump = null
+                }
             }
             if (player.onGround && !jumped) {
                 player.coyoteTime = properties.coyoteTime
+                player.jumps = properties.maxJumps
             }
 
             if (!player.onGround) {
                 player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
                 player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
+                if (properties.fallingCountsAsJumping && player.currentJump == null && player.coyoteTime <= 0 && player.wallCoyoteTime <= 0) {
+                    player.jumps--
+                    player.currentJump = FallJump
+                }
             }
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
@@ -313,11 +329,13 @@ class PlayerController : System {
 
         this.jumpBufferTime = 0f
         this.coyoteTime = 0f
-
-        AUDIO_JUMP.play()
+        this.jumps--
     }
 
     private fun Player.getJump(): Jump? {
+        if (this.jumps <= 0) {
+            return null
+        }
         return if (this.onGround) {
             FloorJump(false)
         } else if(this.coyoteTime > 0f) {
@@ -327,7 +345,7 @@ class PlayerController : System {
         } else if(this.wallCoyoteTime > 0f && !this.crouching) {
             WallJump(this.lastWallDirectionTouched, true)
         } else {
-            null
+            return AirJump
         }
     }
 
