@@ -17,6 +17,7 @@ import shenanigans.engine.window.WindowResource
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseState
 import kotlin.system.exitProcess
+import java.lang.System as JSystem
 
 class ClientEngine(initScene: Scene, network: Network = Network(Client())) : Engine(initScene = initScene, network) {
     private lateinit var window: Window
@@ -43,7 +44,9 @@ class ClientEngine(initScene: Scene, network: Network = Network(Client())) : Eng
             Renderer.renderGame(window, scene, engineResources, eventQueuesFor(renderEvents))
         }
 
-        network.impl.connect()
+        if (JSystem.getProperty("no_network") == null) {
+            network.impl.connect()
+        }
 
         var previousTime = GLFW.glfwGetTime()
 
