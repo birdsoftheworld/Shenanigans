@@ -17,6 +17,10 @@ class NetworkSystem : System {
     ) {
         val entities = query(setOf(Synchronized::class))
 
+        eventQueues.network.receive(EntityDeRegistrationPacket::class).forEach {
+            lifecycle.del(it.id)
+        }
+
         eventQueues.own.receive(EntityMovementPacket::class).forEach update@{ packet ->
             val entities = query(setOf(Synchronized::class))
             packet.entities.forEach packet@{ packetEntity ->

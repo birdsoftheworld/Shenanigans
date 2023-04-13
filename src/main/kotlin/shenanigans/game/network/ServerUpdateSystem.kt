@@ -35,13 +35,16 @@ class ServerUpdateSystem : System {
 
         eventQueues.own.queueLater(EntityMovementPacket(entities))
 
-        eventQueues.own.receive(ConnectionEvent::class).filter { it.type == ConnectionEventType.Disconnect }.forEach { disconnectionEvent ->
-            query.invoke(setOf(Synchronized::class)).forEach { entity ->
-                if(entity.component<Synchronized>().get().ownerEndpoint == disconnectionEvent.endpoint) {
-                    eventQueues.own.queueNetwork(EntityDeRegistrationPacket(entity.id))
-                }
+        eventQueues.network.receive(ConnectionEvent::class)
+            .filter { it.type == ConnectionEventType.Disconnect }
+            .forEach { connectionEvent ->
+                entities
+                    .filter { it.component<Synchronized>().get().ownerEndpoint == connectionEvent.endpoint }
+                    .forEach {
+                        eventQueues.network.queueNetwork(EntityDeRegistrationPacket(it.id))
+                        lifecycle.del(it.id)
+                    }
             }
-        }
     }
 }
 
@@ -81,7 +84,9 @@ class FullEntitySyncSystem : System {
     ) {
         val entities = query(emptySet())
 
-        eventQueues.own.receive(ConnectionEvent::class).forEach { connectionEvent ->
+        eventQueues.own.receive(ConnectionEvent::class)
+            .filter { it.type == ConnectionEventType.Connect }
+            .forEach { connectionEvent ->
             entities.forEach {
                 eventQueues.network.queueNetwork(
                     EntityRegistrationPacket(it),
