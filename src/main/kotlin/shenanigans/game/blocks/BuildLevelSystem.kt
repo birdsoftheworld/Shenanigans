@@ -29,6 +29,7 @@ class BuildLevelSystem : System {
         val playerSprite = Sprites.playerSprite
         //Shapes
         val floorShape = Polygons.floorShape
+
         //Oscillating Block
         lifecycle.add((
             sequenceOf(
@@ -131,7 +132,7 @@ class BuildLevelSystem : System {
             PlayerProperties()
         )
         val playerTransform = Transform(
-            Vector3f(100f,-100f,.9f)
+            Vector3f(100f,0f,.9f)
         )
 
         //PLAYER
@@ -143,9 +144,8 @@ class BuildLevelSystem : System {
                 Player(
                     PlayerProperties()
                 ),
-                MousePlayer(false, Vector2f(0f,0f)),
                 Followed {
-                    val p = playerTransform.position
+                    val p = Vector3f(playerTransform.position)
                     p.x += PlayerController.SHAPE_BASE.width / 2
                     p.y += PlayerController.SHAPE_BASE.height / 2
                     if (player.crouching) {

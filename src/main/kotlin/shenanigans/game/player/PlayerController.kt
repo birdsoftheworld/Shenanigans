@@ -56,6 +56,7 @@ data class PlayerProperties(
     val slipperyMovementMultiplier: Float = .4f,
     val slipperyTurnSpeedMultiplier: Float = .2f,
     val slipperyDecelerationMultiplier: Float = .01f,
+    val trampolineSpeed: Float = jumpSpeed * 2f,
 
     val jumpCutoff: Float = 2f,
 
@@ -71,6 +72,7 @@ class FloorJump(isCoyote: Boolean) : Jump(isCoyote)
 class WallJump(val wall: WallStatus, isCoyote: Boolean) : Jump(isCoyote)
 object AirJump : Jump(false)
 object FallJump : Jump(false)
+object TrampolineJump : Jump(false)
 
 @ClientOnly
 data class Player(
@@ -116,6 +118,8 @@ class PlayerController : System {
             player.wall = WallStatus.Off
             player.onCeiling = false
 
+            val properties = player.properties
+
             eventQueues.own.receive(CollisionEvent::class).forEach { event ->
                 val e = query(emptySet())[event.with]
                 if (entity.id == event.target) {
@@ -143,7 +147,8 @@ class PlayerController : System {
                         slippery = true
                     }
                     if (e?.componentOpt<TrampolineBlock>() != null && event.normal.y < 0) {
-                        velocity.y = -PlayerProperties().maxSpeed * 3f
+                        velocity.y = -properties.trampolineSpeed
+                        player.currentJump = TrampolineJump
                     }
                     val teleporter = e?.componentOpt<TeleporterBlock>()
                     if (teleporter != null && teleporter.get().num % 2 == 0) {
@@ -157,8 +162,6 @@ class PlayerController : System {
             }
 
             val pos = transform.get().position
-
-            val properties = player.properties
 
             val holdingCrouch = keyboard.isPressed(Key.S)
             if (!player.crouching && holdingCrouch && player.onGround) {
@@ -292,7 +295,6 @@ class PlayerController : System {
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
             pos.add(velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
-            transform.mutate()
 
             if (!player.onGround && !jumped) {
                 velocity.y += gravity * deltaTimeF
@@ -305,6 +307,7 @@ class PlayerController : System {
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
             entity.component<Player>().mutate()
+            transform.mutate()
         }
     }
 
@@ -327,10 +330,10 @@ class PlayerController : System {
 
     private fun Player.getGravity(holdingJump: Boolean): Float {
         val gravityMultiplier = if (velocity.y < 0f) {
-            if (holdingJump && this.currentJump != null) {
-                1f
-            } else {
+            if (!holdingJump && (this.currentJump is FloorJump || this.currentJump is WallJump)) {
                 1f + properties.jumpCutoff
+            } else {
+                1f
             }
         } else if (velocity.y > 0f) {
             properties.downwardMovementMultiplier

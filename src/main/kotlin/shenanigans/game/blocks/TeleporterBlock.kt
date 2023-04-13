@@ -8,7 +8,9 @@ import shenanigans.engine.util.Transform
 import shenanigans.game.MousePlayer
 import kotlin.reflect.KClass
 
-data class TeleporterBlock(val num : Int) : Component {
+data class TeleporterBlock(val num : Int) : Block() {
+    override val solid: Boolean
+        get() = false
     var targetPos = Vector3f(0f,0f,0f)
 }
 

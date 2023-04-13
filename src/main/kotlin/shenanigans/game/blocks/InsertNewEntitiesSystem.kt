@@ -43,33 +43,20 @@ class InsertNewEntitiesSystem : System {
     }
 }
 
-fun insertBlock(blockType : Component, lifecycle: EntitiesLifecycle, pos : Vector3f){
+fun insertBlock(blockType : Block, lifecycle: EntitiesLifecycle, pos : Vector3f) {
     pos.x = round((pos.x - 25) / 50) * 50
     pos.y = round((pos.y - 25) / 50) * 50
-    if(Sprites.getSprite(blockType) != Sprites.nullSprite) {
-        lifecycle.add(
-            sequenceOf(
-                Transform(
-                    pos
-                ),
-                Sprites.getSprite(blockType),
-                Collider(Polygons.getPolygon(blockType), true, tracked = true),
-                MousePlayer(false, Vector2f(0f,0f)),
-                blockType
-            )
-        )
-    } else {
-        lifecycle.add(
-            sequenceOf(
-                Transform(
-                    pos
-                ),
-                Sprites.getSprite(blockType),
-                Collider(Polygons.getPolygon(blockType), true, tracked = true),
-                MousePlayer(false, Vector2f(0f,0f)),
-                blockType
-            )
-        )
-    }
+    val components = mutableListOf(
+        Transform(
+            pos
+        ),
+        Sprites.getSprite(blockType),
+        MousePlayer(false, Vector2f(0f,0f)),
+        blockType
+    )
 
+    components.add(Collider(Polygons.getPolygon(blockType), true, triggerCollider = blockType.solid, tracked = true))
+    lifecycle.add(
+        components.asSequence()
+    )
 }

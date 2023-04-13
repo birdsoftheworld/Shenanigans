@@ -1,5 +1,6 @@
 package shenanigans.game.blocks
 
-import shenanigans.engine.ecs.Component
-
-class SpikeBlock : Component
+class SpikeBlock : Block() {
+    override val solid: Boolean
+        get() = false
+}
