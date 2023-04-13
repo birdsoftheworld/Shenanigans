@@ -5,38 +5,29 @@ import org.joml.Vector3f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.graphics.TextureKey
-import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.graphics.api.component.Shape
-import shenanigans.engine.graphics.api.component.Sprite
-import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.net.Client
 import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.net.Network
-import shenanigans.engine.net.SendableClass
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionSystem
-import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.isPointInside
-import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
-import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseScrollEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.Blocks.*
-import shenanigans.game.network.*
-import shenanigans.game.player.Player
+import shenanigans.game.blocks.BuildLevelSystem
+import shenanigans.game.blocks.InsertNewEntitiesSystem
+import shenanigans.game.blocks.OscillatingBlock
+import shenanigans.game.blocks.OscillatingBlocksSystem
+import shenanigans.game.network.NetworkSystem
+import shenanigans.game.network.sendables
 import shenanigans.game.player.PlayerController
-import shenanigans.game.player.PlayerProperties
-import java.util.*
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -91,7 +82,6 @@ class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
         this.grabbed = false
     }
 }
-data class KeyboardPlayer(val speed: Float) : Component
 
 class MouseMovementSystem : System {
     override fun executePhysics(

@@ -1,4 +1,4 @@
-package shenanigans.game.Blocks
+package shenanigans.game.blocks
 
 import org.joml.Vector2f
 import org.joml.Vector3f
@@ -9,7 +9,6 @@ import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
-import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.game.Followed
 import shenanigans.game.MousePlayer
 import shenanigans.game.network.Synchronized
@@ -25,26 +24,11 @@ class BuildLevelSystem : System {
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        val shapes = Shapes()
-        val sprites = Sprites()
-
         //Sprites
-        val oscillatingSprite = sprites.oscillatingSprite
-        val teleportarASprite = sprites.teleportarASprite
-        val teleportarBSprite = sprites.teleportarBSprite
-        val spikeSprite = sprites.spikeSprite
-        val trampolineSprite = sprites.trampolineSprite
-        val playerSprite = sprites.playerSprite
+        val oscillatingSprite = Sprites.oscillatingSprite
+        val playerSprite = Sprites.playerSprite
         //Shapes
-        val oscillatingShape = shapes.oscillatingShape
-        val teleportShape = shapes.teleportShape
-        val spikeShape = shapes.spikeShape
-        val floorShape = shapes.floorShape
-        val wallShape = shapes.wallShape
-        val playerShape = shapes.playerShape
-        val slipperyShape = shapes.slipperyShape
-        val stickyShape = shapes.stickyShape
-        val trampolineShape = shapes.trampolineShape
+        val floorShape = Polygons.floorShape
         //Oscillating Block
         lifecycle.add((
             sequenceOf(
@@ -52,121 +36,44 @@ class BuildLevelSystem : System {
                     Vector3f(100f, 500f,0.5f)
                 ),
                 oscillatingSprite,
-                Collider(oscillatingShape.polygon, true, false),
+                Collider(Polygons.oscillatingShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
                 OscillatingBlock(50f, Vector2f(100f, 500f), .01f),
             )
         ))
-
-        //Tp Blocks
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(50f, 500f,0.5f)
-//                ),
-//                teleportarASprite,
-//                Collider(teleportShape.polygon, true, true, tracked = true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                TeleporterBlock(0)
-//            )
-//        ))
-//
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(600f, 500f,0.5f)
-//                ),
-//                teleportarBSprite,
-//                Collider(teleportShape.polygon, true, true, tracked = true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                TeleporterBlock(1),
-//            )
-//        ))
-//
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(600f, 600f,0.5f)
-//                ),
-//                teleportarASprite,
-//                Collider(teleportShape.polygon, true, true, tracked = true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                TeleporterBlock(2),
-//            )
-//        ))
-//
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(50f, 200f,0.5f)
-//                ),
-//                teleportarBSprite,
-//                Collider(teleportShape.polygon, true, true, tracked = true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                TeleporterBlock(3),
-//            )
-//        ))
-
-
-        //scaryBlock
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(100f, 500f,0.5f)
-//                ),
-//                spikeSprite,
-//                Collider(spikeShape.polygon, true, false, tracked = true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                SpikeBlock(),
-//            )
-//        ))
-
-        //springBlock
-//        lifecycle.add((
-//            sequenceOf(
-//                Transform(
-//                    Vector3f(300f, 700f,0.5f)
-//                ),
-//                trampolineSprite,
-//                Collider(trampolineShape.polygon, true, false, tracked = true),
-//                MousePlayer(false, Vector2f(0f,0f)),
-//                TrampolineBlock(),
-//            )
-//        ))
-
-
 
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector3f(0f, 600f,0.5f)
                 ),
-                floorShape,
-                Collider(floorShape.polygon, true, false),
+                Shape(floorShape, Color(1f, 0f, 0f)),
+                Collider(Polygons.floorShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
 
-//        slipppery blocks
+        // slippery blocks
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector3f(200f, 600f,0.5f)
                 ),
-                slipperyShape,
+                Shape(Polygons.slipperyShape, Color(0f, 0.5f, 0.75f)),
                 SlipperyBlock(),
-                Collider(slipperyShape.polygon, true, false),
+                Collider(Polygons.slipperyShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
+
         lifecycle.add(
             sequenceOf(
                 Transform(
                     Vector3f(250f, 600f,0.5f)
                 ),
-                slipperyShape,
+                Shape(Polygons.slipperyShape, Color(0f, 0.5f, 0.75f)),
                 SlipperyBlock(),
-                Collider(slipperyShape.polygon, true, false),
+                Collider(Polygons.slipperyShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
@@ -175,9 +82,9 @@ class BuildLevelSystem : System {
                 Transform(
                     Vector3f(300f, 600f,0.5f)
                 ),
-                slipperyShape,
+                Shape(Polygons.slipperyShape, Color(0f, 0.5f, 0.75f)),
                 SlipperyBlock(),
-                Collider(slipperyShape.polygon, true, false),
+                Collider(Polygons.slipperyShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
@@ -187,9 +94,9 @@ class BuildLevelSystem : System {
                 Transform(
                     Vector3f(0f, 600f,0.5f)
                 ),
-                stickyShape,
+                Shape(Polygons.stickyShape, Color(1f, 0.8f, 0f)),
                 StickyBlock(),
-                Collider(stickyShape.polygon, true, false),
+                Collider(Polygons.stickyShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
@@ -200,9 +107,9 @@ class BuildLevelSystem : System {
                 Transform(
                     Vector3f(0f, 600f,0.5f)
                 ),
-                stickyShape,
+                Shape(Polygons.stickyShape, Color(1f, 0.8f, 0f)),
                 StickyBlock(),
-                Collider(stickyShape.polygon, true, false),
+                Collider(Polygons.stickyShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         )
@@ -213,9 +120,9 @@ class BuildLevelSystem : System {
                 Transform(
                     Vector3f(100f, 500f,0.5f)
                 ),
-                playerShape,
+                Shape(Polygons.bigRect, Color(0f, 0f, 1f)),
                 MousePlayer(false, Vector2f(0f,0f)),
-                Collider(playerShape.polygon, true, true),
+                Collider(Polygons.bigRect, true),
                 RespawnBlock(),
             )
         ))
@@ -223,16 +130,16 @@ class BuildLevelSystem : System {
         val player = Player(
             PlayerProperties()
         )
-        val playerTransform =
-            Transform(
-                Vector3f(100f,-100f,.9f)
-            )
+        val playerTransform = Transform(
+            Vector3f(100f,-100f,.9f)
+        )
+
         //PLAYER
         lifecycle.add(
             sequenceOf(
                 playerTransform,
                 playerSprite,
-                Collider(playerShape.polygon, false, tracked = true),
+                Collider(PlayerController.SHAPE_BASE, false, tracked = true),
                 Player(
                     PlayerProperties()
                 ),
@@ -250,15 +157,13 @@ class BuildLevelSystem : System {
             )
         )
 
-
-
         lifecycle.add((
             sequenceOf(
                 Transform(
                     Vector3f(600f, 700f,0.8f)
                 ),
-                floorShape,
-                Collider(floorShape.polygon, true, false),
+                Shape(Polygons.floorShape, Color(1f, 0f, 0f)),
+                Collider(Polygons.floorShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))
@@ -268,20 +173,19 @@ class BuildLevelSystem : System {
                 Transform(
                     Vector3f(800f, 600f,0.8f)
                 ),
-                floorShape,
-                Collider(floorShape.polygon, true, false),
+                Shape(Polygons.floorShape, Color(1f, 0f, 0f)),
+                Collider(Polygons.floorShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))
-
 
         lifecycle.add((
             sequenceOf(
                 Transform(
                     Vector3f(400f, 400f,0.8f)
                 ),
-                wallShape,
-                Collider(wallShape.polygon, true, false),
+                Shape(Polygons.wallShape, Color(0f, 1f, 1f)),
+                Collider(Polygons.wallShape, true),
                 MousePlayer(false, Vector2f(0f,0f)),
             )
         ))

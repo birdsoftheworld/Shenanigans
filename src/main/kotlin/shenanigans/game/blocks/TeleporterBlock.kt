@@ -1,6 +1,5 @@
-package shenanigans.game.Blocks
+package shenanigans.game.blocks
 
-import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
@@ -14,8 +13,6 @@ data class TeleporterBlock(val num : Int) : Component {
 }
 
 class TeleporterSystem : System {
-
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,

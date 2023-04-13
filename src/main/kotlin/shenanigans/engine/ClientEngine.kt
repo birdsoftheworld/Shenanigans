@@ -19,7 +19,7 @@ import shenanigans.engine.window.events.MouseState
 import kotlin.system.exitProcess
 import java.lang.System as JSystem
 
-class ClientEngine(initScene: Scene) : Engine(initScene = initScene, Network(Client())) {
+class ClientEngine(initScene: Scene, networkImpl: Network = Network(Client())) : Engine(initScene = initScene, networkImpl) {
     private lateinit var window: Window
 
     override fun init() {
