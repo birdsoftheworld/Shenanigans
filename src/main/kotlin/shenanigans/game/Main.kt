@@ -31,10 +31,7 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseScrollEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.Blocks.BuildLevelSystem
-import shenanigans.game.Blocks.InsertNewEntitiesSystem
-import shenanigans.game.Blocks.OscillatingBlock
-import shenanigans.game.Blocks.OscillatingBlocksSystem
+import shenanigans.game.Blocks.*
 import shenanigans.game.network.*
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController

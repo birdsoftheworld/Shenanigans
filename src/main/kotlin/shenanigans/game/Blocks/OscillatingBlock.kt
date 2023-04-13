@@ -6,6 +6,7 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.util.Transform
 import shenanigans.game.MousePlayer
+import java.security.cert.TrustAnchor
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
@@ -59,30 +60,33 @@ class OscillatingBlocksSystem : System {
         val entities = query(setOf(MousePlayer::class, Transform::class))
 
         entities.forEach { entity ->
-            val pos = entity.component<Transform>().get().position
-            val oscillatingBlock = entity.component<OscillatingBlock>().get()
-            val mousePlayer = entity.component<MousePlayer>().get()
-//            println(oscillatingBlock.speed)
-            if(!mousePlayer.grabbed){
-                if(abs(pos.x - oscillatingBlock.startPos.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos.y) > oscillatingBlock.distanceToOscillate){
-                    oscillatingBlock.changeDirection()
-                }
-                when(oscillatingBlock.dir){
-                    direction.Up -> {
-                        pos.y -= oscillatingBlock.speed
+            if(entity.componentOpt<OscillatingBlock>() != null) {
+                val pos = entity.component<Transform>().get().position
+                val oscillatingBlock = entity.component<OscillatingBlock>().get()
+                val mousePlayer = entity.component<MousePlayer>().get()
+                if (!mousePlayer.grabbed) {
+                    if (abs(pos.x - oscillatingBlock.startPos.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos.y) > oscillatingBlock.distanceToOscillate) {
+                        oscillatingBlock.changeDirection()
                     }
-                    direction.Right -> {
-                        pos.x += oscillatingBlock.speed
-                    }
-                    direction.Down -> {
-                        pos.y += oscillatingBlock.speed
-                    }
-                    direction.Left -> {
-                        pos.x -= oscillatingBlock.speed
+                    when (oscillatingBlock.dir) {
+                        direction.Up -> {
+                            pos.y -= oscillatingBlock.speed
+                        }
+
+                        direction.Right -> {
+                            pos.x += oscillatingBlock.speed
+                        }
+
+                        direction.Down -> {
+                            pos.y += oscillatingBlock.speed
+                        }
+
+                        direction.Left -> {
+                            pos.x -= oscillatingBlock.speed
+                        }
                     }
                 }
             }
-
         }
     }
 }

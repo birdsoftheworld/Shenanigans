@@ -20,7 +20,7 @@ class Sprites {
         }
         return nullSprite
     }
-    val nullSprite = Sprite(TextureManager.createTexture(TextureKey("null"),"/nullSprite.png").getRegion(), Rectangle(50f,50f))
+    val nullSprite = Sprite(TextureManager.createTexture(TextureKey("null"),"/null.png").getRegion(), Rectangle(50f,50f))
     val playerSprite = Sprite(TextureManager.createTexture(TextureKey("player"),"/playerTexture.png").getRegion(), Rectangle(25f,25f))
     val oscillatingSprite = Sprite(TextureManager.createTexture(TextureKey("arrow"),"/betterArrow.png").getRegion(), Rectangle(50f,50f))
     val trampolineSprite = Sprite(TextureManager.createTexture(TextureKey("spring"),"/spring.png").getRegion(), Rectangle(50f,50f))

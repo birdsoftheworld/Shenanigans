@@ -10,8 +10,11 @@ import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Rectangle
+import shenanigans.game.Followed
 import shenanigans.game.MousePlayer
+import shenanigans.game.network.Synchronized
 import shenanigans.game.player.Player
+import shenanigans.game.player.PlayerController
 import shenanigans.game.player.PlayerProperties
 import kotlin.reflect.KClass
 
@@ -217,19 +220,33 @@ class BuildLevelSystem : System {
             )
         ))
 
-
+        val player = Player(
+            PlayerProperties()
+        )
+        val playerTransform =
+            Transform(
+                Vector3f(100f,-100f,.9f)
+            )
         //PLAYER
         lifecycle.add(
             sequenceOf(
-                Transform(
-                    Vector3f(200f, 500f,.9f)
-                ),
+                playerTransform,
                 playerSprite,
                 Collider(playerShape.polygon, false, tracked = true),
                 Player(
                     PlayerProperties()
                 ),
-                MousePlayer(false, Vector2f(0f,0f))
+                MousePlayer(false, Vector2f(0f,0f)),
+                Followed {
+                    val p = playerTransform.position
+                    p.x += PlayerController.SHAPE_BASE.width / 2
+                    p.y += PlayerController.SHAPE_BASE.height / 2
+                    if (player.crouching) {
+                        p.y -= PlayerController.SHAPE_BASE.height - PlayerController.SHAPE_CROUCHED.height
+                    }
+                    p
+                },
+                Synchronized()
             )
         )
 
