@@ -46,7 +46,7 @@ class EntityView internal constructor(
     inline fun <reified T : Component> componentOpt(): ComponentView<T>? {
         val stored = entity.components[T::class]
 
-        return if (stored !== null) {
+        return if (stored != null) {
             ComponentView(stored)
         } else {
             null
