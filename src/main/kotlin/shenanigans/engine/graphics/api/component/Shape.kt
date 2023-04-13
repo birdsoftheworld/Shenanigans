@@ -10,5 +10,5 @@ import shenanigans.engine.util.shapes.Polygon
 
 data class Shape(
     val polygon : Polygon,
-    val color: Color,
+    var color: Color,
 ) : Component

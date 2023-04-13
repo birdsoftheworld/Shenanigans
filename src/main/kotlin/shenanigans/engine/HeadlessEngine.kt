@@ -14,11 +14,11 @@ class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : E
     }
 
     override fun loop() {
-        var previousTime = GLFW.glfwGetTime()
-
         var lastTick = 0L
 
         network.impl.connect()
+
+        var previousTime = GLFW.glfwGetTime()
 
         while (true) {
             lastTick = java.lang.System.currentTimeMillis()

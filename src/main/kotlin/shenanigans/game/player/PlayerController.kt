@@ -7,15 +7,16 @@ import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
+import shenanigans.engine.util.raycast
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.engine.net.ClientOnly
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
@@ -37,6 +38,7 @@ data class PlayerProperties(
     val maxAirTurnSpeed: Float = 2150f,
 
     val maxSpeed: Float = 275f,
+    val crouchedMoveSpeedMultiplier: Float = 0.35f,
 
     val jumpSpeed: Float = 550f,
 
@@ -52,14 +54,18 @@ data class PlayerProperties(
 
     val jumpCutoff: Float = 2f,
 
+    val maxJumps: Int = 1,
+    val fallingCountsAsJumping: Boolean = true,
+
     val terminalVelocity: Float = 825f,
     val gravity: Float = 1375f,
 )
 
 sealed class Jump(val isCoyote: Boolean)
-
 class FloorJump(isCoyote: Boolean) : Jump(isCoyote)
 class WallJump(val wall: WallStatus, isCoyote: Boolean) : Jump(isCoyote)
+object AirJump : Jump(false)
+object FallJump : Jump(false)
 
 
 @ClientOnly
@@ -75,6 +81,7 @@ data class Player(
     var crouching: Boolean = false,
 
     var currentJump: Jump? = null,
+    var jumps: Int = 0,
 
     var coyoteTime: Float = 0f,
     var wallCoyoteTime: Float = 0f,
@@ -135,8 +142,29 @@ class PlayerController : System {
                 player.crouching = true
                 entity.changeCrouch(true)
             } else if (player.crouching && !holdingCrouch) {
-                player.crouching = false
-                entity.changeCrouch(false)
+                val things = query(setOf(Collider::class, Transform::class))
+                    .filter { e -> e.id != entity.id && !e.component<Collider>().get().triggerCollider }
+                val topPosition = Vector2f(pos.x, pos.y)
+                val height = SHAPE_BASE.height - SHAPE_CROUCHED.height
+                var hit = raycast(
+                    things,
+                    topPosition,
+                    Vector2f(0f, -1f),
+                    height
+                )
+                if (hit == null) {
+                    topPosition.add(SHAPE_CROUCHED.width, 0f)
+                    hit = raycast(
+                        things,
+                        topPosition,
+                        Vector2f(0f, -1f),
+                        height
+                    )
+                }
+                if (hit == null) {
+                    player.crouching = false
+                    entity.changeCrouch(false)
+                }
             }
 
             var direction = 0f
@@ -155,7 +183,7 @@ class PlayerController : System {
             }
 
             if (player.crouching && player.onGround) {
-                desiredVelocity.zero()
+                desiredVelocity.x *= properties.crouchedMoveSpeedMultiplier
             }
 
             var turnSpeed = 0f
@@ -205,17 +233,28 @@ class PlayerController : System {
                 player.jumpBufferTime = properties.jumpBufferTime
             }
 
-            if (player.wall != WallStatus.Off && !jumped) {
-                player.lastWallDirectionTouched = player.wall
-                player.wallCoyoteTime = properties.wallCoyoteTime
+            if (player.wall != WallStatus.Off) {
+                if (!jumped) {
+                    player.lastWallDirectionTouched = player.wall
+                    player.wallCoyoteTime = properties.wallCoyoteTime
+                }
+                if (player.currentJump != null && player.velocity.y >= 0 && !player.crouching) {
+                    player.currentJump = null
+                    player.jumps = properties.maxJumps
+                }
             }
             if (player.onGround && !jumped) {
                 player.coyoteTime = properties.coyoteTime
+                player.jumps = properties.maxJumps
             }
 
             if (!player.onGround) {
                 player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
                 player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
+                if (properties.fallingCountsAsJumping && player.currentJump == null && player.coyoteTime <= 0 && player.wallCoyoteTime <= 0) {
+                    player.jumps--
+                    player.currentJump = FallJump
+                }
             }
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
@@ -291,11 +330,13 @@ class PlayerController : System {
 
         this.jumpBufferTime = 0f
         this.coyoteTime = 0f
-
-        AUDIO_JUMP.play()
+        this.jumps--
     }
 
     private fun Player.getJump(): Jump? {
+        if (this.jumps <= 0) {
+            return null
+        }
         return if (this.onGround) {
             FloorJump(false)
         } else if(this.coyoteTime > 0f) {
@@ -305,7 +346,7 @@ class PlayerController : System {
         } else if(this.wallCoyoteTime > 0f && !this.crouching) {
             WallJump(this.lastWallDirectionTouched, true)
         } else {
-            null
+            return AirJump
         }
     }
 
