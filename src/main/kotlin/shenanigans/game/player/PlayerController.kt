@@ -38,6 +38,7 @@ data class PlayerProperties(
     val maxAirTurnSpeed: Float = 2150f,
 
     val maxSpeed: Float = 275f,
+    val crouchedMoveSpeedMultiplier: Float = 0.35f,
 
     val jumpSpeed: Float = 550f,
 
@@ -182,7 +183,7 @@ class PlayerController : System {
             }
 
             if (player.crouching && player.onGround) {
-                desiredVelocity.zero()
+                desiredVelocity.x *= properties.crouchedMoveSpeedMultiplier
             }
 
             var turnSpeed = 0f
@@ -237,7 +238,7 @@ class PlayerController : System {
                     player.lastWallDirectionTouched = player.wall
                     player.wallCoyoteTime = properties.wallCoyoteTime
                 }
-                if (player.currentJump != null && player.velocity.y >= 0) {
+                if (player.currentJump != null && player.velocity.y >= 0 && !player.crouching) {
                     player.currentJump = null
                     player.jumps = properties.maxJumps
                 }
