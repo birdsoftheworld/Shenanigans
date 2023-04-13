@@ -27,9 +27,6 @@ class NetworkSystem : System {
                     return@packet
                 }
 
-
-
-                //FIXME
                 if (entity.component<Synchronized>().get().ownerEndpoint == eventQueues.network.getEndpoint()) {
                     return@packet
                 }
@@ -43,12 +40,12 @@ class NetworkSystem : System {
 
         eventQueues.own.receive(EntityRegistrationPacket::class).forEach registration@{ packet ->
             if (entities[packet.id] != null) {
-                val entitySynchronization = entities[packet.id]!!.component<Synchronized>();
+                val entitySynchronization = entities[packet.id]!!.component<Synchronized>()
                 entitySynchronization.get().registration = (packet.entity[Synchronized::class]!! as Synchronized).registration
                 entitySynchronization.get().ownerEndpoint = (packet.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
                 entitySynchronization.mutate()
 
-                Logger.log("Network System", "WHaHOOO")
+                Logger.log("Network System", "WHaHOOO: " + packet.id)
                 return@registration
             }
 
@@ -57,12 +54,15 @@ class NetworkSystem : System {
                 packet.id,
             )
 
-            Logger.log("Network System", "WahoOO!")
+            Logger.log("Network System", "WahoOO!: " + packet.id)
         }
 
-        entities.filter { it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected }.forEach {
-            it.component<Synchronized>().get().registration = RegistrationStatus.Registered
+        entities.filter {
+                it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected
+        }.forEach {
+            it.component<Synchronized>().get().registration = RegistrationStatus.Sent
             it.component<Synchronized>().get().ownerEndpoint = eventQueues.network.getEndpoint()
+            it.component<Synchronized>().mutate()
             eventQueues.network.queueLater(EntityRegistrationPacket(it))
         }
 

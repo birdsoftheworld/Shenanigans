@@ -8,10 +8,7 @@ import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
-import shenanigans.game.network.EntityDeRegistrationPacket
-import shenanigans.game.network.EntityMovementPacket
-import shenanigans.game.network.EntityRegistrationPacket
-import shenanigans.game.network.Synchronized
+import shenanigans.game.network.*
 import kotlin.reflect.KClass
 
 class ServerUpdateSystem : System {
@@ -61,6 +58,9 @@ class ServerRegistrationSystem : System {
             if (entities[entityRegistrationPacket.id] != null) {
                 Logger.warn("Entity Registration", "Duplicate ID: " + entityRegistrationPacket.id)
             }
+
+            (entityRegistrationPacket.entity[Synchronized::class] as Synchronized).registration = RegistrationStatus.Registered
+
             lifecycle.add(
                 entityRegistrationPacket.entity.values.asSequence(),
                 entityRegistrationPacket.id,

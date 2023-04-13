@@ -74,7 +74,7 @@ class NetworkEventQueue internal constructor(val network: Network) : EventQueue(
         delivery: MessageDelivery = MessageDelivery.UnreliableUnordered,
         recipient: MessageEndpoint? = null
     ) {
-        network.impl.sendMessage(EventMessage(event, delivery, recipient))
+        network.impl.sendMessage(EventMessage(event, delivery = delivery, recipient = recipient))
     }
 
     override fun finish() {
