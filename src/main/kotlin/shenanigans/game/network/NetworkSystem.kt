@@ -64,15 +64,19 @@ class NetworkSystem : System {
         entities.filter {
                 it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected
         }.forEach {
-            it.component<Synchronized>().get().registration = RegistrationStatus.Sent
-            it.component<Synchronized>().get().ownerEndpoint = eventQueues.network.getEndpoint()
-            it.component<Synchronized>().mutate()
+            val synchronized = it.component<Synchronized>()
+
+            synchronized.get().registration = RegistrationStatus.Sent
+            synchronized.get().ownerEndpoint = eventQueues.network.getEndpoint()
+            synchronized.mutate()
             eventQueues.network.queueLater(EntityRegistrationPacket(it))
         }
 
         eventQueues.network.queueLater(EntityMovementPacket(entities.filter {
-            it.component<Synchronized>().get().registration == RegistrationStatus.Registered &&
-            it.component<Synchronized>().get().ownerEndpoint == eventQueues.network.getEndpoint()
+            val synchronized = it.component<Synchronized>()
+
+            synchronized.get().registration == RegistrationStatus.Registered &&
+            synchronized.get().ownerEndpoint == eventQueues.network.getEndpoint()
         }))
     }
 }
