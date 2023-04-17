@@ -27,7 +27,7 @@ object Sprites {
     val trampolineSprite
         get() = Sprite(TextureManager.createTexture(TextureKey("spring"),"/spring.png").getRegion(), Rectangle(50f,50f))
     val spikeSprite
-        get() = Sprite(TextureManager.createTexture(TextureKey("hole"),"/hole.png").getRegion(), Rectangle(50f,50f))
+        get() = Sprite(TextureManager.createTexture(TextureKey("hole"),"/spike.png").getRegion(), Rectangle(50f,50f))
     val teleporterASprite
         get() = Sprite(TextureManager.createTexture(TextureKey("teleportA"),"/teleporterA.png").getRegion(), Rectangle(25f,25f))
     val teleporterBSprite
