@@ -25,7 +25,7 @@ import shenanigans.game.blocks.BuildLevelSystem
 import shenanigans.game.blocks.InsertNewEntitiesSystem
 import shenanigans.game.blocks.OscillatingBlock
 import shenanigans.game.blocks.OscillatingBlocksSystem
-import shenanigans.game.network.NetworkSystem
+import shenanigans.game.network.ClientSystem
 import shenanigans.game.network.sendables
 import shenanigans.game.player.PlayerController
 import kotlin.math.round
@@ -48,7 +48,7 @@ fun testScene(): Scene {
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(FollowCameraSystem())
-    scene.defaultSystems.add(NetworkSystem())
+    scene.defaultSystems.add(ClientSystem())
 
     return scene
 }
