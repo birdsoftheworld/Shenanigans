@@ -36,12 +36,13 @@ class CollisionSystem : System {
         collisionPairs.forEach { pair ->
             val collision = testCollision(pair) ?: return@forEach
 
-            val transform1 = pair.first.component<Transform>()
-            val transform2 = pair.second.component<Transform>()
-
             val collider1 = pair.first.component<Collider>().get()
             val collider2 = pair.second.component<Collider>().get()
-            if(!collider1.triggerCollider && !collider2.triggerCollider) {
+
+            if (collider1.solid && collider2.solid) {
+                val transform1 = pair.first.component<Transform>()
+                val transform2 = pair.second.component<Transform>()
+
                 if (!collider1.static && !collider2.static) {
                     val move = Vector3f(collision.normal, 0f).mul(collision.scale).mul(0.5f)
                     transform1.get().position.add(move)
@@ -57,12 +58,11 @@ class CollisionSystem : System {
                     transform2.get().position.add(move)
                     transform2.mutate()
                 }
-
-                maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
-                maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
             }
+
+            maybeEmitEventsFor(collision.normal, pair.first, pair.second, eventQueues)
+            maybeEmitEventsFor(Vector2f(collision.normal).negate(), pair.second, pair.first, eventQueues)
         }
-        return
     }
 
     private fun getCollisionPairs(entities: Sequence<EntityView>): MutableList<Pair<EntityView, EntityView>> {

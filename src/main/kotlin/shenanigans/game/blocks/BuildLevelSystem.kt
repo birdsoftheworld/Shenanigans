@@ -58,7 +58,7 @@ class BuildLevelSystem : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(200f, 600f,0.5f)
+                    Vector3f(200f, 600f,1f)
                 ),
                 Shape(Polygons.slipperyShape, Color(0f, 0.5f, 0.75f)),
                 SlipperyBlock(),
@@ -70,7 +70,7 @@ class BuildLevelSystem : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(250f, 600f,0.5f)
+                    Vector3f(250f, 600f,1f)
                 ),
                 Shape(Polygons.slipperyShape, Color(0f, 0.5f, 0.75f)),
                 SlipperyBlock(),
@@ -81,7 +81,7 @@ class BuildLevelSystem : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(300f, 600f,0.5f)
+                    Vector3f(300f, 600f,1f)
                 ),
                 Shape(Polygons.slipperyShape, Color(0f, 0.5f, 0.75f)),
                 SlipperyBlock(),
@@ -93,7 +93,7 @@ class BuildLevelSystem : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(0f, 600f,0.5f)
+                    Vector3f(0f, 600f,1f)
                 ),
                 Shape(Polygons.stickyShape, Color(1f, 0.8f, 0f)),
                 StickyBlock(),
@@ -106,7 +106,7 @@ class BuildLevelSystem : System {
         lifecycle.add(
             sequenceOf(
                 Transform(
-                    Vector3f(0f, 600f,0.5f)
+                    Vector3f(0f, 600f,1f)
                 ),
                 Shape(Polygons.stickyShape, Color(1f, 0.8f, 0f)),
                 StickyBlock(),

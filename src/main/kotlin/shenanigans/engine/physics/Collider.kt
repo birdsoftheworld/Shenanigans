@@ -7,7 +7,7 @@ import shenanigans.engine.util.shapes.Polygon
 class Collider constructor(
     var polygon: Polygon,
     val static: Boolean,
-    val triggerCollider: Boolean = false,
+    val solid: Boolean = true,
     val tracked: Boolean = false
     ) : Component {
     var transformedVertices = Array(polygon.vertices.size) { Vector2f() }

@@ -73,6 +73,7 @@ class FollowCameraSystem : System {
     }
 }
 
+@ClientOnly
 class MousePlayer(var grabbed: Boolean, var dragOffset: Vector2f) : Component {
     fun grab() {
         this.grabbed = true

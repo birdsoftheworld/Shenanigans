@@ -17,8 +17,7 @@ import shenanigans.engine.util.raycast
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.game.blocks.*
-import kotlin.math.max
+import shenanigans.game.level.block.*
 import kotlin.math.min
 import kotlin.math.sign
 import kotlin.reflect.KClass
@@ -123,14 +122,14 @@ class PlayerController : System {
             eventQueues.own.receive(CollisionEvent::class).forEach { event ->
                 val e = query(emptySet())[event.with]!!
                 if (entity.id == event.target) {
-                    val solid = !e.component<Collider>().get().triggerCollider
+                    val solid = e.component<Collider>().get().solid
                     if (solid) {
                         if (event.normal.y < 0) {
                             player.onGround = true
                             velocity.y = velocity.y.coerceAtMost(0f)
                         } else if (event.normal.y > 0) {
                             player.onCeiling = true
-                            velocity.y = max(0f, velocity.y)
+                            velocity.y = velocity.y.coerceAtLeast(0f)
                         }
                         if (event.normal.x < 0) {
                             player.wall = WallStatus.Right
@@ -149,7 +148,7 @@ class PlayerController : System {
                     if (e.componentOpt<SlipperyBlock>() != null) {
                         slippery = true
                     }
-                    if (e.componentOpt<TrampolineBlock>() != null && event.normal.y < 0) {
+                    if (e.componentOpt<TrampolineBlock>() != null) {
                         velocity.y = -properties.trampolineSpeed
                         player.currentJump = TrampolineJump
                     }
@@ -172,7 +171,7 @@ class PlayerController : System {
                 entity.changeCrouch(true)
             } else if (player.crouching && !holdingCrouch) {
                 val things = query(setOf(Collider::class, Transform::class))
-                    .filter { e -> e.id != entity.id && !e.component<Collider>().get().triggerCollider }
+                    .filter { e -> e.id != entity.id && e.component<Collider>().get().solid }
                 val topPosition = Vector2f(pos.x, pos.y)
                 val height = SHAPE_BASE.height - SHAPE_CROUCHED.height
                 var hit = raycast(
