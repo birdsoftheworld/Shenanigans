@@ -121,36 +121,39 @@ class PlayerController : System {
             val properties = player.properties
 
             eventQueues.own.receive(CollisionEvent::class).forEach { event ->
-                val e = query(emptySet())[event.with]
+                val e = query(emptySet())[event.with]!!
                 if (entity.id == event.target) {
-                    if (event.normal.y < 0) {
-                        player.onGround = true
-                        velocity.y = velocity.y.coerceAtMost(0f)
-                    } else if (event.normal.y > 0) {
-                        player.onCeiling = true
-                        velocity.y = max(0f, velocity.y)
+                    val solid = !e.component<Collider>().get().triggerCollider
+                    if (solid) {
+                        if (event.normal.y < 0) {
+                            player.onGround = true
+                            velocity.y = velocity.y.coerceAtMost(0f)
+                        } else if (event.normal.y > 0) {
+                            player.onCeiling = true
+                            velocity.y = max(0f, velocity.y)
+                        }
+                        if (event.normal.x < 0) {
+                            player.wall = WallStatus.Right
+                            velocity.x = velocity.x.coerceAtMost(0f)
+                        } else if (event.normal.x > 0) {
+                            player.wall = WallStatus.Left
+                            velocity.x = velocity.x.coerceAtLeast(0f)
+                        }
                     }
-                    if (event.normal.x < 0) {
-                        player.wall = WallStatus.Right
-                        velocity.x = velocity.x.coerceAtMost(0f)
-                    } else if (event.normal.x > 0) {
-                        player.wall = WallStatus.Left
-                        velocity.x = velocity.x.coerceAtLeast(0f)
-                    }
-                    if (e?.componentOpt<SpikeBlock>() != null) {
+                    if (e.componentOpt<SpikeBlock>() != null) {
                         respawn(entity, query)
                     }
-                    if (e?.componentOpt<StickyBlock>() != null) {
+                    if (e.componentOpt<StickyBlock>() != null) {
                         sticky = true
                     }
-                    if (e?.componentOpt<SlipperyBlock>() != null) {
+                    if (e.componentOpt<SlipperyBlock>() != null) {
                         slippery = true
                     }
-                    if (e?.componentOpt<TrampolineBlock>() != null && event.normal.y < 0) {
+                    if (e.componentOpt<TrampolineBlock>() != null && event.normal.y < 0) {
                         velocity.y = -properties.trampolineSpeed
                         player.currentJump = TrampolineJump
                     }
-                    val teleporter = e?.componentOpt<TeleporterBlock>()
+                    val teleporter = e.componentOpt<TeleporterBlock>()
                     if (teleporter != null && teleporter.get().num % 2 == 0) {
                         // fixme
                     }

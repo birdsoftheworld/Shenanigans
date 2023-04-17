@@ -54,8 +54,7 @@ fun insertBlock(blockType : Block, lifecycle: EntitiesLifecycle, pos : Vector3f)
         MousePlayer(false, Vector2f(0f,0f)),
         blockType
     )
-
-    components.add(Collider(Polygons.getPolygon(blockType), true, triggerCollider = blockType.solid, tracked = true))
+    components.add(Collider(Polygons.getPolygon(blockType), true, triggerCollider = !blockType.solid, tracked = true))
     lifecycle.add(
         components.asSequence()
     )

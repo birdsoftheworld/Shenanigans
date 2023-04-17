@@ -18,11 +18,18 @@ object Sprites {
         return nullSprite
     }
 
-    val nullSprite = Sprite(TextureManager.createTexture(TextureKey("null"),"/null.png").getRegion(), Rectangle(50f,50f))
-    val playerSprite = Sprite(TextureManager.createTexture(TextureKey("player"),"/playerTexture.png").getRegion(), PlayerController.SHAPE_BASE)
-    val oscillatingSprite = Sprite(TextureManager.createTexture(TextureKey("arrow"),"/betterArrow.png").getRegion(), Rectangle(50f,50f))
-    val trampolineSprite = Sprite(TextureManager.createTexture(TextureKey("spring"),"/spring.png").getRegion(), Rectangle(50f,50f))
-    val spikeSprite = Sprite(TextureManager.createTexture(TextureKey("hole"),"/hole.png").getRegion(), Rectangle(50f,50f))
-    val teleporterASprite = Sprite(TextureManager.createTexture(TextureKey("teleportA"),"/teleporterA.png").getRegion(), Rectangle(25f,25f))
-    val teleporterBSprite = Sprite(TextureManager.createTexture(TextureKey("teleportB"),"/teleporterB.png").getRegion(), Rectangle(25f,25f))
+    val nullSprite
+        get() = Sprite(TextureManager.createTexture(TextureKey("null"),"/null.png").getRegion(), Rectangle(50f,50f))
+    val playerSprite
+        get() = Sprite(TextureManager.createTexture(TextureKey("player"),"/playerTexture.png").getRegion(), PlayerController.SHAPE_BASE)
+    val oscillatingSprite
+        get() = Sprite(TextureManager.createTexture(TextureKey("arrow"),"/betterArrow.png").getRegion(), Rectangle(50f,50f))
+    val trampolineSprite
+        get() = Sprite(TextureManager.createTexture(TextureKey("spring"),"/spring.png").getRegion(), Rectangle(50f,50f))
+    val spikeSprite
+        get() = Sprite(TextureManager.createTexture(TextureKey("hole"),"/hole.png").getRegion(), Rectangle(50f,50f))
+    val teleporterASprite
+        get() = Sprite(TextureManager.createTexture(TextureKey("teleportA"),"/teleporterA.png").getRegion(), Rectangle(25f,25f))
+    val teleporterBSprite
+        get() = Sprite(TextureManager.createTexture(TextureKey("teleportB"),"/teleporterB.png").getRegion(), Rectangle(25f,25f))
 }
