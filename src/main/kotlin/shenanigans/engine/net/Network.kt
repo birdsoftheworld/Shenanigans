@@ -119,7 +119,7 @@ fun builtinSendables(): Set<SendableClass<out Any>> {
             instantiator = { Sprite(TextureRegion(Texture(TextureKey()), 0f, 0f, 0f, 0f), Rectangle(0f, 0f)) }),
         SendableClass(
             Collider::class,
-            instantiator = { Collider(Polygon(arrayOf()), static = false, triggerCollider = false) }),
+            instantiator = { Collider(Polygon(arrayOf()), static = false, solid = true) }),
         SendableClass(Transform::class),
         SendableClass(Synchronized::class),
         SendableClass(Polygon::class, instantiator = { Polygon(arrayOf()) }),
