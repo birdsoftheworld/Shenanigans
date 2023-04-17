@@ -14,6 +14,7 @@ import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.events.KeyEvent
 import shenanigans.engine.window.events.MouseState
 import shenanigans.game.MousePlayer
+import shenanigans.game.network.Synchronized
 import kotlin.math.round
 import kotlin.reflect.KClass
 
@@ -52,7 +53,8 @@ fun insertBlock(blockType : Block, lifecycle: EntitiesLifecycle, pos : Vector3f)
         ),
         Sprites.getSprite(blockType),
         MousePlayer(false, Vector2f(0f,0f)),
-        blockType
+        blockType,
+        Synchronized()
     )
     components.add(Collider(Polygons.getPolygon(blockType), true, triggerCollider = !blockType.solid, tracked = true))
     lifecycle.add(
