@@ -149,7 +149,7 @@ class PlayerController : System {
                     if (e.componentOpt<SlipperyBlock>() != null) {
                         slippery = true
                     }
-                    if (e.componentOpt<TrampolineBlock>() != null && event.normal.y < 0) {
+                    if (e.componentOpt<TrampolineBlock>() != null) {
                         velocity.y = -properties.trampolineSpeed
                         player.currentJump = TrampolineJump
                     }

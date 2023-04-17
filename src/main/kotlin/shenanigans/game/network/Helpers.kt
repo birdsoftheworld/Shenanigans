@@ -3,6 +3,7 @@ package shenanigans.game.network
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.net.MessageEndpoint
 import shenanigans.engine.net.SendableClass
+import shenanigans.game.blocks.*
 import java.util.*
 
 class Synchronized : Component {
@@ -23,6 +24,14 @@ fun sendables(): Set<SendableClass<Any>> {
             EntityRegistrationPacket::class,
             instantiator = { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }),
         SendableClass(EntityDeRegistrationPacket::class, instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) }),
-        SendableClass(RegistrationStatus::class)
+        SendableClass(RegistrationStatus::class),
+        SendableClass(NormalBlock::class),
+        SendableClass(OscillatingBlock::class),
+        SendableClass(RespawnBlock::class),
+        SendableClass(SlipperyBlock::class),
+        SendableClass(SpikeBlock::class),
+        SendableClass(TrampolineBlock::class),
+        SendableClass(StickyBlock::class),
+        SendableClass(Direction::class)
     )
 }
