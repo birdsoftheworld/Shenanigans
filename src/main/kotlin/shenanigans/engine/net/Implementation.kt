@@ -5,6 +5,7 @@ import com.esotericsoftware.kryonet.Listener
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.engine.term.Logger
+import java.io.IOException
 import com.esotericsoftware.kryonet.Client as KryoClient
 import com.esotericsoftware.kryonet.Server as KryoServer
 
@@ -99,15 +100,19 @@ class Client(private val kryoClient: KryoClient) : NetworkImplementation {
         kryoClient.start()
 
         try {
-            val addresses = kryoClient.discoverHosts(40506, 500)
-            if (addresses.size == 0) {
-                throw RuntimeException("No servers found!")
-            }
-            kryoClient.connect(4500, addresses[0], 40506, 40506)
-            println("Connecting to " + addresses[0])
-        } catch (e: Exception) {
-            e.printStackTrace()
+            Logger.log("Network Initialization", "Attempting to connect to localhost.")
+            kryoClient.connect(4500, "localhost", 40506, 40506)
+            return
+        } catch (e: IOException) {
+            Logger.log("Network Initialization", "Failed to connect to localhost, falling back to LAN discovery.")
         }
+
+        val addresses = kryoClient.discoverHosts(40506, 500)
+        if (addresses.size == 0) {
+            throw RuntimeException("No servers found!")
+        }
+        kryoClient.connect(4500, addresses[0], 40506, 40506)
+        Logger.log("Network Initialization", "Connected to server at ${addresses[0]}.")
     }
 
     override fun sendMessage(msg: Message) {

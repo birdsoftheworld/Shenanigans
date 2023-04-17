@@ -8,10 +8,7 @@ import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
-import shenanigans.game.network.EntityDeRegistrationPacket
-import shenanigans.game.network.EntityMovementPacket
-import shenanigans.game.network.EntityRegistrationPacket
-import shenanigans.game.network.Synchronized
+import shenanigans.game.network.*
 import kotlin.reflect.KClass
 
 class ServerUpdateSystem : System {
@@ -38,13 +35,16 @@ class ServerUpdateSystem : System {
 
         eventQueues.own.queueLater(EntityMovementPacket(entities))
 
-        eventQueues.own.receive(ConnectionEvent::class).filter { it.type == ConnectionEventType.Disconnect }.forEach { disconnectionEvent ->
-            query.invoke(setOf(Synchronized::class)).forEach { entity ->
-                if(entity.component<Synchronized>().get().ownerEndpoint == disconnectionEvent.endpoint) {
-                    eventQueues.own.queueNetwork(EntityDeRegistrationPacket(entity.id))
-                }
+        eventQueues.network.receive(ConnectionEvent::class)
+            .filter { it.type == ConnectionEventType.Disconnect }
+            .forEach { connectionEvent ->
+                entities
+                    .filter { it.component<Synchronized>().get().ownerEndpoint == connectionEvent.endpoint }
+                    .forEach {
+                        eventQueues.network.queueNetwork(EntityDeRegistrationPacket(it.id))
+                        lifecycle.del(it.id)
+                    }
             }
-        }
     }
 }
 
@@ -61,6 +61,9 @@ class ServerRegistrationSystem : System {
             if (entities[entityRegistrationPacket.id] != null) {
                 Logger.warn("Entity Registration", "Duplicate ID: " + entityRegistrationPacket.id)
             }
+
+            (entityRegistrationPacket.entity[Synchronized::class] as Synchronized).registration = RegistrationStatus.Registered
+
             lifecycle.add(
                 entityRegistrationPacket.entity.values.asSequence(),
                 entityRegistrationPacket.id,
@@ -81,7 +84,9 @@ class FullEntitySyncSystem : System {
     ) {
         val entities = query(emptySet())
 
-        eventQueues.own.receive(ConnectionEvent::class).forEach { connectionEvent ->
+        eventQueues.own.receive(ConnectionEvent::class)
+            .filter { it.type == ConnectionEventType.Connect }
+            .forEach { connectionEvent ->
             entities.forEach {
                 eventQueues.network.queueNetwork(
                     EntityRegistrationPacket(it),

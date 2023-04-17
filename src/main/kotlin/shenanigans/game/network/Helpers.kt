@@ -6,7 +6,6 @@ import shenanigans.engine.net.SendableClass
 import java.util.*
 
 class Synchronized : Component {
-    @Transient
     var registration = RegistrationStatus.Disconnected
     var ownerEndpoint : MessageEndpoint? = null
 }
@@ -23,6 +22,7 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(
             EntityRegistrationPacket::class,
             instantiator = { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }),
-        SendableClass(EntityDeRegistrationPacket::class, instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) })
+        SendableClass(EntityDeRegistrationPacket::class, instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) }),
+        SendableClass(RegistrationStatus::class)
     )
 }
