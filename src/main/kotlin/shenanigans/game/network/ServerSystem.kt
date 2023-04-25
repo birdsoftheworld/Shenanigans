@@ -13,8 +13,18 @@ import kotlin.reflect.KClass
 
 class ServerUpdateSystem : NetworkUpdateSystem() {
 
-    override fun getUpdatePacket(components: Iterable<KClass<out Component>>, entities: QueryView, eventQueue: NetworkEventQueue): EntityUpdatePacket {
-        return EntityUpdatePacket(entities)
+    override fun getUpdatePacket(
+        components: Iterable<KClass<out Component>>,
+        entities: QueryView,
+        eventQueue: NetworkEventQueue
+    ): EntityUpdatePacket {
+        return EntityUpdatePacket(
+            entities.map { entity ->
+                entity.id to entity.entity.components.filter { component ->
+                    components.contains(component.key)
+                }.mapValues { it.value.component }
+            }.toMap()
+        )
     }
 
     override fun updateEntities(updatePacket: EntityUpdatePacket, entities: QueryView, eventQueue: NetworkEventQueue) {
@@ -23,7 +33,7 @@ class ServerUpdateSystem : NetworkUpdateSystem() {
                 if (entities[entity.key]?.componentOpt<Transform>() == null) {
                     Logger.warn("Server Update", "entity does not have a transform!")
                 }
-                entities[entity.key]?.component<Transform>()!!.get().position = (entity.value).position
+                entities[entity.key]?.component<Transform>()!!.get().position = ((entity.value)[Transform::class]!! as Transform).position
             } else {
                 Logger.warn("Entity Update", "entity does not exist: " + entity.key)
             }
