@@ -13,12 +13,18 @@ import kotlin.reflect.KClass
 
 class ClientUpdateSystem : NetworkUpdateSystem() {
     override fun getUpdatePacket(components: Iterable<KClass<out Component>>, entities: QueryView, eventQueue: NetworkEventQueue): EntityUpdatePacket {
-        return EntityUpdatePacket(entities.filter {
-            val synchronized = it.component<Synchronized>()
+        return EntityUpdatePacket(
+            entities.filter {
+                val synchronized = it.component<Synchronized>()
 
-            synchronized.get().registration == RegistrationStatus.Registered &&
-                    synchronized.get().ownerEndpoint == eventQueue.getEndpoint()
-        })
+                synchronized.get().registration == RegistrationStatus.Registered &&
+                        synchronized.get().ownerEndpoint == eventQueue.getEndpoint()
+            }.map { entity ->
+                entity.id to entity.entity.components.filter { component ->
+                    components.contains(component.key)
+                }.mapValues { it.value.component }
+            }.toMap()
+        )
     }
 
     override fun updateEntities(updatePacket: EntityUpdatePacket, entities: QueryView, eventQueue: NetworkEventQueue) {
@@ -35,7 +41,7 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
             }
 
             val position = entity.component<Transform>().get().position
-            position.lerp((packetEntity.value).position, 1f / 3f)
+            position.lerp(((packetEntity.value)[Transform::class]!! as Transform).position, 1f / 3f)
 
             entities[packetEntity.key]!!.component<Transform>().mutate()
         }
