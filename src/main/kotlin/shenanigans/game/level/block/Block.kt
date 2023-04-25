@@ -29,5 +29,15 @@ sealed class Block : Component {
     }
 }
 
+
+//Textures
 val SQUARE_BLOCK_SHAPE: Rectangle = Rectangle(50f, 50f)
 val NULL_TEXTURE: Texture = TextureManager.createTexture(TextureKey("null"), "/null.png")
+val NORMAL_TEXTURE: Texture = TextureManager.createTexture(TextureKey("normal"), "/normalSprite.png")
+val STICKY_TEXTURE: Texture = TextureManager.createTexture(TextureKey("sticky"), "/sticky.png")
+val ICE_TEXTURE: Texture = TextureManager.createTexture(TextureKey("ice"), "/ice.png")
+val RESPAWN_TEXTURE: Texture = TextureManager.createTexture(TextureKey("respawn"), "/respawn.png")
+val SPIKE_TEXTURE: Texture = TextureManager.createTexture(TextureKey("spike"), "/spike.png")
+val OSCILLATOR_TEXTURE: Texture = TextureManager.createTexture(TextureKey("oscillator"), "/oscillatorBlock.png")
+
+//Polygons

@@ -22,7 +22,7 @@ class OscillatingBlock(
 
     override val solid = true
     override val shape = SQUARE_BLOCK_SHAPE
-    override val texture = OscillatingBlock.texture
+    override val texture = OSCILLATOR_TEXTURE
 
     fun rotate(clockwise: Boolean) {
         dir = if (clockwise) {

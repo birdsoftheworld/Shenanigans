@@ -76,7 +76,7 @@ class BuildLevelSystem : System {
         insertBlock(
             lifecycle,
             RespawnBlock(),
-            Vector3f(100f, 500f, 0.5f)
+            Vector3f(100f, 500f, 100f)
         )
 
         val player = Player(
