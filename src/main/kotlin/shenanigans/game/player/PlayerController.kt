@@ -17,7 +17,7 @@ import shenanigans.engine.util.raycast
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.game.level.block.*
+import shenanigans.game.blocks.*
 import kotlin.math.min
 import kotlin.math.sign
 import kotlin.reflect.KClass

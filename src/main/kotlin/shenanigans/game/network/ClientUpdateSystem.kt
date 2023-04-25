@@ -11,51 +11,7 @@ import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
-class ClientSystem : NetworkUpdateSystem() {
-
-    override fun executeNetwork(
-        resources: ResourcesView,
-        eventQueues: EventQueues<NetworkEventQueue>,
-        query: (Iterable<KClass<out Component>>) -> QueryView,
-        lifecycle: EntitiesLifecycle
-    ) {
-        val entities = query(setOf(Synchronized::class))
-
-        eventQueues.network.receive(EntityDeRegistrationPacket::class).forEach {
-            lifecycle.del(it.id)
-        }
-
-        eventQueues.own.receive(EntityRegistrationPacket::class).forEach registration@{ packet ->
-            if (entities[packet.id] != null) {
-                val entitySynchronization = entities[packet.id]!!.component<Synchronized>()
-                entitySynchronization.get().registration = (packet.entity[Synchronized::class]!! as Synchronized).registration
-                entitySynchronization.get().ownerEndpoint = (packet.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
-                entitySynchronization.mutate()
-
-                Logger.log("Network System", "WHaHOOO: " + packet.id)
-                return@registration
-            }
-
-            lifecycle.add(
-                packet.entity.values.asSequence(),
-                packet.id,
-            )
-
-            Logger.log("Network System", "WahoOO!: " + packet.id)
-        }
-
-        entities.filter {
-                it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected
-        }.forEach {
-            val synchronized = it.component<Synchronized>()
-
-            synchronized.get().registration = RegistrationStatus.Sent
-            synchronized.get().ownerEndpoint = eventQueues.network.getEndpoint()
-            synchronized.mutate()
-            eventQueues.network.queueLater(EntityRegistrationPacket(it))
-        }
-    }
-
+class ClientUpdateSystem : NetworkUpdateSystem() {
     override fun getUpdatePacket(components: Iterable<KClass<out Component>>, entities: QueryView, eventQueue: NetworkEventQueue): EntityUpdatePacket {
         return EntityUpdatePacket(entities.filter {
             val synchronized = it.component<Synchronized>()
@@ -92,19 +48,14 @@ class ClientConnectionSystem: NetworkConnectionSystem() {
         entities: QueryView,
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun disconnect(
         event: ConnectionEvent,
         entities: QueryView,
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
-    ) {
-        TODO("Not yet implemented")
-    }
-
+    ) {}
 }
 
 class ClientRegistrationSystem: NetworkRegistrationSystem(){
@@ -117,7 +68,16 @@ class ClientRegistrationSystem: NetworkRegistrationSystem(){
     ) {
         super.executeNetwork(resources, eventQueues, query, lifecycle)
 
+        query(setOf(Synchronized::class)).filter {
+            it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected
+        }.forEach {
+            val synchronized = it.component<Synchronized>()
 
+            synchronized.get().registration = RegistrationStatus.Sent
+            synchronized.get().ownerEndpoint = eventQueues.network.getEndpoint()
+            synchronized.mutate()
+            eventQueues.network.queueLater(EntityRegistrationPacket(it))
+        }
     }
 
     override fun register(
@@ -126,7 +86,21 @@ class ClientRegistrationSystem: NetworkRegistrationSystem(){
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
     ) {
-        TODO("Not yet implemented")
-    }
+        if (entities[registrationPacket.id] != null) {
+            val entitySynchronization = entities[registrationPacket.id]!!.component<Synchronized>()
+            entitySynchronization.get().registration = (registrationPacket.entity[Synchronized::class]!! as Synchronized).registration
+            entitySynchronization.get().ownerEndpoint = (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
+            entitySynchronization.mutate()
 
+            Logger.log("Network System", "WHaHOOO: " + registrationPacket.id)
+            return
+        }
+
+        lifecycle.add(
+            registrationPacket.entity.values.asSequence(),
+            registrationPacket.id,
+        )
+
+        Logger.log("Network System", "WahoOO!: " + registrationPacket.id)
+    }
 }

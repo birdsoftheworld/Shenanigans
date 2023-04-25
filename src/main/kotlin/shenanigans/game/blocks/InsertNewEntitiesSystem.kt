@@ -56,7 +56,7 @@ fun insertBlock(blockType : Block, lifecycle: EntitiesLifecycle, pos : Vector3f)
         blockType,
         Synchronized()
     )
-    components.add(Collider(Polygons.getPolygon(blockType), true, triggerCollider = !blockType.solid, tracked = true))
+    components.add(Collider(Polygons.getPolygon(blockType), true, solid = !blockType.solid, tracked = true))
     lifecycle.add(
         components.asSequence()
     )

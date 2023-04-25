@@ -49,7 +49,7 @@ abstract class NetworkConnectionSystem() : System {
 
         eventQueues.network.receive(ConnectionEvent::class)
             .filter { it.type == ConnectionEventType.Disconnect }
-            .forEach { connect(it, query(setOf(Synchronized::class)), eventQueues.network, lifecycle) }
+            .forEach { disconnect(it, query(setOf(Synchronized::class)), eventQueues.network, lifecycle) }
     }
 
     abstract fun connect(
@@ -82,6 +82,15 @@ abstract class NetworkRegistrationSystem: System {
                 lifecycle
             )
         }
+
+        eventQueues.network.receive(EntityDeRegistrationPacket::class).forEach {
+            deregister(
+                it,
+                query(setOf(Synchronized::class)),
+                eventQueues.network,
+                lifecycle
+            )
+        }
     }
 
     abstract fun register(
@@ -90,4 +99,13 @@ abstract class NetworkRegistrationSystem: System {
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
     )
+
+    open fun deregister(
+        deregistrationPacket: EntityDeRegistrationPacket,
+        entities: QueryView,
+        eventQueue: NetworkEventQueue,
+        lifecycle: EntitiesLifecycle
+    ) {
+        lifecycle.del(deregistrationPacket.id)
+    }
 }

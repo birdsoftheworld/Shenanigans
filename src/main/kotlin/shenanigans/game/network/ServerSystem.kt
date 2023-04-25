@@ -54,7 +54,6 @@ class ServerConnectionSystem: NetworkConnectionSystem() {
                 eventQueue.queueNetwork(EntityDeRegistrationPacket(it.id))
                 lifecycle.del(it.id)
             }
-
     }
 
 }
