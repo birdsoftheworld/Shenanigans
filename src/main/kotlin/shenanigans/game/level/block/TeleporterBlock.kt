@@ -1,16 +1,19 @@
-package shenanigans.game.blocks
+package shenanigans.game.level.block
 
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.util.Transform
 import shenanigans.game.MousePlayer
 import kotlin.reflect.KClass
 
 data class TeleporterBlock(val num : Int) : Block() {
-    override val solid: Boolean
-        get() = false
+    override val solid = false
+    override val shape = SQUARE_BLOCK_SHAPE
+    override val texture: Texture = NULL_TEXTURE
+
     var targetPos = Vector3f(0f,0f,0f)
 }
 
@@ -29,6 +32,7 @@ class TeleporterSystem : System {
                 entities.forEach { entity2 ->
                     if (entity2.component<TeleporterBlock>().get().num == 1) {
                         tpBlock.get().targetPos = entity2.component<Transform>().get().position
+                        tpBlock.mutate()
                     }
                 }
             }

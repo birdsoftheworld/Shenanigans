@@ -21,10 +21,10 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseScrollEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.blocks.BuildLevelSystem
-import shenanigans.game.blocks.InsertNewEntitiesSystem
-import shenanigans.game.blocks.OscillatingBlock
-import shenanigans.game.blocks.OscillatingBlocksSystem
+import shenanigans.game.level.BuildLevelSystem
+import shenanigans.game.level.InsertNewEntitiesSystem
+import shenanigans.game.level.block.OscillatingBlock
+import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.ClientConnectionSystem
 import shenanigans.game.network.ClientRegistrationSystem
 import shenanigans.game.network.ClientUpdateSystem

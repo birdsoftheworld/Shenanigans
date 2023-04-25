@@ -3,9 +3,9 @@ package shenanigans.game.network
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.net.MessageEndpoint
 import shenanigans.engine.net.SendableClass
+import shenanigans.game.level.block.*
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
-import shenanigans.game.blocks.*
 import java.util.*
 import kotlin.reflect.KClass
 

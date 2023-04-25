@@ -6,7 +6,9 @@ import shenanigans.engine.audio.AudioClip
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.component.Sprite
+import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
@@ -17,7 +19,7 @@ import shenanigans.engine.util.raycast
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
-import shenanigans.game.blocks.*
+import shenanigans.game.level.block.*
 import kotlin.math.min
 import kotlin.math.sign
 import kotlin.reflect.KClass
@@ -394,6 +396,8 @@ class PlayerController : System {
     companion object {
         val SHAPE_BASE: Rectangle = Rectangle(40f, 70f)
         val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 40f)
+
+        val TEXTURE = TextureManager.createTexture(TextureKey("player"),"/playerTexture.png")
 
         val AUDIO_JUMP = AudioClip.fromFile("/jump.wav")
     }
