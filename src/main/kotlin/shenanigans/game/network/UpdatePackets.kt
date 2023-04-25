@@ -9,7 +9,7 @@ import shenanigans.engine.util.Transform
 import java.util.*
 import kotlin.reflect.KClass
 
-class EntityMovementPacket(val entities: Map<UUID, Transform>): Event {
+class EntityUpdatePacket(val entities: Map<UUID, Transform>): Event {
     constructor (entities: Sequence<EntityView>) : this(entities.map { it.id to it.component<Transform>().get()}.toMap())
 
     constructor (entities: QueryView) : this( entities.iterator().asSequence().map { it.id to it.component<Transform>().get()}.toMap())
