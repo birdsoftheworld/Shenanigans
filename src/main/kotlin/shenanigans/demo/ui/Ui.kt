@@ -6,13 +6,16 @@ import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.ecs.utils.AddEntitiesSystem
 import shenanigans.engine.graphics.api.Color
+import shenanigans.engine.net.Network
+import shenanigans.engine.net.NullNetwork
+import shenanigans.engine.net.Server
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UIComponent
 import shenanigans.engine.ui.dsl.buildUI
 import shenanigans.engine.ui.elements.Box
 
 fun main() {
-    val engine = ClientEngine(Scene())
+    val engine = ClientEngine(Scene(), Network(NullNetwork))
 
     val ui = buildUI {
         coloredBox {

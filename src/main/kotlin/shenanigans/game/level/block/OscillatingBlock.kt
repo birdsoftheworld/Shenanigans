@@ -7,7 +7,6 @@ import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.Transform
-import shenanigans.engine.util.shapes.Polygon
 import shenanigans.game.MousePlayer
 import kotlin.math.abs
 import kotlin.reflect.KClass
