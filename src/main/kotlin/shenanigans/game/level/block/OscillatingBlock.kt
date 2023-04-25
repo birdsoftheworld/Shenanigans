@@ -1,33 +1,40 @@
-package shenanigans.game.blocks
+package shenanigans.game.level.block
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.graphics.TextureKey
+import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.shapes.Polygon
 import shenanigans.game.MousePlayer
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
-enum class Direction(sign : Int) {
-    Up(0),Right(1),Down(2),Left(3)
+enum class Direction(sign: Int) {
+    Up(0), Right(1), Down(2), Left(3)
 }
 
-class OscillatingBlock(val distanceToOscillate : Float, var startPos : Vector2f, var speed : Float, var dir : Direction = Direction.Right) :
-    Block() {
-    constructor() : this(50f,Vector2f(100f, 500f), .01f )
+class OscillatingBlock(
+    val distanceToOscillate: Float, var startPos: Vector2f, var speed: Float, var dir: Direction = Direction.Right,
+) : Block() {
+    constructor() : this(50f, Vector2f(100f, 500f), .01f)
 
-    fun rotate(clockwise : Boolean){
-        if(clockwise){
-            dir = when(dir) {
+    override val solid = true
+    override val shape = SQUARE_BLOCK_SHAPE
+    override val texture = OscillatingBlock.texture
+
+    fun rotate(clockwise: Boolean) {
+        dir = if (clockwise) {
+            when (dir) {
                 Direction.Up -> Direction.Right
                 Direction.Right -> Direction.Down
                 Direction.Down -> Direction.Left
                 Direction.Left -> Direction.Up
             }
-        }
-        else{
-            dir = when(dir) {
+        } else {
+            when (dir) {
                 Direction.Down -> Direction.Right
                 Direction.Left -> Direction.Down
                 Direction.Up -> Direction.Left
@@ -39,11 +46,17 @@ class OscillatingBlock(val distanceToOscillate : Float, var startPos : Vector2f,
     fun reset() {
         speed = abs(speed)
     }
-    fun changeDirection(){
+
+    fun changeDirection() {
         speed *= -1
     }
-    fun newStartPos(x : Float, y : Float){
+
+    fun newStartPos(x: Float, y: Float) {
         this.startPos.set(x, y)
+    }
+
+    companion object {
+        val texture = TextureManager.createTexture(TextureKey("arrow"), "/betterArrow.png")
     }
 }
 

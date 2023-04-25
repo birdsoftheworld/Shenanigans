@@ -40,9 +40,7 @@ fun main() {
                 justifyContent = Box.JustifyContent.Center
                 alignItems = Box.Align.Center
 
-                text {
-                    text = "Hello, world!"
-                }
+                text("Hello, World!")
             }
 
             coloredBox {

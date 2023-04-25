@@ -3,7 +3,7 @@ package shenanigans.game.network
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.net.MessageEndpoint
 import shenanigans.engine.net.SendableClass
-import shenanigans.game.blocks.*
+import shenanigans.game.level.block.*
 import java.util.*
 
 class Synchronized : Component {
