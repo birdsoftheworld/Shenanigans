@@ -22,10 +22,10 @@ sealed interface ParentUIBuilder {
     }
 
     fun text(text: String, init: TextBuilder.() -> Unit = {}) {
-        addChild(TextBuilder().apply {
+        text {
             this.text = text
             init()
-        })
+        }
     }
 }
 
