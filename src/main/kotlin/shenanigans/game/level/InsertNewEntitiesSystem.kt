@@ -11,7 +11,7 @@ import shenanigans.engine.window.KeyAction
 import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.events.KeyEvent
 import shenanigans.engine.window.events.MouseState
-import shenanigans.game.MousePlayer
+import shenanigans.game.control.MouseDraggable
 import shenanigans.game.level.block.*
 import shenanigans.game.network.Synchronized
 import kotlin.math.round
@@ -54,7 +54,7 @@ fun insertBlock(lifecycle: EntitiesLifecycle, block: Block, pos: Vector3f) {
     val components = block.toComponents(pos).plus(
         sequenceOf(
             Synchronized(),
-            MousePlayer(false, Vector2f(0f, 0f)),
+            MouseDraggable(false, Vector2f(0f, 0f)),
         )
     )
 

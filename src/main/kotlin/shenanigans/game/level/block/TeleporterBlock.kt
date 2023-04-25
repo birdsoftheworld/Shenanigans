@@ -6,7 +6,7 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.util.Transform
-import shenanigans.game.MousePlayer
+import shenanigans.game.control.MouseDraggable
 import kotlin.reflect.KClass
 
 data class TeleporterBlock(val num : Int) : Block() {
@@ -24,7 +24,7 @@ class TeleporterSystem : System {
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        val entities = query(setOf(MousePlayer::class, Transform::class))
+        val entities = query(setOf(MouseDraggable::class, Transform::class))
 
         entities.forEach { entity ->
             val tpBlock = entity.component<TeleporterBlock>()

@@ -2,6 +2,7 @@ package shenanigans.game.player
 
 import org.joml.Vector2f
 import org.joml.Vector3f
+import org.joml.Vector3fc
 import shenanigans.engine.audio.AudioClip
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
@@ -20,6 +21,7 @@ import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.level.block.*
+import shenanigans.game.network.Synchronized
 import kotlin.math.min
 import kotlin.math.sign
 import kotlin.reflect.KClass
@@ -394,6 +396,33 @@ class PlayerController : System {
     }
 
     companion object {
+        fun createPlayer(position: Vector3fc): Sequence<Component> {
+            val player = Player(
+                PlayerProperties()
+            )
+            val playerTransform = Transform(
+                Vector3f(position)
+            )
+
+            return sequenceOf(
+                playerTransform,
+                Sprite(TEXTURE.getRegion(), SHAPE_BASE),
+                Collider(SHAPE_BASE, false, tracked = true),
+                player,
+                Synchronized()
+            )
+        }
+
+        fun getCameraPosition(player: EntityView): Vector3fc {
+            val p = Vector3f(player.component<Transform>().get().position)
+            p.x += SHAPE_BASE.width / 2
+            p.y += SHAPE_BASE.height / 2
+            if (player.component<Player>().get().crouching) {
+                p.y -= SHAPE_BASE.height - SHAPE_CROUCHED.height
+            }
+            return p
+        }
+
         val SHAPE_BASE: Rectangle = Rectangle(40f, 70f)
         val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 40f)
 

@@ -5,16 +5,12 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.graphics.api.component.Sprite
-import shenanigans.engine.physics.Collider
-import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Rectangle
-import shenanigans.game.Followed
+import shenanigans.game.control.CameraManager
+import shenanigans.game.control.FollowingCamera
 import shenanigans.game.level.block.*
-import shenanigans.game.network.Synchronized
-import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
-import shenanigans.game.player.PlayerProperties
+import shenanigans.game.state.ModeManager
 import kotlin.reflect.KClass
 
 class BuildLevelSystem : System {
@@ -24,8 +20,6 @@ class BuildLevelSystem : System {
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        //Sprites
-        val playerSprite = Sprite(PlayerController.TEXTURE.getRegion(), PlayerController.SHAPE_BASE)
         //Shapes
         val floorShape = Rectangle(600f, 50f)
 
@@ -79,33 +73,9 @@ class BuildLevelSystem : System {
             Vector3f(100f, 500f, 0.5f)
         )
 
-        val player = Player(
-            PlayerProperties()
-        )
-        val playerTransform = Transform(
-            Vector3f(100f, 0f, .9f)
-        )
-
         //PLAYER
-        lifecycle.add(
-            sequenceOf(
-                playerTransform,
-                playerSprite,
-                Collider(PlayerController.SHAPE_BASE, false, tracked = true),
-                Player(
-                    PlayerProperties()
-                ),
-                Followed {
-                    val p = Vector3f(playerTransform.position)
-                    p.x += PlayerController.SHAPE_BASE.width / 2
-                    p.y += PlayerController.SHAPE_BASE.height / 2
-                    if (player.crouching) {
-                        p.y -= PlayerController.SHAPE_BASE.height - PlayerController.SHAPE_CROUCHED.height
-                    }
-                    p
-                },
-                Synchronized()
-            )
+        val player = lifecycle.add(
+            PlayerController.createPlayer(Vector3f())
         )
 
         insertBlock(
@@ -124,6 +94,18 @@ class BuildLevelSystem : System {
             lifecycle,
             NormalBlock(floorShape),
             Vector3f(400f, 400f, 0.8f)
+        )
+
+        lifecycle.add(
+            sequenceOf(
+                CameraManager(FollowingCamera(player, PlayerController::getCameraPosition))
+            )
+        )
+
+        lifecycle.add(
+            sequenceOf(
+                ModeManager()
+            )
         )
     }
 }
