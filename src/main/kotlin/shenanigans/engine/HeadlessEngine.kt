@@ -7,6 +7,7 @@ import shenanigans.engine.net.Network
 import shenanigans.engine.net.Server
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.timer.TimerSystem
 import kotlin.system.exitProcess
 
 class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : Engine(initScene, network) {
@@ -32,7 +33,7 @@ class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : E
             previousTime = currentTime
 
             val physicsResources = ResourcesView(scene.sceneResources, engineResources)
-            scene.defaultSystems.forEach(
+            scene.defaultSystems.asSequence().plus(builtinSystems).forEach(
                 scene.runSystem(
                     System::executePhysics,
                     physicsResources,
@@ -41,7 +42,7 @@ class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : E
             )
 
             val networkResources = ResourcesView(scene.sceneResources, engineResources)
-            scene.defaultSystems.forEach(
+            scene.defaultSystems.asSequence().plus(TimerSystem).forEach(
                 scene.runSystem(
                     System::executeNetwork,
                     networkResources,
@@ -53,7 +54,7 @@ class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : E
             networkEvents.finish()
             renderEvents.finish()
 
-            while(java.lang.System.currentTimeMillis() - lastTick < 20) {
+            while (java.lang.System.currentTimeMillis() - lastTick < 20) {
                 continue
             }
         }

@@ -14,6 +14,7 @@ import shenanigans.engine.events.control.SceneChangeEvent
 import shenanigans.engine.events.control.UpdateDefaultSystemsEvent
 import shenanigans.engine.net.Network
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.timer.TimerSystem
 
 abstract class Engine(initScene: Scene, val network: Network) {
     protected var scene: Scene = initScene
@@ -42,6 +43,11 @@ abstract class Engine(initScene: Scene, val network: Network) {
             eventQueuesFor(physicsEvents)
         )(system)
     }
+
+    protected val builtinSystems: Sequence<System> = sequenceOf(
+        TimerSystem
+    )
+
 
     protected fun handleControlEvents(events: EventQueue) {
         events.receive(ControlEvent::class).forEach { e ->
