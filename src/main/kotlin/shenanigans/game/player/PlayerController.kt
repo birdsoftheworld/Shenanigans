@@ -106,7 +106,7 @@ class PlayerController : System {
     ) {
         val keyboard = resources.get<KeyboardState>()
         val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
-
+        var friction = 0f
         query(setOf(Player::class, Transform::class, Collider::class)).forEach { entity ->
             val player = entity.component<Player>().get()
             val transform = entity.component<Transform>()
@@ -129,6 +129,13 @@ class PlayerController : System {
                         if (event.normal.y < 0) {
                             player.onGround = true
                             velocity.y = velocity.y.coerceAtMost(0f)
+                            if (e.componentOpt<TrampolineBlock>() != null) {
+                                velocity.y = -properties.trampolineSpeed
+                                player.currentJump = TrampolineJump
+                            }
+                            if (e.componentOpt<OscillatingBlock>() != null) {
+                                friction = e.component<OscillatingBlock>().get().speed
+                            }
                         } else if (event.normal.y > 0) {
                             player.onCeiling = true
                             velocity.y = velocity.y.coerceAtLeast(0f)
@@ -149,10 +156,6 @@ class PlayerController : System {
                     }
                     if (e.componentOpt<SlipperyBlock>() != null) {
                         slippery = true
-                    }
-                    if (e.componentOpt<TrampolineBlock>() != null) {
-                        velocity.y = -properties.trampolineSpeed
-                        player.currentJump = TrampolineJump
                     }
                     val teleporter = e.componentOpt<TeleporterBlock>()
                     if (teleporter != null && teleporter.get().num % 2 == 0) {
@@ -310,6 +313,7 @@ class PlayerController : System {
             }
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+            pos.x += friction
             entity.component<Player>().mutate()
             transform.mutate()
         }
@@ -394,10 +398,10 @@ class PlayerController : System {
     }
 
     companion object {
-        val SHAPE_BASE: Rectangle = Rectangle(40f, 70f)
+        val SHAPE_BASE: Rectangle = Rectangle(32f, 48f)
         val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 40f)
 
-        val TEXTURE = TextureManager.createTexture(TextureKey("player"),"/playerTexture.png")
+        val TEXTURE = TextureManager.createTexture(TextureKey("player"),"/player.png")
 
         val AUDIO_JUMP = AudioClip.fromFile("/jump.wav")
     }

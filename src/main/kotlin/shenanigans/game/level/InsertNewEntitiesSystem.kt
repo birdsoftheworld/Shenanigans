@@ -48,8 +48,8 @@ class InsertNewEntitiesSystem : System {
 }
 
 fun insertBlock(lifecycle: EntitiesLifecycle, block: Block, pos: Vector3f) {
-    pos.x = round((pos.x - 25) / 50) * 50
-    pos.y = round((pos.y - 25) / 50) * 50
+    pos.x = round((pos.x - 32) / 64) * 64
+    pos.y = round((pos.y - 32) / 64) * 64
 
     val components = block.toComponents(pos).plus(
         sequenceOf(
