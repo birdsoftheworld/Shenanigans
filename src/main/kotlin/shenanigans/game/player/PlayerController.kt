@@ -166,7 +166,7 @@ class PlayerController : System {
                     if (e.componentOpt<StickyBlock>() != null) {
                         sticky = true
                     }
-                    if (e.componentOpt<IceBlock>() != null) {
+                    if (e.componentOpt<SlipperyBlock>() != null) {
                         slippery = true
                     }
                 }

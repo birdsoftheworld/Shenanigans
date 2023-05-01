@@ -32,7 +32,7 @@ object NullNetwork : NetworkImplementation {
 
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
-    constructor() : this(KryoServer())
+    constructor() : this(KryoServer(65536, 16384))
 
     override fun connect() {
         kryoServer.start()
@@ -103,7 +103,7 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
 class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
-    constructor() : this(KryoClient())
+    constructor() : this(KryoClient(65536, 16384))
 
     override fun connect() {
         kryoClient.start()

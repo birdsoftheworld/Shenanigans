@@ -6,6 +6,7 @@ import shenanigans.engine.ecs.QueryView
 import shenanigans.engine.net.MessageDelivery
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
+import shenanigans.engine.physics.Collider
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import shenanigans.game.network.*
@@ -34,6 +35,8 @@ class ServerUpdateSystem : NetworkUpdateSystem() {
                     Logger.warn("Server Update", "entity does not have a transform!")
                 }
                 entities[entity.key]?.component<Transform>()!!.get().position = ((entity.value)[Transform::class]!! as Transform).position
+                entities[entity.key]?.component<Collider>()!!.get().polygon = (entity.value[Collider::class]!! as Collider).polygon
+                entities[entity.key]?.component<Collider>()!!.mutate()
             } else {
                 Logger.warn("Entity Update", "entity does not exist: " + entity.key)
             }

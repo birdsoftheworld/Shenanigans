@@ -7,6 +7,7 @@ import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
+import shenanigans.engine.physics.Collider
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
@@ -40,8 +41,11 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
                 return@packet
             }
 
-            val position = entity.component<Transform>().get().position
-            position.lerp(((packetEntity.value)[Transform::class]!! as Transform).position, 1f / 3f)
+            entity.component<Transform>().get().position.lerp(((packetEntity.value)[Transform::class]!! as Transform).position, 1f / 3f)
+            entity.component<Transform>().mutate()
+
+            entity.component<Collider>().get().polygon = (packetEntity.value[Collider::class]!! as Collider).polygon
+            entity.component<Collider>().mutate()
 
             entities[packetEntity.key]!!.component<Transform>().mutate()
         }
