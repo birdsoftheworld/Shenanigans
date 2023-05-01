@@ -16,6 +16,7 @@ import shenanigans.engine.graphics.api.system.ShapeSystem
 import shenanigans.engine.graphics.api.system.SpriteSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.timer.TimerSystem
 import shenanigans.engine.ui.UISystem
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.window.Window
@@ -29,10 +30,11 @@ object Renderer {
     private lateinit var fontRenderer: FontRenderer
 
     private val builtinSystems: List<System> = listOf(
-        DrawBackgroundSystem(),
+//        DrawBackgroundSystem(),
         SpriteSystem(),
         ShapeSystem(),
         UISystem(),
+        TimerSystem
     )
 
     fun init() {
