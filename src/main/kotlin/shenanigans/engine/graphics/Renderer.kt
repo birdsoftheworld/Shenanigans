@@ -81,7 +81,7 @@ object Renderer {
         glDepthFunc(GL_LESS)
 
         glEnable(GL_BLEND)
-        glBlendFunc(GL_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         builtinSystems.forEach(scene.runSystem(System::executeRender, resources, eventQueues))
         scene.defaultSystems.forEach(scene.runSystem(System::executeRender, resources, eventQueues))
