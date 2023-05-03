@@ -10,8 +10,8 @@ import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.net.Network
 import shenanigans.engine.net.NullNetwork
 import shenanigans.engine.scene.Scene
-import shenanigans.engine.util.shapes.Polygon
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.shapes.Polygon
 import kotlin.reflect.KClass
 
 fun main() {
