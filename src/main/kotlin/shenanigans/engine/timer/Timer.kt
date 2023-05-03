@@ -7,7 +7,7 @@ import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.net.NetworkEventQueue
-import java.util.SortedMap
+import java.util.*
 import kotlin.reflect.KClass
 
 fun timeEventPhysics(delay: Double, event: Event) {

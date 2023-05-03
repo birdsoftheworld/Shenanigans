@@ -13,7 +13,7 @@ import kotlin.reflect.KClass
 
 class Synchronized : Component {
     var registration = RegistrationStatus.Disconnected
-    var ownerEndpoint : MessageEndpoint? = null
+    var ownerEndpoint: MessageEndpoint? = null
 }
 
 enum class RegistrationStatus {
@@ -33,9 +33,10 @@ fun sendables(): Set<SendableClass<Any>> {
             instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) }),
         SendableClass(RegistrationStatus::class),
         SendableClass(NormalBlock::class, instantiator = { NormalBlock(Rectangle(0f, 0f)) }),
+        SendableClass(NormalBlock::class),
         SendableClass(OscillatingBlock::class),
         SendableClass(RespawnBlock::class),
-        SendableClass(SlipperyBlock::class),
+        SendableClass(IceBlock::class),
         SendableClass(SpikeBlock::class),
         SendableClass(TrampolineBlock::class),
         SendableClass(StickyBlock::class),

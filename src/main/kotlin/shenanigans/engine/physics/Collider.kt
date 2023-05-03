@@ -9,6 +9,6 @@ class Collider constructor(
     val static: Boolean,
     val solid: Boolean = true,
     val tracked: Boolean = false
-    ) : Component {
+) : Component {
     var transformedVertices = Array(polygon.vertices.size) { Vector2f() }
 }

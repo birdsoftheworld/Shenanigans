@@ -40,7 +40,7 @@ class CameraControlSystem : System {
             }
             mode.pos.add(move.mul(dt.toFloat()))
         }
-        val position = when(mode) {
+        val position = when (mode) {
             is StationaryCamera -> mode.pos
             is FollowingCamera -> mode.func(query(emptySet())[mode.target]!!)
             is MovableCamera -> mode.pos

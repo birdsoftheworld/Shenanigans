@@ -2,9 +2,6 @@ package shenanigans.engine
 
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.Resources
-import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.StateMachine
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.events.*

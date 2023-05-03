@@ -21,18 +21,18 @@ class Shader(vertexShader: String, fragmentShader: String) {
 
         glLinkProgram(programId)
 
-        if(glGetProgrami(programId, GL_LINK_STATUS) == 0) {
+        if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
             throw RuntimeException("Failed to link program: ${glGetProgramInfoLog(programId, 1024)}")
         }
 
-        if(vertShaderId != 0) {
+        if (vertShaderId != 0) {
             glDetachShader(programId, vertShaderId)
         }
-        if(fragShaderId != 0) {
+        if (fragShaderId != 0) {
             glDetachShader(programId, fragShaderId)
         }
 
-        if(System.getProperty("render_debug") != null) {
+        if (System.getProperty("render_debug") != null) {
             // only necessary for debugging
             glValidateProgram(programId)
             if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
@@ -44,14 +44,14 @@ class Shader(vertexShader: String, fragmentShader: String) {
     private fun createShader(source: String, type: Int): Int {
         val id = glCreateShader(type)
 
-        if(id == 0) {
+        if (id == 0) {
             throw RuntimeException("Failed to create shader of type $type")
         }
 
         glShaderSource(id, source)
         glCompileShader(id)
 
-        if(glGetShaderi(id, GL_COMPILE_STATUS) == 0) {
+        if (glGetShaderi(id, GL_COMPILE_STATUS) == 0) {
             throw IllegalStateException("Failed to compile shader: ${glGetShaderInfoLog(id, 1024)}")
         }
 
@@ -77,14 +77,14 @@ class Shader(vertexShader: String, fragmentShader: String) {
 
     fun createUniform(name: String) {
         val uniform = glGetUniformLocation(programId, name)
-        if(uniform < 0) {
+        if (uniform < 0) {
             throw IllegalStateException("Failed to find uniform location: $name")
         }
         uniforms[name] = uniform
     }
 
     fun setUniform(name: String, value: Matrix4f) {
-        if(!bound) {
+        if (!bound) {
             throw IllegalStateException("Bind shader before changing uniforms")
         }
         val stack = MemoryStack.stackPush()
@@ -95,8 +95,8 @@ class Shader(vertexShader: String, fragmentShader: String) {
         }
     }
 
-    fun setUniform(name : String, value : Int) {
-        if(!bound) {
+    fun setUniform(name: String, value: Int) {
+        if (!bound) {
             throw IllegalStateException("Bind shader before changing uniforms")
         }
         glUniform1i(uniforms[name]!!, value)

@@ -13,8 +13,13 @@ fun raycast(everything: Sequence<EntityView>, point: Vector2fc, direction: Vecto
     for (entityView in everything.iterator()) {
         val transform = entityView.component<Transform>().get()
         val collider = entityView.component<Collider>().get()
-        val verts = collider.transformedVertices.map { it.add(Vector2f(transform.position.x, transform.position.y), Vector2f()) }
-        for(i in verts.indices) {
+        val verts = collider.transformedVertices.map {
+            it.add(
+                Vector2f(transform.position.x, transform.position.y),
+                Vector2f()
+            )
+        }
+        for (i in verts.indices) {
             val fst = verts[i]
             val snd = verts[(i + 1) % verts.size]
             val value = pointProjectionCollisionDistance(fst to snd, point, direction)

@@ -27,7 +27,8 @@ class ResourcesView(private vararg val children: Resources) {
 }
 
 class Resources {
-    @PublishedApi internal val resources: HashMap<KClass<out Resource>, Resource> = hashMapOf()
+    @PublishedApi
+    internal val resources: HashMap<KClass<out Resource>, Resource> = hashMapOf()
 
     inline fun <reified T : Resource> get(): T {
         return getOpt()!!

@@ -1,7 +1,10 @@
 package shenanigans.engine.audio
 
 import shenanigans.engine.term.Logger
-import javax.sound.sampled.*
+import javax.sound.sampled.AudioInputStream
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.LineEvent
+import javax.sound.sampled.LineListener
 
 class AudioClip(private val stream: AudioInputStream) : AutoCloseable {
     private val clip = AudioSystem.getClip().apply {
@@ -40,12 +43,15 @@ internal object ClipLogger : LineListener {
             LineEvent.Type.OPEN -> {
                 Logger.log("audio", "opened audio line")
             }
+
             LineEvent.Type.START -> {
                 Logger.log("audio", "started playing clip")
             }
+
             LineEvent.Type.STOP -> {
                 Logger.log("audio", "stopped playing clip")
             }
+
             LineEvent.Type.CLOSE -> {
                 Logger.log("audio", "closed audio line")
             }

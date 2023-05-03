@@ -29,42 +29,42 @@ abstract class Camera {
         screenHeight = h
     }
 
-    fun reset() : Camera {
+    fun reset(): Camera {
         translation.set(0f, 0f, 0f)
         rotation = 0f
         scaling.set(1f, 1f, 1f)
         return this
     }
 
-    fun rotate(rotation: Float) : Camera {
+    fun rotate(rotation: Float): Camera {
         this.rotation += rotation
         return this
     }
 
-    fun scale(vector3f: Vector3f) : Camera {
+    fun scale(vector3f: Vector3f): Camera {
         scaling.mul(vector3f)
         return this
     }
 
-    fun translate(x: Float, y: Float, z: Float = 0f) : Camera {
+    fun translate(x: Float, y: Float, z: Float = 0f): Camera {
         translation.add(x, y, z)
         return this
     }
 
-    fun transformPoint(vector3f: Vector3f) : Vector3f {
+    fun transformPoint(vector3f: Vector3f): Vector3f {
         _tempVec.set(vector3f, 1f).mul(this.computeViewMatrix())
         return vector3f.set(_tempVec.x / _tempVec.w, _tempVec.y / _tempVec.w, _tempVec.z / _tempVec.w)
     }
 
-    fun untransformPoint(vector3f: Vector3f) : Vector3f {
+    fun untransformPoint(vector3f: Vector3f): Vector3f {
         _tempMat.set(this.computeViewMatrix())
         _tempVec.set(vector3f, 1f).mul(_tempMat.invert())
         return vector3f.set(_tempVec.x / _tempVec.w, _tempVec.y / _tempVec.w, _tempVec.z / _tempVec.w)
     }
 
-    abstract fun computeProjectionMatrix() : Matrix4f
+    abstract fun computeProjectionMatrix(): Matrix4f
 
-    fun computeViewMatrix() : Matrix4f {
+    fun computeViewMatrix(): Matrix4f {
         _tempQua.rotationZ(rotation)
         return viewMatrix
             .translationRotateScale(
@@ -74,7 +74,12 @@ abstract class Camera {
             )
     }
 
-    fun computeModelViewMatrix(translation: Vector3f, rotation: Float, scale: Vector3f, viewMatrix: Matrix4f) : Matrix4f {
+    fun computeModelViewMatrix(
+        translation: Vector3f,
+        rotation: Float,
+        scale: Vector3f,
+        viewMatrix: Matrix4f
+    ): Matrix4f {
         modelViewMatrix.setToTransform(translation, rotation, scale)
         return Matrix4f(viewMatrix).mul(modelViewMatrix)
     }

@@ -5,8 +5,10 @@ import shenanigans.engine.graphics.VertexAttribute
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.shader.Shader
 
-class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(
-    setOf(VertexAttribute.COLOR, VertexAttribute.ALPHA, VertexAttribute.POSITION), vertexCapacity, indicesCapacity) {
+class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) :
+    AbstractRenderer(
+        setOf(VertexAttribute.COLOR, VertexAttribute.ALPHA, VertexAttribute.POSITION), vertexCapacity, indicesCapacity
+    ) {
 
     override val shader = Shader(
         """

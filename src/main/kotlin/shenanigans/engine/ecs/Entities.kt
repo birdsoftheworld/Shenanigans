@@ -3,7 +3,6 @@ package shenanigans.engine.ecs
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
 import java.util.*
-import javax.management.Query
 import kotlin.reflect.KClass
 
 class Entities {
@@ -31,7 +30,7 @@ data class StoredEntity(
     val components: Map<KClass<out Component>, StoredComponent>
 )
 
-data class StoredComponent(val component: Component, var version: Int = 0)
+data class StoredComponent(var component: Component, var version: Int = 0)
 
 class EntityView internal constructor(
     entities: Entities,
@@ -65,6 +64,15 @@ class ComponentView<T : Component>(private val stored: StoredComponent) {
 
     fun mutate() {
         stored.version++
+    }
+
+    fun replace(new: T): T {
+        val old = get()
+
+        stored.component = new
+        mutate()
+
+        return old
     }
 
     operator fun component1(): T {

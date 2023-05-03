@@ -3,10 +3,10 @@ package shenanigans.engine.graphics.api.system
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.graphics.api.component.Shape
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.camera.CameraResource
 import kotlin.reflect.KClass
 
 /**
@@ -28,7 +28,8 @@ class ShapeSystem : System {
         for (entity in query(setOf(Shape::class, Transform::class))) {
             val shape = entity.component<Shape>().get()
             val transform = entity.component<Transform>().get()
-            renderer.transformation = camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
+            renderer.transformation =
+                camera.computeModelViewMatrix(transform.position, transform.rotation, transform.scale, view)
             renderer.polygon(shape.polygon.vertices, shape.color)
         }
 

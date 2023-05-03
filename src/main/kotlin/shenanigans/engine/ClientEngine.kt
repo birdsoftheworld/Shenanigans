@@ -10,7 +10,6 @@ import shenanigans.engine.net.Client
 import shenanigans.engine.net.Network
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
-import shenanigans.engine.timer.TimerSystem
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.camera.OrthoCamera
 import shenanigans.engine.window.Window

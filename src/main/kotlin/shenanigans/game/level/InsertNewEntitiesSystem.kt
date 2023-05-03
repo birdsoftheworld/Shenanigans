@@ -39,7 +39,11 @@ class InsertNewEntitiesSystem : System {
                         Key.NUM_1 -> insertBlock(lifecycle, SpikeBlock(), pos)
                         Key.NUM_2 -> insertBlock(lifecycle, TrampolineBlock(), pos)
                         Key.NUM_3 -> insertBlock(lifecycle, OscillatingBlock(), pos)
-                        Key.NUM_4 -> insertBlock(lifecycle, NormalBlock(SQUARE_BLOCK_SHAPE), pos)
+                        Key.NUM_4 -> insertBlock(lifecycle, StickyBlock(), pos)
+                        Key.NUM_5 -> insertBlock(lifecycle, IceBlock(), pos)
+                        Key.NUM_6 -> insertBlock(lifecycle, TeleporterBlock(), pos)
+                        Key.NUM_7 -> insertBlock(lifecycle, GoalBlock(), pos)
+                        Key.NUM_8 -> insertBlock(lifecycle, NormalBlock(SQUARE_BLOCK_SHAPE), pos)
                     }
                 }
             }

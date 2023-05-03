@@ -4,9 +4,6 @@ import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
-import shenanigans.engine.graphics.api.Color
-import shenanigans.engine.graphics.api.resource.ShapeRendererResource
-import shenanigans.engine.util.camera.CameraResource
 
 open class Box : AutoCloseable {
     private val node = Yoga.YGNodeNew()

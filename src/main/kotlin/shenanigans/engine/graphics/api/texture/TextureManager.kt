@@ -11,17 +11,23 @@ object TextureManager {
     private val queuedTextures = mutableListOf<Pair<TextureKey, TextureCreatable>>()
     private val keyedTextures = mutableMapOf<TextureKey, GlTexture>()
 
-    fun createTexture(key: TextureKey, path: String, options: TextureOptions = TextureOptions()) : Texture {
+    fun createTexture(key: TextureKey, path: String, options: TextureOptions = TextureOptions()): Texture {
         queuedTextures.add(Pair(key, PathTexture(options, path)))
-        if(GlobalRendererState.isInitializedAndOnRenderThread()) {
+        if (GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
         }
         return Texture(key)
     }
 
-    fun createTextureFromData(key: TextureKey, data: ByteBuffer, width: Int, height: Int, options: TextureOptions = TextureOptions()) : Texture {
+    fun createTextureFromData(
+        key: TextureKey,
+        data: ByteBuffer,
+        width: Int,
+        height: Int,
+        options: TextureOptions = TextureOptions()
+    ): Texture {
         queuedTextures.add(Pair(key, RawTexture(options, data, Vector2i(width, height))))
-        if(GlobalRendererState.isInitializedAndOnRenderThread()) {
+        if (GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
         }
         return Texture(key)
@@ -38,7 +44,7 @@ object TextureManager {
         dequeue()
     }
 
-    internal fun getTexture(key: TextureKey) : GlTexture {
+    internal fun getTexture(key: TextureKey): GlTexture {
         return keyedTextures[key]!!
     }
 
@@ -51,7 +57,7 @@ object TextureManager {
 }
 
 private abstract class TextureCreatable(val options: TextureOptions) {
-    abstract fun create() : GlTexture
+    abstract fun create(): GlTexture
 }
 
 private class PathTexture(options: TextureOptions, val path: String) : TextureCreatable(options) {
@@ -60,7 +66,8 @@ private class PathTexture(options: TextureOptions, val path: String) : TextureCr
     }
 }
 
-private class RawTexture(options: TextureOptions, val data: ByteBuffer, val size: Vector2i) : TextureCreatable(options) {
+private class RawTexture(options: TextureOptions, val data: ByteBuffer, val size: Vector2i) :
+    TextureCreatable(options) {
     override fun create(): GlTexture {
         return GlTexture(size.x, size.y, data, options)
     }

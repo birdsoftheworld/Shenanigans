@@ -35,7 +35,14 @@ class ModeChangeSystem : System {
                 cameraManager.mode = MovableCamera(Vector3f(cameraManager.lastPosition))
                 modeManager.mode = Mode.BUILD
             } else {
-                val id = lifecycle.add(PlayerController.createPlayer(Vector2f(cameraManager.lastPosition.x(), cameraManager.lastPosition.y())))
+                val id = lifecycle.add(
+                    PlayerController.createPlayer(
+                        Vector2f(
+                            cameraManager.lastPosition.x(),
+                            cameraManager.lastPosition.y()
+                        )
+                    )
+                )
                 cameraManager.mode = FollowingCamera(id, PlayerController::getCameraPosition)
                 modeManager.mode = Mode.RUN
             }
