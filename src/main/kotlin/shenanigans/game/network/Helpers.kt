@@ -36,7 +36,7 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(NormalBlock::class),
         SendableClass(OscillatingBlock::class),
         SendableClass(RespawnBlock::class),
-        SendableClass(SlipperyBlock::class),
+        SendableClass(IceBlock::class),
         SendableClass(SpikeBlock::class),
         SendableClass(TrampolineBlock::class),
         SendableClass(StickyBlock::class),

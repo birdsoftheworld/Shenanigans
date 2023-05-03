@@ -9,6 +9,6 @@ class SpikeBlock : Block() {
     override val texture = SpikeBlock.texture
 
     companion object {
-        val texture = TextureManager.createTexture(TextureKey("hole"), "/hole.png")
+        val texture = TextureManager.createTexture(TextureKey("spike"), "/spike.png")
     }
 }

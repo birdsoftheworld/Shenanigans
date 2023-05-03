@@ -5,6 +5,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.game.control.CameraManager
 import shenanigans.game.control.FollowingCamera
@@ -20,80 +21,51 @@ class BuildLevelSystem : System {
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        //Sprites
+        val playerSprite = Sprite(PlayerController.TEXTURE.getRegion(), PlayerController.SHAPE_BASE)
         //Shapes
         val floorShape = Rectangle(320f, 64f)
 
-        //Oscillating Block
-        insertBlock(
-            lifecycle,
-            OscillatingBlock(128f, Vector2f(100f, 500f), .02f),
-            Vector3f(100f, 500f, 0.5f)
-        )
+        val singleShape = Rectangle(64f, 64f)
 
-        insertBlock(
-            lifecycle,
-            NormalBlock(floorShape),
-            Vector3f(0f, 600f, 0.5f)
-        )
+        fun line(x : Int, y : Int, pos : Vector3f){
+            for (c in 1..x) {
+                for (r in 1..y) {
+                    insertBlock(
+                        lifecycle,
+                        NormalBlock(singleShape),
+                        Vector3f(pos.x + c * 32, pos.y + r * 32, 100f)
+                    )
+                }
+            }
+        }
 
-        // slippery blocks
-        insertBlock(
-            lifecycle,
-            SlipperyBlock(),
-            Vector3f(200f, 600f, 1f)
-        )
-        insertBlock(
-            lifecycle,
-            SlipperyBlock(),
-            Vector3f(250f, 600f, 1f)
-        )
-        insertBlock(
-            lifecycle,
-            SlipperyBlock(),
-            Vector3f(300f, 600f, 1f)
-        )
-        //sticky blocks
-        insertBlock(
-            lifecycle,
-            StickyBlock(),
-            Vector3f(0f, 600f, 1f)
-        )
-
-        insertBlock(
-            lifecycle,
-            StickyBlock(),
-            Vector3f(0f, 600f, 1f)
-        )
+        fun box(x : Int, y : Int, pos : Vector3f){
+            line(x, 1, pos)
+            pos.y+=y*32
+            line(x, 1, pos)
+            pos.y-=y*32
+            line(1, y, pos)
+            pos.x+=x*32
+            line(1, y, pos)
+        }
 
         //Player Respawn Block
         insertBlock(
             lifecycle,
             RespawnBlock(),
-            Vector3f(100f, 300f, 100f)
+            Vector3f(96f, 608f, 100f)
         )
 
+//        val player = Player(
+//            PlayerProperties()
+//        )
         //PLAYER
         val player = lifecycle.add(
-            PlayerController.createPlayer(Vector2f())
+            PlayerController.createPlayer(Vector2f(96f, 576f))
         )
 
-        insertBlock(
-            lifecycle,
-            NormalBlock(floorShape),
-            Vector3f(600f, 700f, 0.8f)
-        )
-
-        insertBlock(
-            lifecycle,
-            NormalBlock(floorShape),
-            Vector3f(800f, 600f, 0.8f)
-        )
-
-        insertBlock(
-            lifecycle,
-            NormalBlock(floorShape),
-            Vector3f(400f, 400f, 0.8f)
-        )
+        box(80,20, Vector3f(0f, 0f, .9f))
 
         lifecycle.add(
             sequenceOf(
