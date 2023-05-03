@@ -21,10 +21,22 @@ sealed class Block : Component {
             Sprite(texture.getRegion(), shape)
         )
     }
+
+    companion object {
+        fun initAll() {
+            GoalBlock
+            NormalBlock
+            OscillatingBlock
+            RespawnBlock
+            IceBlock
+            SpikeBlock
+            StickyBlock
+            TeleporterBlock
+            TrampolineBlock
+        }
+    }
 }
 
 
 //Textures
 val SQUARE_BLOCK_SHAPE: Rectangle = Rectangle(64f, 64f)
-
-//Polygons
