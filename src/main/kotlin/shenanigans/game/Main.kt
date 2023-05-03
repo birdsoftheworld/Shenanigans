@@ -15,6 +15,7 @@ import shenanigans.game.network.ClientRegistrationSystem
 import shenanigans.game.network.ClientUpdateSystem
 import shenanigans.game.network.sendables
 import shenanigans.game.player.PlayerController
+import shenanigans.game.render.DrawBackgroundSystem
 import shenanigans.game.state.ModeChangeSystem
 
 fun main() {
@@ -38,6 +39,7 @@ fun testScene(): Scene {
     scene.defaultSystems.add(ClientUpdateSystem())
     scene.defaultSystems.add(ClientConnectionSystem())
     scene.defaultSystems.add(ClientRegistrationSystem())
+    scene.defaultSystems.add(DrawBackgroundSystem())
 
     return scene
 }

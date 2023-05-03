@@ -32,6 +32,9 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
             out vec4 fragColor;
 
             void main() {
+                if(outColor.a == 0.0) {
+                    discard;
+                }
                 fragColor = outColor;
             }
         """.trimIndent(),

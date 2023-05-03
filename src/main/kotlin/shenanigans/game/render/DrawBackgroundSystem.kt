@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics.api.system
+package shenanigans.game.render
 
 import org.joml.Vector2i
 import org.joml.Vector3f
@@ -15,7 +15,11 @@ import kotlin.reflect.KClass
 
 class DrawBackgroundSystem : System {
     private val background =
-        TextureManager.createTexture(TextureKey("background"), "/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
+        TextureManager.createTexture(
+            TextureKey("background"),
+            "/background.png",
+            TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT)
+        )
     private val imageSize = Vector2i(400, 400)
 
     override fun executeRender(

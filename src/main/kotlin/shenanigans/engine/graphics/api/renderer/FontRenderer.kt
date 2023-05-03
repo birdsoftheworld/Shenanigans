@@ -17,6 +17,9 @@ class FontRenderer : TextureRenderer() {
 
                 void main() {
                     vec4 sampleColor = vec4(outColor.rgb, texture(textureSampler, outTexCoord).r * outColor.a);
+                    if(sampleColor.a == 0.0) {
+                        discard;
+                    }
                     fragColor = sampleColor;
                 }
             """.trimIndent()

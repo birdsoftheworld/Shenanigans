@@ -11,7 +11,6 @@ import shenanigans.engine.graphics.api.renderer.TextureRenderer
 import shenanigans.engine.graphics.api.resource.FontRendererResource
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
-import shenanigans.engine.graphics.api.system.DrawBackgroundSystem
 import shenanigans.engine.graphics.api.system.ShapeSystem
 import shenanigans.engine.graphics.api.system.SpriteSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
@@ -30,7 +29,6 @@ object Renderer {
     private lateinit var fontRenderer: FontRenderer
 
     private val builtinSystems: List<System> = listOf(
-//        DrawBackgroundSystem(),
         SpriteSystem(),
         ShapeSystem(),
         UISystem(),
@@ -53,11 +51,6 @@ object Renderer {
             GLUtil.setupDebugMessageCallback()
         }
         TextureManager.initialize()
-        glEnable(GL_MULTISAMPLE)
-        glEnable(GL_BLEND)
-        glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LESS)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     }
 
     fun discard() {
@@ -76,6 +69,14 @@ object Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         val resources = ResourcesView(renderResources, scene.sceneResources, engineResources)
+
+        glEnable(GL_MULTISAMPLE)
+
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
+
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         builtinSystems.forEach(scene.runSystem(System::executeRender, resources, eventQueues))
         scene.defaultSystems.forEach(scene.runSystem(System::executeRender, resources, eventQueues))
