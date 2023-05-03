@@ -1,11 +1,13 @@
 package shenanigans.game.network
 
+import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
 import shenanigans.engine.net.MessageEndpoint
 import shenanigans.engine.net.SendableClass
-import shenanigans.game.level.block.*
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.shapes.Rectangle
+import shenanigans.game.level.block.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -26,16 +28,19 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(
             EntityRegistrationPacket::class,
             instantiator = { EntityRegistrationPacket(UUID.randomUUID(), mapOf()) }),
-        SendableClass(EntityDeRegistrationPacket::class, instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) }),
+        SendableClass(
+            EntityDeRegistrationPacket::class,
+            instantiator = { EntityDeRegistrationPacket(UUID.randomUUID()) }),
         SendableClass(RegistrationStatus::class),
-        SendableClass(NormalBlock::class),
+        SendableClass(NormalBlock::class, instantiator = { NormalBlock(Rectangle(0f, 0f)) }),
         SendableClass(OscillatingBlock::class),
         SendableClass(RespawnBlock::class),
         SendableClass(SlipperyBlock::class),
         SendableClass(SpikeBlock::class),
         SendableClass(TrampolineBlock::class),
         SendableClass(StickyBlock::class),
-        SendableClass(Direction::class)
+        SendableClass(Direction::class),
+        SendableClass(Array<Vector2f>::class)
     )
 }
 

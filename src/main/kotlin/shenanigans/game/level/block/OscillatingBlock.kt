@@ -7,7 +7,6 @@ import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.Transform
-import shenanigans.engine.util.shapes.Polygon
 import shenanigans.game.control.MouseDraggable
 import kotlin.math.abs
 import kotlin.reflect.KClass
@@ -19,11 +18,12 @@ enum class Direction(sign: Int) {
 class OscillatingBlock(
     val distanceToOscillate: Float, var startPos: Vector2f, var speed: Float, var dir: Direction = Direction.Right,
 ) : Block() {
-    constructor() : this(50f, Vector2f(100f, 500f), .01f)
+    constructor() : this(128f, Vector2f(100f, 500f), .01f)
 
     override val solid = true
     override val shape = SQUARE_BLOCK_SHAPE
     override val texture = OscillatingBlock.texture
+
 
     fun rotate(clockwise: Boolean) {
         dir = if (clockwise) {
@@ -56,7 +56,7 @@ class OscillatingBlock(
     }
 
     companion object {
-        val texture = TextureManager.createTexture(TextureKey("arrow"), "/betterArrow.png")
+        val texture = TextureManager.createTexture(TextureKey("oscillator"), "/oscillator.png")
     }
 }
 

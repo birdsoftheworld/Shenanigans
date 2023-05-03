@@ -84,6 +84,8 @@ data class Player(
 
     val velocity: Vector2f = Vector2f(),
 
+    var won : Boolean = false,
+
     var onGround: Boolean = false,
     var onCeiling: Boolean = false,
     var wall: WallStatus = WallStatus.Off,
@@ -108,8 +110,8 @@ class PlayerController : System {
         lifecycle: EntitiesLifecycle
     ) {
         val keyboard = resources.get<KeyboardState>()
-        val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
-
+        var deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+        var friction = 0f
         query(setOf(Player::class, Transform::class, Collider::class)).forEach { entity ->
             val player = entity.component<Player>().get()
             val transform = entity.component<Transform>()
@@ -132,6 +134,13 @@ class PlayerController : System {
                         if (event.normal.y < 0) {
                             player.onGround = true
                             velocity.y = velocity.y.coerceAtMost(0f)
+                            if (e.componentOpt<TrampolineBlock>() != null) {
+                                velocity.y = -properties.trampolineSpeed
+                                player.currentJump = TrampolineJump
+                            }
+                            if (e.componentOpt<OscillatingBlock>() != null) {
+                                friction = e.component<OscillatingBlock>().get().speed
+                            }
                         } else if (event.normal.y > 0) {
                             player.onCeiling = true
                             velocity.y = velocity.y.coerceAtLeast(0f)
@@ -147,19 +156,21 @@ class PlayerController : System {
                     if (e.componentOpt<SpikeBlock>() != null) {
                         respawn(entity, query)
                     }
+                    if (e.componentOpt<GoalBlock>() != null) {
+                        println("CONGRATS YOU PASSED THE LEVEL")
+                        player.won = true
+                        deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()/5
+                        if(player.onGround){
+                            deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+                            player.won = false
+                            respawn(entity, query)
+                        }
+                    }
                     if (e.componentOpt<StickyBlock>() != null) {
                         sticky = true
                     }
                     if (e.componentOpt<SlipperyBlock>() != null) {
                         slippery = true
-                    }
-                    if (e.componentOpt<TrampolineBlock>() != null) {
-                        velocity.y = -properties.trampolineSpeed
-                        player.currentJump = TrampolineJump
-                    }
-                    val teleporter = e.componentOpt<TeleporterBlock>()
-                    if (teleporter != null && teleporter.get().num % 2 == 0) {
-                        // fixme
                     }
                 }
             }
@@ -201,18 +212,21 @@ class PlayerController : System {
             }
 
             var direction = 0f
-            //left
-            if (keyboard.isPressed(Key.A)) {
-                direction -= 1f
-            }
-            //right
-            if (keyboard.isPressed(Key.D)) {
-                direction += 1f
+            if(!player.won){
+                //left
+                if (keyboard.isPressed(Key.A)) {
+                    direction -= 1f
+                }
+                //right
+                if (keyboard.isPressed(Key.D)) {
+                    direction += 1f
+                }
+
+                if (keyboard.isPressed(Key.R)) {
+                    respawn(entity, query)
+                }
             }
 
-            if (keyboard.isPressed(Key.R)) {
-                respawn(entity, query)
-            }
 
             val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
             if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
@@ -312,7 +326,11 @@ class PlayerController : System {
                 velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
             }
 
+
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+
+
+            pos.x += friction
             entity.component<Player>().mutate()
             transform.mutate()
         }
@@ -424,10 +442,10 @@ class PlayerController : System {
             return p
         }
 
-        val SHAPE_BASE: Rectangle = Rectangle(40f, 70f)
-        val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 40f)
+        val SHAPE_BASE: Rectangle = Rectangle(40f, 72f)
+        val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 48f)
 
-        val TEXTURE = TextureManager.createTexture(TextureKey("player"),"/playerTexture.png")
+        val TEXTURE = TextureManager.createTexture(TextureKey("player"),"/player.png")
 
         val AUDIO_JUMP = AudioClip.fromFile("/jump.wav")
     }

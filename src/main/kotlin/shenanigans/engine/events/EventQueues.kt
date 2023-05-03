@@ -17,7 +17,7 @@ internal data class RealEventQueues<Q : EventQueue?>(
     override val own: Q
 ) : EventQueues<Q>
 
-internal class FakeEventQueues : EventQueues<LocalEventQueue> {
+internal object FakeEventQueues : EventQueues<LocalEventQueue> {
     override val network: NetworkEventQueue by FakeProperty
     override val physics: LocalEventQueue by FakeProperty
     override val render: LocalEventQueue by FakeProperty
@@ -31,7 +31,7 @@ internal class FakeEventQueues : EventQueues<LocalEventQueue> {
 }
 
 fun <Q : EventQueue?> fakeEventQueues(): EventQueues<Q> {
-    return FakeEventQueues() as EventQueues<Q>
+    return FakeEventQueues as EventQueues<Q>
 }
 
 fun <Q : EventQueue?> eventQueues(

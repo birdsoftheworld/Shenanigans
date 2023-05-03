@@ -21,12 +21,12 @@ class BuildLevelSystem : System {
         lifecycle: EntitiesLifecycle
     ) {
         //Shapes
-        val floorShape = Rectangle(600f, 50f)
+        val floorShape = Rectangle(320f, 64f)
 
         //Oscillating Block
         insertBlock(
             lifecycle,
-            OscillatingBlock(50f, Vector2f(100f, 500f), .01f),
+            OscillatingBlock(128f, Vector2f(100f, 500f), .02f),
             Vector3f(100f, 500f, 0.5f)
         )
 
@@ -52,14 +52,13 @@ class BuildLevelSystem : System {
             SlipperyBlock(),
             Vector3f(300f, 600f, 1f)
         )
-        //sticky block
+        //sticky blocks
         insertBlock(
             lifecycle,
             StickyBlock(),
             Vector3f(0f, 600f, 1f)
         )
 
-        //sticky block
         insertBlock(
             lifecycle,
             StickyBlock(),
@@ -70,7 +69,7 @@ class BuildLevelSystem : System {
         insertBlock(
             lifecycle,
             RespawnBlock(),
-            Vector3f(100f, 500f, 0.5f)
+            Vector3f(100f, 300f, 100f)
         )
 
         //PLAYER

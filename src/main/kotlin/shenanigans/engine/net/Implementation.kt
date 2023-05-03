@@ -21,9 +21,18 @@ interface NetworkImplementation {
     fun registerSendable(sendable: SendableClass<out Any>)
 }
 
+object NullNetwork : NetworkImplementation {
+    override fun connect() {}
+    override fun sendMessage(msg: Message) {}
+    override fun getEndpoint(): MessageEndpoint = MessageEndpoint.Server
+    override fun registerListener(listener: (Message) -> Unit) {}
+    override fun registerSendable(sendable: SendableClass<out Any>) {}
+
+}
+
 class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
-    constructor() : this(KryoServer())
+    constructor() : this(KryoServer(65536, 16384))
 
     override fun connect() {
         kryoServer.start()
@@ -94,7 +103,7 @@ class Server(private val kryoServer: KryoServer) : NetworkImplementation {
 
 class Client(private val kryoClient: KryoClient) : NetworkImplementation {
 
-    constructor() : this(KryoClient())
+    constructor() : this(KryoClient(65536, 16384))
 
     override fun connect() {
         kryoClient.start()

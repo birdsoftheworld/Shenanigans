@@ -10,6 +10,7 @@ import shenanigans.engine.net.Client
 import shenanigans.engine.net.Network
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.scene.Scene
+import shenanigans.engine.timer.TimerSystem
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.camera.OrthoCamera
 import shenanigans.engine.window.Window
@@ -19,7 +20,8 @@ import shenanigans.engine.window.events.MouseState
 import kotlin.system.exitProcess
 import java.lang.System as JSystem
 
-class ClientEngine(initScene: Scene, networkImpl: Network = Network(Client())) : Engine(initScene = initScene, networkImpl) {
+class ClientEngine(initScene: Scene, networkImpl: Network = Network(Client())) :
+    Engine(initScene = initScene, networkImpl) {
     private lateinit var window: Window
 
     override fun init() {
@@ -63,7 +65,7 @@ class ClientEngine(initScene: Scene, networkImpl: Network = Network(Client())) :
             previousTime = currentTime
 
             val physicsResources = ResourcesView(scene.sceneResources, engineResources)
-            scene.defaultSystems.forEach(
+            scene.defaultSystems.asSequence().plus(builtinSystems).forEach(
                 scene.runSystem(
                     System::executePhysics,
                     physicsResources,
@@ -72,7 +74,7 @@ class ClientEngine(initScene: Scene, networkImpl: Network = Network(Client())) :
             )
 
             val networkResources = ResourcesView(scene.sceneResources, engineResources)
-            scene.defaultSystems.forEach(
+            scene.defaultSystems.asSequence().plus(builtinSystems).forEach(
                 scene.runSystem(
                     System::executeNetwork,
                     networkResources,
