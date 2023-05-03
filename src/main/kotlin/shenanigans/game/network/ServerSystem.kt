@@ -96,6 +96,6 @@ class ServerRegistrationSystem : NetworkRegistrationSystem() {
             registrationPacket.id,
         )
         Logger.log("Entity Registration", registrationPacket.id.toString())
-        eventQueue.queueLater(registrationPacket)
+        eventQueue.queueNetwork(registrationPacket, MessageDelivery.ReliableOrdered)
     }
 }

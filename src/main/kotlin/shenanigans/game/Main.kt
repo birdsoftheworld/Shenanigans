@@ -1,14 +1,21 @@
 package shenanigans.game
 
+import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
+import shenanigans.engine.ecs.*
+import shenanigans.engine.ecs.utils.AddEntitiesSystem
+import shenanigans.engine.events.EventQueues
+import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.net.Client
 import shenanigans.engine.net.Network
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
 import shenanigans.game.control.CameraControlSystem
+import shenanigans.game.control.CameraManager
+import shenanigans.game.control.FollowingCamera
 import shenanigans.game.control.MouseMovementSystem
-import shenanigans.game.level.BuildLevelSystem
 import shenanigans.game.level.InsertNewEntitiesSystem
+import shenanigans.game.level.block.Block
 import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.ClientConnectionSystem
 import shenanigans.game.network.ClientRegistrationSystem
@@ -17,11 +24,15 @@ import shenanigans.game.network.sendables
 import shenanigans.game.player.PlayerController
 import shenanigans.game.render.DrawBackgroundSystem
 import shenanigans.game.state.ModeChangeSystem
+import shenanigans.game.state.ModeManager
+import kotlin.reflect.KClass
 
 fun main() {
     val engine = ClientEngine(testScene(), Network(Client(), sendables()))
 
-    engine.runPhysicsOnce(BuildLevelSystem())
+    Block.initAll()
+
+    engine.runPhysicsOnce(CreatePlayer)
 
     engine.run()
 }
@@ -42,4 +53,29 @@ fun testScene(): Scene {
     scene.defaultSystems.add(DrawBackgroundSystem())
 
     return scene
+}
+
+object CreatePlayer : System {
+    override fun executePhysics(
+        resources: ResourcesView,
+        eventQueues: EventQueues<LocalEventQueue>,
+        query: (Iterable<KClass<out Component>>) -> QueryView,
+        lifecycle: EntitiesLifecycle
+    ) {
+        val player = lifecycle.add(
+            PlayerController.createPlayer(Vector2f())
+        )
+
+        lifecycle.add(
+            sequenceOf(
+                CameraManager(FollowingCamera(player, PlayerController::getCameraPosition))
+            )
+        )
+
+        lifecycle.add(
+            sequenceOf(
+                ModeManager()
+            )
+        )
+    }
 }
