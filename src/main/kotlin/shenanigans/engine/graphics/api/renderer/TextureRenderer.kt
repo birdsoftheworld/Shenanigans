@@ -46,6 +46,9 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
 
             void main() {
                 vec4 sample = texture(textureSampler, outTexCoord);
+                if(sample.a == 0.0) {
+                    discard;
+                }
                 fragColor = vec4(sample.rgb * outColor.rgb, sample.a * outColor.a);
             }
         """.trimIndent()

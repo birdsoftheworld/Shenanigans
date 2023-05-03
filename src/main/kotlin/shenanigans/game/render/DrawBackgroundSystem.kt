@@ -1,4 +1,4 @@
-package shenanigans.engine.graphics.api.system
+package shenanigans.game.render
 
 import org.joml.Vector2i
 import org.joml.Vector3f
