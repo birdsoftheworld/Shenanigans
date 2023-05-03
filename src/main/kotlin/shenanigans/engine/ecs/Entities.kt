@@ -66,9 +66,13 @@ class ComponentView<T : Component>(private val stored: StoredComponent) {
         stored.version++
     }
 
-    fun replace(new: T) {
+    fun replace(new: T): T {
+        val old = get()
+
         stored.component = new
-        stored.version++
+        mutate()
+
+        return old
     }
 
     operator fun component1(): T {
