@@ -30,7 +30,7 @@ data class StoredEntity(
     val components: Map<KClass<out Component>, StoredComponent>
 )
 
-data class StoredComponent(val component: Component, var version: Int = 0)
+data class StoredComponent(var component: Component, var version: Int = 0)
 
 class EntityView internal constructor(
     entities: Entities,
@@ -63,6 +63,11 @@ class ComponentView<T : Component>(private val stored: StoredComponent) {
     }
 
     fun mutate() {
+        stored.version++
+    }
+
+    fun replace(new: T) {
+        stored.component = new
         stored.version++
     }
 
