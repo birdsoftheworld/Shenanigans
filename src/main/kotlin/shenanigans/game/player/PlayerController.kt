@@ -1,6 +1,7 @@
 package shenanigans.game.player
 
 import org.joml.Vector2f
+import org.joml.Vector2fc
 import org.joml.Vector3f
 import org.joml.Vector3fc
 import shenanigans.engine.audio.AudioClip
@@ -170,7 +171,7 @@ class PlayerController : System {
             val pos = transform.get().position
 
             val holdingCrouch = keyboard.isPressed(Key.S)
-            if (!player.crouching && holdingCrouch && player.onGround) {
+            if (!player.crouching && holdingCrouch) {
                 player.crouching = true
                 entity.changeCrouch(true)
             } else if (player.crouching && !holdingCrouch) {
@@ -293,7 +294,7 @@ class PlayerController : System {
             if (!player.onGround) {
                 player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
                 player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
-                if (properties.fallingCountsAsJumping && player.currentJump == null && player.coyoteTime <= 0 && player.wallCoyoteTime <= 0) {
+                if (properties.fallingCountsAsJumping && player.currentJump == null && player.coyoteTime <= 0 && (player.wallCoyoteTime <= 0 || player.crouching)) {
                     player.jumps--
                     player.currentJump = FallJump
                 }
@@ -396,12 +397,12 @@ class PlayerController : System {
     }
 
     companion object {
-        fun createPlayer(position: Vector3fc): Sequence<Component> {
+        fun createPlayer(position: Vector2fc): Sequence<Component> {
             val player = Player(
                 PlayerProperties()
             )
             val playerTransform = Transform(
-                Vector3f(position)
+                Vector3f(position.x() - SHAPE_BASE.width / 2, position.y() - SHAPE_BASE.height / 2, 100f)
             )
 
             return sequenceOf(

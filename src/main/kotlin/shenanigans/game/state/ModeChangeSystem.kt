@@ -1,5 +1,6 @@
 package shenanigans.game.state
 
+import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
@@ -27,16 +28,16 @@ class ModeChangeSystem : System {
 
         val keyboard = resources.get<KeyboardState>()
         if (keyboard.isJustPressed(Key.B)) {
-            if (modeManager.mode == Mode.PLAY) {
+            if (modeManager.mode == Mode.RUN) {
                 for (entityView in query(setOf(Player::class))) {
                     lifecycle.del(entityView.id)
                 }
                 cameraManager.mode = MovableCamera(Vector3f(cameraManager.lastPosition))
-                modeManager.mode = Mode.PLACE
+                modeManager.mode = Mode.BUILD
             } else {
-                val id = lifecycle.add(PlayerController.createPlayer(cameraManager.lastPosition))
+                val id = lifecycle.add(PlayerController.createPlayer(Vector2f(cameraManager.lastPosition.x(), cameraManager.lastPosition.y())))
                 cameraManager.mode = FollowingCamera(id, PlayerController::getCameraPosition)
-                modeManager.mode = Mode.PLAY
+                modeManager.mode = Mode.RUN
             }
             mmComponent.mutate()
         }

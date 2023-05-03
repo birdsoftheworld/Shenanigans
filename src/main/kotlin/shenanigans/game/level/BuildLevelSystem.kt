@@ -75,7 +75,7 @@ class BuildLevelSystem : System {
 
         //PLAYER
         val player = lifecycle.add(
-            PlayerController.createPlayer(Vector3f())
+            PlayerController.createPlayer(Vector2f())
         )
 
         insertBlock(

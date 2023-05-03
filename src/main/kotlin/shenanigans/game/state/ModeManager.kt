@@ -3,10 +3,10 @@ package shenanigans.game.state
 import shenanigans.engine.ecs.Component
 
 enum class Mode {
-    PLACE,
-    PLAY
+    BUILD,
+    RUN
 }
 
 class ModeManager : Component {
-    var mode: Mode = Mode.PLAY
+    var mode: Mode = Mode.RUN
 }
