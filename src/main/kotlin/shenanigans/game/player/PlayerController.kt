@@ -84,7 +84,7 @@ data class Player(
 
     val velocity: Vector2f = Vector2f(),
 
-    var won : Boolean = false,
+    var won: Boolean = false,
 
     var onGround: Boolean = false,
     var onCeiling: Boolean = false,
@@ -159,8 +159,8 @@ class PlayerController : System {
                     if (e.componentOpt<GoalBlock>() != null) {
                         println("CONGRATS YOU PASSED THE LEVEL")
                         player.won = true
-                        deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()/5
-                        if(player.onGround){
+                        deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat() / 5
+                        if (player.onGround) {
                             deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
                             player.won = false
                             respawn(entity, query)
@@ -212,7 +212,7 @@ class PlayerController : System {
             }
 
             var direction = 0f
-            if(!player.won){
+            if (!player.won) {
                 //left
                 if (keyboard.isPressed(Key.A)) {
                     direction -= 1f
@@ -319,7 +319,7 @@ class PlayerController : System {
 
             if (!player.onGround && !jumped) {
                 velocity.y += gravity * deltaTimeF
-                pos.add(Vector3f(0f, gravity, 0f).mul(1/2 * deltaTimeF * deltaTimeF))
+                pos.add(Vector3f(0f, gravity, 0f).mul(1 / 2 * deltaTimeF * deltaTimeF))
             }
 
             if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
@@ -368,7 +368,7 @@ class PlayerController : System {
         return properties.gravity * gravityMultiplier
     }
 
-    private fun Player.jump(jump: Jump, sticky : Boolean) {
+    private fun Player.jump(jump: Jump, sticky: Boolean) {
         this.currentJump = jump
 
         val targetSpeed = if (jump is WallJump) {
@@ -383,7 +383,7 @@ class PlayerController : System {
         }
 
         var jumpSpeed = -targetSpeed
-        if(sticky) {
+        if (sticky) {
             jumpSpeed *= .5f
         }
         if (velocity.y < 0f) {
@@ -445,7 +445,7 @@ class PlayerController : System {
         val SHAPE_BASE: Rectangle = Rectangle(40f, 72f)
         val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 48f)
 
-        val TEXTURE = TextureManager.createTexture(TextureKey("player"),"/player.png")
+        val TEXTURE = TextureManager.createTexture(TextureKey("player"), "/player.png")
 
         val AUDIO_JUMP = AudioClip.fromFile("/jump.wav")
     }

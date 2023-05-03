@@ -13,7 +13,11 @@ import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 class ClientUpdateSystem : NetworkUpdateSystem() {
-    override fun getUpdatePacket(components: Iterable<KClass<out Component>>, entities: QueryView, eventQueue: NetworkEventQueue): EntityUpdatePacket {
+    override fun getUpdatePacket(
+        components: Iterable<KClass<out Component>>,
+        entities: QueryView,
+        eventQueue: NetworkEventQueue
+    ): EntityUpdatePacket {
         return EntityUpdatePacket(
             entities.filter {
                 val synchronized = it.component<Synchronized>()
@@ -41,7 +45,8 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
                 return@packet
             }
 
-            entity.component<Transform>().get().position.lerp(((packetEntity.value)[Transform::class]!! as Transform).position, 1f / 3f)
+            entity.component<Transform>()
+                .get().position.lerp(((packetEntity.value)[Transform::class]!! as Transform).position, 1f / 3f)
             entity.component<Transform>().mutate()
 
             entity.component<Collider>().get().polygon = (packetEntity.value[Collider::class]!! as Collider).polygon
@@ -52,23 +57,25 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
     }
 }
 
-class ClientConnectionSystem: NetworkConnectionSystem() {
+class ClientConnectionSystem : NetworkConnectionSystem() {
     override fun connect(
         event: ConnectionEvent,
         entities: QueryView,
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
-    ) {}
+    ) {
+    }
 
     override fun disconnect(
         event: ConnectionEvent,
         entities: QueryView,
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
-    ) {}
+    ) {
+    }
 }
 
-class ClientRegistrationSystem: NetworkRegistrationSystem(){
+class ClientRegistrationSystem : NetworkRegistrationSystem() {
 
     override fun executeNetwork(
         resources: ResourcesView,
@@ -98,8 +105,10 @@ class ClientRegistrationSystem: NetworkRegistrationSystem(){
     ) {
         if (entities[registrationPacket.id] != null) {
             val entitySynchronization = entities[registrationPacket.id]!!.component<Synchronized>()
-            entitySynchronization.get().registration = (registrationPacket.entity[Synchronized::class]!! as Synchronized).registration
-            entitySynchronization.get().ownerEndpoint = (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
+            entitySynchronization.get().registration =
+                (registrationPacket.entity[Synchronized::class]!! as Synchronized).registration
+            entitySynchronization.get().ownerEndpoint =
+                (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
             entitySynchronization.mutate()
 
             Logger.log("Network System", "WHaHOOO: " + registrationPacket.id)

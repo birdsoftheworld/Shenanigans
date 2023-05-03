@@ -6,7 +6,7 @@ import org.joml.Vector2fc
 import org.joml.Vector4f
 import shenanigans.engine.util.shapes.Polygon
 
-fun Polygon.isPointInside(point: Vector2fc, transform: Transform) : Boolean{
+fun Polygon.isPointInside(point: Vector2fc, transform: Transform): Boolean {
     val transformMatrix = Matrix4f()
 
     transformMatrix.setToTransform(transform.position, transform.rotation, transform.scale)
@@ -21,17 +21,18 @@ fun Polygon.isPointInside(point: Vector2fc, transform: Transform) : Boolean{
 
     var count = 0
     for (i in vertices.indices) {
-        if(pointProjectionIntersectsLine(
+        if (pointProjectionIntersectsLine(
                 point,
-                Pair(transformedVertices[i], transformedVertices[(i + 1) % vertices.size]))
+                Pair(transformedVertices[i], transformedVertices[(i + 1) % vertices.size])
+            )
         ) {
-            count ++
+            count++
         }
     }
     return count % 2 == 1
 }
 
-private fun pointProjectionIntersectsLine(point: Vector2fc, line: Pair<Vector2fc, Vector2fc>) : Boolean {
+private fun pointProjectionIntersectsLine(point: Vector2fc, line: Pair<Vector2fc, Vector2fc>): Boolean {
     return ((((line.first.y() > point.y() && line.second.y() < point.y()) ||
             (line.first.y() < point.y() && line.second.y() > point.y()))) &&
             (point.x() < line.first.x() || point.x() < line.second.x()))

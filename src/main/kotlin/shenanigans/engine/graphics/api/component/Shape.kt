@@ -9,6 +9,6 @@ import shenanigans.engine.util.shapes.Polygon
  */
 
 data class Shape(
-    val polygon : Polygon,
+    val polygon: Polygon,
     var color: Color,
 ) : Component

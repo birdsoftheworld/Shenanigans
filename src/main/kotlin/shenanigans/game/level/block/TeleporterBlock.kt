@@ -11,12 +11,12 @@ import shenanigans.engine.util.Transform
 import shenanigans.game.control.MouseDraggable
 import kotlin.reflect.KClass
 
-data class TeleporterBlock(val num : Int) : Block() {
+data class TeleporterBlock(val num: Int) : Block() {
     override val solid = false
     override val shape = SQUARE_BLOCK_SHAPE
     override val texture: Texture = TeleporterBlock.texture
 
-    var targetPos = Vector3f(0f,0f,0f)
+    var targetPos = Vector3f(0f, 0f, 0f)
 
     companion object {
         val texture = TextureManager.createTexture(TextureKey("teleporterA"), "/teleporterA.png")
@@ -34,7 +34,7 @@ class TeleporterSystem : System {
 
         entities.forEach { entity ->
             val tpBlock = entity.component<TeleporterBlock>()
-            if(tpBlock.get().num == 0) {
+            if (tpBlock.get().num == 0) {
                 entities.forEach { entity2 ->
                     if (entity2.component<TeleporterBlock>().get().num == 1) {
                         tpBlock.get().targetPos = entity2.component<Transform>().get().position

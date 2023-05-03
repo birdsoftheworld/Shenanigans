@@ -27,7 +27,7 @@ abstract class NetworkUpdateSystem : System {
         components: Iterable<KClass<out Component>>,
         entities: QueryView,
         eventQueue: NetworkEventQueue
-    ) : EntityUpdatePacket
+    ): EntityUpdatePacket
 
     abstract fun updateEntities(
         updatePacket: EntityUpdatePacket,
@@ -36,7 +36,7 @@ abstract class NetworkUpdateSystem : System {
     )
 }
 
-abstract class NetworkConnectionSystem() : System {
+abstract class NetworkConnectionSystem : System {
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,
@@ -67,7 +67,7 @@ abstract class NetworkConnectionSystem() : System {
     )
 }
 
-abstract class NetworkRegistrationSystem: System {
+abstract class NetworkRegistrationSystem : System {
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,

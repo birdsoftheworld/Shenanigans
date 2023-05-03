@@ -6,7 +6,11 @@ import shenanigans.engine.graphics.Mesh
 import shenanigans.engine.graphics.VertexAttribute
 import shenanigans.engine.graphics.shader.Shader
 
-abstract class AbstractRenderer(attribs: Set<VertexAttribute>, val vertexCapacity: Int = DEFAULT_MAX_VERTICES, val indicesCapacity: Int = DEFAULT_MAX_INDICES) {
+abstract class AbstractRenderer(
+    attribs: Set<VertexAttribute>,
+    val vertexCapacity: Int = DEFAULT_MAX_VERTICES,
+    val indicesCapacity: Int = DEFAULT_MAX_INDICES
+) {
 
     protected companion object {
         const val DEFAULT_MAX_VERTICES = 1024
@@ -116,7 +120,7 @@ abstract class AbstractRenderer(attribs: Set<VertexAttribute>, val vertexCapacit
     }
 
     protected fun flush() {
-        if(lowestIndex != 0) {
+        if (lowestIndex != 0) {
             this.writeToMesh()
             this.render()
         }
@@ -125,7 +129,7 @@ abstract class AbstractRenderer(attribs: Set<VertexAttribute>, val vertexCapacit
     }
 
     protected fun flushIfFull(newVertices: Int, newIndices: Int) {
-        if(newIndices + nIndices >= indicesCapacity || newVertices + nVertices >= vertexCapacity) {
+        if (newIndices + nIndices >= indicesCapacity || newVertices + nVertices >= vertexCapacity) {
             flush()
         }
     }

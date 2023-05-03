@@ -3,7 +3,6 @@ package shenanigans.engine.ecs
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
 import java.util.*
-import javax.management.Query
 import kotlin.reflect.KClass
 
 class Entities {

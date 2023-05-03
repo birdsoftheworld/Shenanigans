@@ -29,10 +29,10 @@ class Mesh(nVertices: Int, nIndices: Int, private val vertexAttribs: Set<VertexA
      * the number of indices to draw. change with `writeIndices`
      */
     var indicesCount = 0
-    private set
+        private set
 
     init {
-        if(!vertexAttribs.contains(VertexAttribute.POSITION)) {
+        if (!vertexAttribs.contains(VertexAttribute.POSITION)) {
             throw IllegalArgumentException("Must include position in vertex attributes")
         }
 
@@ -42,7 +42,13 @@ class Mesh(nVertices: Int, nIndices: Int, private val vertexAttribs: Set<VertexA
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
         for (vertexAttrib in vertexAttribs) {
-            defineVertexAttrib(nVertices, vertexAttrib.typeSize, vertexAttrib.attributeSize, vertexAttrib.index, vertexAttrib.name)
+            defineVertexAttrib(
+                nVertices,
+                vertexAttrib.typeSize,
+                vertexAttrib.attributeSize,
+                vertexAttrib.index,
+                vertexAttrib.name
+            )
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -62,7 +68,7 @@ class Mesh(nVertices: Int, nIndices: Int, private val vertexAttribs: Set<VertexA
     /**
      * create a buffer of `size` elements of `typeSize` in bytes with gl type `type`
      */
-    private fun createBuffer(size: Int, typeSize: Int, type: Int, name: String) : Int {
+    private fun createBuffer(size: Int, typeSize: Int, type: Int, name: String): Int {
         return createBuffer(size * typeSize, type, name)
     }
 

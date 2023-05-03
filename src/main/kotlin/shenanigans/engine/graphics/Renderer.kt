@@ -11,7 +11,6 @@ import shenanigans.engine.graphics.api.renderer.TextureRenderer
 import shenanigans.engine.graphics.api.resource.FontRendererResource
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
-import shenanigans.engine.graphics.api.system.DrawBackgroundSystem
 import shenanigans.engine.graphics.api.system.ShapeSystem
 import shenanigans.engine.graphics.api.system.SpriteSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
@@ -67,7 +66,12 @@ object Renderer {
         TextureManager.discard()
     }
 
-    fun renderGame(window: Window, scene: Scene, engineResources: Resources, eventQueues: EventQueues<LocalEventQueue>) {
+    fun renderGame(
+        window: Window,
+        scene: Scene,
+        engineResources: Resources,
+        eventQueues: EventQueues<LocalEventQueue>
+    ) {
         val width = window.width
         val height = window.height
         glViewport(0, 0, width, height)

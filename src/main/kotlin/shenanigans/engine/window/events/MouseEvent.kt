@@ -5,7 +5,6 @@ import org.joml.Vector2fc
 import shenanigans.engine.ecs.Resource
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueue
-import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.events.StateMachine
 import shenanigans.engine.window.KeyModifier
 import shenanigans.engine.window.MouseButton

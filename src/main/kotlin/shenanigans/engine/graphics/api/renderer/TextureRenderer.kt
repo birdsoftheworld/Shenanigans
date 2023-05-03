@@ -7,9 +7,12 @@ import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.graphics.shader.Shader
 
-open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) : AbstractRenderer(setOf(
-    VertexAttribute.POSITION, VertexAttribute.TEX_COORDS, VertexAttribute.COLOR, VertexAttribute.ALPHA
-), vertexCapacity, indicesCapacity) {
+open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity: Int = DEFAULT_MAX_INDICES) :
+    AbstractRenderer(
+        setOf(
+            VertexAttribute.POSITION, VertexAttribute.TEX_COORDS, VertexAttribute.COLOR, VertexAttribute.ALPHA
+        ), vertexCapacity, indicesCapacity
+    ) {
     protected open val vertexShader: String =
         """
             #version 330
@@ -51,7 +54,7 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         vertexShader, fragShader
     )
 
-    private val texCoords = ArrayList<Float>(DEFAULT_MAX_VERTICES*2)
+    private val texCoords = ArrayList<Float>(DEFAULT_MAX_VERTICES * 2)
     private val colors = ArrayList<Float>(DEFAULT_MAX_VERTICES * 3)
     private val alphas = ArrayList<Float>(DEFAULT_MAX_VERTICES)
     private var texture: TextureKey? = null
@@ -62,10 +65,11 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
         shader.createUniform("projectionMatrix")
     }
 
-    fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) = textureRect(x, y, 0f, w, h, texture)
+    fun textureRect(x: Float, y: Float, w: Float, h: Float, texture: TextureRegion) =
+        textureRect(x, y, 0f, w, h, texture)
 
     fun textureRect(x: Float, y: Float, z: Float, w: Float, h: Float, texture: TextureRegion) {
-        if(this.texture != texture.getKey() && this.texture != null) {
+        if (this.texture != texture.getKey() && this.texture != null) {
             this.flush()
         }
         flushIfFull(4, 6)
@@ -127,7 +131,7 @@ open class TextureRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCa
     }
 
     override fun render() {
-        if(texture == null) return
+        if (texture == null) return
         val texture = TextureManager.getTexture(texture!!)
         texture.bind()
         super.render()

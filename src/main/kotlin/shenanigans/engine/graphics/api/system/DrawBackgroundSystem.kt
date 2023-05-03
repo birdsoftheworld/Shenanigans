@@ -15,7 +15,11 @@ import kotlin.reflect.KClass
 
 class DrawBackgroundSystem : System {
     private val background =
-        TextureManager.createTexture(TextureKey("background"), "/background.png", TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT))
+        TextureManager.createTexture(
+            TextureKey("background"),
+            "/background.png",
+            TextureOptions(wrapping = TextureOptions.WrappingType.REPEAT)
+        )
     private val imageSize = Vector2i(400, 400)
 
     override fun executeRender(
@@ -34,9 +38,14 @@ class DrawBackgroundSystem : System {
         textureRenderer.start()
 
         textureRenderer.transformation = view
-        textureRenderer.textureRect(translation.x, translation.y, -1f, size.x.toFloat(), size.y.toFloat(), background.getRegion(
-            translation.x / imageSize.x, translation.y / imageSize.y, size.x.toFloat() / imageSize.x, size.y.toFloat() / imageSize.y
-        ))
+        textureRenderer.textureRect(
+            translation.x, translation.y, -1f, size.x.toFloat(), size.y.toFloat(), background.getRegion(
+                translation.x / imageSize.x,
+                translation.y / imageSize.y,
+                size.x.toFloat() / imageSize.x,
+                size.y.toFloat() / imageSize.y
+            )
+        )
         textureRenderer.textureRect(
             translation.x, translation.y, size.x.toFloat(), size.y.toFloat(), background.getRegion(
                 translation.x / imageSize.x,

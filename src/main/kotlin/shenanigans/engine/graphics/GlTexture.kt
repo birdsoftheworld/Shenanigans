@@ -1,16 +1,32 @@
 package shenanigans.engine.graphics
+
 import de.matthiasmann.twl.utils.PNGDecoder
 import org.lwjgl.opengl.GL30C.*
 import java.nio.Buffer
 import java.nio.ByteBuffer
 
-class GlTexture(val width: Int, val height: Int, private val buf: ByteBuffer, options: TextureOptions = TextureOptions()) {
+class GlTexture(
+    val width: Int,
+    val height: Int,
+    private val buf: ByteBuffer,
+    options: TextureOptions = TextureOptions()
+) {
     private val textureId = glGenTextures()
 
     init {
         glBindTexture(GL_TEXTURE_2D, textureId)
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-        glTexImage2D(GL_TEXTURE_2D, 0, options.textureType.glId, width, height, 0, options.textureType.glId, GL_UNSIGNED_BYTE, buf)
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            options.textureType.glId,
+            width,
+            height,
+            0,
+            options.textureType.glId,
+            GL_UNSIGNED_BYTE,
+            buf
+        )
 
         // wrapping
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, options.wrapping.glId)

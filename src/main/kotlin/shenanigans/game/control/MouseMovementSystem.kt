@@ -44,27 +44,31 @@ class MouseMovementSystem : System {
                 val x = dragOffset.x
                 val y = dragOffset.y
                 var scroll: Float
-                eventQueues.own.receive(MouseScrollEvent::class).forEach{ event ->
+                eventQueues.own.receive(MouseScrollEvent::class).forEach { event ->
                     scroll = event.offset.y()
-                    if(scroll > 0){
-                        transform.rotation -= (Math.PI/2).toFloat()
+                    if (scroll > 0) {
+                        transform.rotation -= (Math.PI / 2).toFloat()
                         dragOffset.x = y
                         dragOffset.y = -x
-                        if(entity.componentOpt<OscillatingBlock>() != null){
+                        if (entity.componentOpt<OscillatingBlock>() != null) {
                             entity.component<OscillatingBlock>().get().rotate(false)
                         }
                     }
-                    if(scroll < 0){
-                        transform.rotation += (Math.PI/2).toFloat()
+                    if (scroll < 0) {
+                        transform.rotation += (Math.PI / 2).toFloat()
                         dragOffset.x = -y
                         dragOffset.y = x
-                        if(entity.componentOpt<OscillatingBlock>() != null){
+                        if (entity.componentOpt<OscillatingBlock>() != null) {
                             entity.component<OscillatingBlock>().get().rotate(true)
                         }
                     }
                 }
 
-                transform.position.set(transformedPosition.x() + mouseDraggable.dragOffset.x(), transformedPosition.y() + mouseDraggable.dragOffset.y(),transform.position.z)
+                transform.position.set(
+                    transformedPosition.x() + mouseDraggable.dragOffset.x(),
+                    transformedPosition.y() + mouseDraggable.dragOffset.y(),
+                    transform.position.z
+                )
                 entity.component<Transform>().mutate()
             }
         }
@@ -80,12 +84,13 @@ class MouseMovementSystem : System {
                         Vector2f(
                             transformedPosition.x,
                             transformedPosition.y
-                        ), transform)
+                        ), transform
+                    )
                 ) {
-                    if(resources.get<KeyboardState>().isPressed(Key.Q)){
+                    if (resources.get<KeyboardState>().isPressed(Key.Q)) {
                         lifecycle.del(entity.id)
                     }
-                    if(event.action == MouseButtonAction.PRESS){
+                    if (event.action == MouseButtonAction.PRESS) {
 
                         mouseDraggable.dragOffset.x = transform.position.x - transformedPosition.x()
                         mouseDraggable.dragOffset.y = transform.position.y - transformedPosition.y()
@@ -93,7 +98,7 @@ class MouseMovementSystem : System {
                     }
                 }
                 if (entity.component<MouseDraggable>().get().grabbed) {
-                    if(event.action == MouseButtonAction.RELEASE) {
+                    if (event.action == MouseButtonAction.RELEASE) {
                         mouseDraggable.drop()
                         transform.position.x = round(transform.position.x / 50) * 50
                         transform.position.y = round(transform.position.y / 50) * 50
