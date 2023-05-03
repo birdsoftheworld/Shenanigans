@@ -11,6 +11,7 @@ import shenanigans.engine.graphics.api.renderer.TextureRenderer
 import shenanigans.engine.graphics.api.resource.FontRendererResource
 import shenanigans.engine.graphics.api.resource.ShapeRendererResource
 import shenanigans.engine.graphics.api.resource.TextureRendererResource
+import shenanigans.engine.graphics.api.system.DrawBackgroundSystem
 import shenanigans.engine.graphics.api.system.ShapeSystem
 import shenanigans.engine.graphics.api.system.SpriteSystem
 import shenanigans.engine.graphics.api.texture.TextureManager
@@ -29,7 +30,7 @@ object Renderer {
     private lateinit var fontRenderer: FontRenderer
 
     private val builtinSystems: List<System> = listOf(
-//        DrawBackgroundSystem(),
+        DrawBackgroundSystem(),
         SpriteSystem(),
         ShapeSystem(),
         UISystem(),

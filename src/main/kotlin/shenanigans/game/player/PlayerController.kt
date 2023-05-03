@@ -84,8 +84,6 @@ data class Player(
 
     val velocity: Vector2f = Vector2f(),
 
-    var won: Boolean = false,
-
     var onGround: Boolean = false,
     var onCeiling: Boolean = false,
     var wall: WallStatus = WallStatus.Off,
@@ -158,18 +156,12 @@ class PlayerController : System {
                     }
                     if (e.componentOpt<GoalBlock>() != null) {
                         println("CONGRATS YOU PASSED THE LEVEL")
-                        player.won = true
-                        deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat() / 5
-                        if (player.onGround) {
-                            deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
-                            player.won = false
-                            respawn(entity, query)
-                        }
+                        respawn(entity, query)
                     }
                     if (e.componentOpt<StickyBlock>() != null) {
                         sticky = true
                     }
-                    if (e.componentOpt<SlipperyBlock>() != null) {
+                    if (e.componentOpt<IceBlock>() != null) {
                         slippery = true
                     }
                 }
@@ -212,21 +204,18 @@ class PlayerController : System {
             }
 
             var direction = 0f
-            if (!player.won) {
-                //left
-                if (keyboard.isPressed(Key.A)) {
-                    direction -= 1f
-                }
-                //right
-                if (keyboard.isPressed(Key.D)) {
-                    direction += 1f
-                }
-
-                if (keyboard.isPressed(Key.R)) {
-                    respawn(entity, query)
-                }
+            //left
+            if (keyboard.isPressed(Key.A)) {
+                direction -= 1f
+            }
+            //right
+            if (keyboard.isPressed(Key.D)) {
+                direction += 1f
             }
 
+            if (keyboard.isPressed(Key.R)) {
+                respawn(entity, query)
+            }
 
             val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
             if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {

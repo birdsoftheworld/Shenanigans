@@ -100,8 +100,8 @@ class MouseMovementSystem : System {
                 if (entity.component<MouseDraggable>().get().grabbed) {
                     if (event.action == MouseButtonAction.RELEASE) {
                         mouseDraggable.drop()
-                        transform.position.x = round(transform.position.x / 50) * 50
-                        transform.position.y = round(transform.position.y / 50) * 50
+                        transform.position.x = round(transform.position.x / 64) * 64
+                        transform.position.y = round(transform.position.y / 64) * 64
                         if (entity.componentOpt<OscillatingBlock>() != null) {
                             entity.component<OscillatingBlock>().get().reset()
                             entity.component<OscillatingBlock>().get()
