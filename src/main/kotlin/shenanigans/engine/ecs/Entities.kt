@@ -37,19 +37,26 @@ class EntityView internal constructor(
     val id: UUID,
     @PublishedApi internal val entity: StoredEntity = entities.entities[id]!!
 ) {
-
-    inline fun <reified T : Component> component(): ComponentView<T> {
-        return componentOpt()!!
+    inline fun <reified T : Component> component(cl: KClass<T>): ComponentView<T> {
+        return componentOpt(cl)!!
     }
 
-    inline fun <reified T : Component> componentOpt(): ComponentView<T>? {
-        val stored = entity.components[T::class]
+    inline fun <reified T : Component> componentOpt(cl: KClass<T>): ComponentView<T>? {
+        val stored = entity.components[cl]
 
         return if (stored != null) {
             ComponentView(stored)
         } else {
             null
         }
+    }
+
+    inline fun <reified T : Component> component(): ComponentView<T> {
+        return component(T::class)
+    }
+
+    inline fun <reified T : Component> componentOpt(): ComponentView<T>? {
+        return componentOpt(T::class)
     }
 }
 
