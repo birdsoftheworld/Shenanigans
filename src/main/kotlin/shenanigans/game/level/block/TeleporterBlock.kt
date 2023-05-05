@@ -8,7 +8,6 @@ import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.Transform
-import shenanigans.game.control.MouseDraggable
 import kotlin.reflect.KClass
 
 class TeleporterBlock : Block() {
@@ -30,7 +29,7 @@ class TeleporterSystem : System {// Implement
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        val entities = query(setOf(MouseDraggable::class, Transform::class))
+        val entities = query(setOf(Transform::class))
 
         entities.forEach { entity ->
 

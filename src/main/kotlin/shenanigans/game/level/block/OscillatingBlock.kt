@@ -7,7 +7,6 @@ import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.Transform
-import shenanigans.game.control.MouseDraggable
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
@@ -68,32 +67,29 @@ class OscillatingBlocksSystem : System {
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        val entities = query(setOf(MouseDraggable::class, Transform::class, OscillatingBlock::class))
+        val entities = query(setOf(Transform::class, OscillatingBlock::class))
 
         entities.forEach { entity ->
             val pos = entity.component<Transform>().get().position
             val oscillatingBlock = entity.component<OscillatingBlock>().get()
-            val mouseDraggable = entity.component<MouseDraggable>().get()
-            if (!mouseDraggable.grabbed) {
-                if (abs(pos.x - oscillatingBlock.startPos.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos.y) > oscillatingBlock.distanceToOscillate) {
-                    oscillatingBlock.changeDirection()
+            if (abs(pos.x - oscillatingBlock.startPos.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos.y) > oscillatingBlock.distanceToOscillate) {
+                oscillatingBlock.changeDirection()
+            }
+            when (oscillatingBlock.dir) {
+                Direction.Up -> {
+                    pos.y -= oscillatingBlock.speed
                 }
-                when (oscillatingBlock.dir) {
-                    Direction.Up -> {
-                        pos.y -= oscillatingBlock.speed
-                    }
 
-                    Direction.Right -> {
-                        pos.x += oscillatingBlock.speed
-                    }
+                Direction.Right -> {
+                    pos.x += oscillatingBlock.speed
+                }
 
-                    Direction.Down -> {
-                        pos.y += oscillatingBlock.speed
-                    }
+                Direction.Down -> {
+                    pos.y += oscillatingBlock.speed
+                }
 
-                    Direction.Left -> {
-                        pos.x -= oscillatingBlock.speed
-                    }
+                Direction.Left -> {
+                    pos.x -= oscillatingBlock.speed
                 }
             }
         }

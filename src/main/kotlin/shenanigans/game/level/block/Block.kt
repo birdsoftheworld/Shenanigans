@@ -18,8 +18,12 @@ sealed class Block : Component {
             this,
             Transform(pos),
             Collider(shape, true, solid, false),
-            Sprite(texture.getRegion(), shape)
+            this.createSprite()
         )
+    }
+
+    fun createSprite(): Sprite {
+        return Sprite(texture.getRegion(), shape)
     }
 
     companion object {
@@ -37,6 +41,7 @@ sealed class Block : Component {
     }
 }
 
+const val GRID_SIZE = 64f
 
 //Textures
-val SQUARE_BLOCK_SHAPE: Rectangle = Rectangle(64f, 64f)
+val SQUARE_BLOCK_SHAPE: Rectangle = Rectangle(GRID_SIZE, GRID_SIZE)

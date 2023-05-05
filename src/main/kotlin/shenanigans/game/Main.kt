@@ -3,18 +3,13 @@ package shenanigans.game
 import org.joml.Vector2f
 import shenanigans.engine.ClientEngine
 import shenanigans.engine.ecs.*
-import shenanigans.engine.ecs.utils.AddEntitiesSystem
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.net.Client
 import shenanigans.engine.net.Network
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
-import shenanigans.game.control.CameraControlSystem
-import shenanigans.game.control.CameraManager
-import shenanigans.game.control.FollowingCamera
-import shenanigans.game.control.MouseMovementSystem
-import shenanigans.game.level.InsertNewEntitiesSystem
+import shenanigans.game.control.*
 import shenanigans.game.level.block.Block
 import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.ClientConnectionSystem
@@ -40,10 +35,9 @@ fun main() {
 fun testScene(): Scene {
     val scene = Scene()
 
-    scene.defaultSystems.add(InsertNewEntitiesSystem())
     scene.defaultSystems.add(OscillatingBlocksSystem())
     scene.defaultSystems.add(ModeChangeSystem())
-    scene.defaultSystems.add(MouseMovementSystem())
+    scene.defaultSystems.add(MousePlacementSystem())
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(CameraControlSystem())
@@ -75,6 +69,12 @@ object CreatePlayer : System {
         lifecycle.add(
             sequenceOf(
                 ModeManager()
+            )
+        )
+
+        lifecycle.add(
+            sequenceOf(
+                PlacementManager()
             )
         )
     }
