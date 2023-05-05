@@ -86,7 +86,8 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
         super.executeNetwork(resources, eventQueues, query, lifecycle)
 
         query(setOf(Synchronized::class)).filter {
-            it.component<Synchronized>().get().registration == RegistrationStatus.Disconnected
+            val sync = it.component<Synchronized>().get()
+            sync.registration == RegistrationStatus.Disconnected && sync.ownerEndpoint == eventQueues.network.getEndpoint()
         }.forEach {
             val synchronized = it.component<Synchronized>()
 
