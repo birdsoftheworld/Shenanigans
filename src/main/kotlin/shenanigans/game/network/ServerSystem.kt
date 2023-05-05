@@ -86,7 +86,7 @@ class ServerRegistrationSystem : NetworkRegistrationSystem() {
         lifecycle: EntitiesLifecycle
     ) {
         if (entities[registrationPacket.id] != null) {
-            Logger.warn("Entity Registration", "Duplicate ID: " + registrationPacket.id)
+            Logger.warn("Entity Registration", "Received registration pack with duplicate ID " + registrationPacket.id)
         }
 
         (registrationPacket.entity[Synchronized::class] as Synchronized).registration = RegistrationStatus.Registered
