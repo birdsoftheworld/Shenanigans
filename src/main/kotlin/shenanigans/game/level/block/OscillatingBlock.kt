@@ -6,6 +6,7 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
 import kotlin.math.abs
 import kotlin.reflect.KClass
@@ -17,8 +18,7 @@ enum class Direction(sign: Int) {
 class OscillatingBlock(
     val distanceToOscillate: Float, var startPos: Vector2f, var speed: Float, var dir: Direction = Direction.Right,
 ) : Block() {
-    constructor() : this(128f, Vector2f(100f, 500f), .01f)
-
+    constructor() : this(128f, Vector2f(100f, 500f), 500f)
     override val solid = true
     override val shape = SQUARE_BLOCK_SHAPE
     override val texture = OscillatingBlock.texture
@@ -72,24 +72,25 @@ class OscillatingBlocksSystem : System {
         entities.forEach { entity ->
             val pos = entity.component<Transform>().get().position
             val oscillatingBlock = entity.component<OscillatingBlock>().get()
+            var deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
             if (abs(pos.x - oscillatingBlock.startPos.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos.y) > oscillatingBlock.distanceToOscillate) {
                 oscillatingBlock.changeDirection()
             }
             when (oscillatingBlock.dir) {
                 Direction.Up -> {
-                    pos.y -= oscillatingBlock.speed
+                    pos.y -= oscillatingBlock.speed * deltaTimeF
                 }
 
                 Direction.Right -> {
-                    pos.x += oscillatingBlock.speed
+                    pos.x += oscillatingBlock.speed * deltaTimeF
                 }
 
                 Direction.Down -> {
-                    pos.y += oscillatingBlock.speed
+                    pos.y += oscillatingBlock.speed * deltaTimeF
                 }
 
                 Direction.Left -> {
-                    pos.x -= oscillatingBlock.speed
+                    pos.x -= oscillatingBlock.speed * deltaTimeF
                 }
             }
         }

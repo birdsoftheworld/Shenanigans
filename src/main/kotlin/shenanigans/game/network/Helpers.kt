@@ -2,6 +2,7 @@ package shenanigans.game.network
 
 import org.joml.Vector2f
 import shenanigans.engine.ecs.Component
+import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.net.MessageEndpoint
 import shenanigans.engine.net.SendableClass
 import shenanigans.engine.physics.Collider
@@ -45,9 +46,20 @@ fun sendables(): Set<SendableClass<Any>> {
     )
 }
 
-fun synchronizedComponents(): Set<KClass<out Component>> {
+class SynchronizedComponent(
+    val component: KClass<out Component>,
+    val updateClient: ((Component, Component) -> Component) = { _: Component, updated: Component -> updated },
+    val updateServer: ((Component, Component) -> Component) = { _: Component, updated: Component -> updated }
+)
+
+fun synchronizedComponents(): Set<SynchronizedComponent> {
     return setOf(
-        Transform::class,
-        Collider::class,
+        SynchronizedComponent(Transform::class, updateClient = {
+                initial: Component, updated : Component ->
+            (initial as Transform).position.lerp((updated as Transform).position, 1f / 3f)
+            return@SynchronizedComponent initial
+        }),
+        SynchronizedComponent(Collider::class),
+        SynchronizedComponent(Sprite::class),
     )
 }

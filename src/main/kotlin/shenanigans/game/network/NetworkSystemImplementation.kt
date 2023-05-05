@@ -5,9 +5,13 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
+import java.util.*
 import kotlin.reflect.KClass
 
 abstract class NetworkUpdateSystem : System {
+
+    protected var lastUpdate : WeakHashMap<UUID, Map<KClass<out Component>, Int>> = WeakHashMap()
+
     override fun executeNetwork(
         resources: ResourcesView,
         eventQueues: EventQueues<NetworkEventQueue>,
@@ -17,15 +21,33 @@ abstract class NetworkUpdateSystem : System {
         val entities = query(setOf(Synchronized::class))
 
         eventQueues.network.receive(EntityUpdatePacket::class).forEach {
-            updateEntities(it, entities, eventQueues.network)
+            updateEntities(
+                it,
+                entities,
+                eventQueues.network)
         }
 
-        eventQueues.network.queueNetwork(getUpdatePacket(synchronizedComponents(), entities, eventQueues.network))
+        eventQueues.network.queueNetwork(
+            getUpdatePacket(
+                synchronizedComponents(),
+                entities.filter { entity ->
+                        lastUpdate.containsKey(entity.id) &&
+                        lastUpdate[entity.id]!!.filter { lastVersion ->
+                            entity.component(lastVersion.key).version() != lastVersion.value
+                        }.isNotEmpty()
+                },
+                eventQueues.network
+            )
+        )
+
+        entities.forEach { entity ->
+            lastUpdate[entity.id] = synchronizedComponents().associate { it.component to entity.component(it.component).version() }
+        }
     }
 
     abstract fun getUpdatePacket(
-        components: Iterable<KClass<out Component>>,
-        entities: QueryView,
+        components: Set<SynchronizedComponent>,
+        entities: Sequence<EntityView>,
         eventQueue: NetworkEventQueue
     ): EntityUpdatePacket
 

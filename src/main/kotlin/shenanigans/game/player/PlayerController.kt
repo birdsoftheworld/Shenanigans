@@ -124,46 +124,44 @@ class PlayerController : System {
 
             val properties = player.properties
 
-            eventQueues.own.receive(CollisionEvent::class).forEach { event ->
-                val e = query(emptySet())[event.with]!!
-                if (entity.id == event.target) {
-                    val solid = e.component<Collider>().get().solid
-                    if (solid) {
-                        if (event.normal.y < 0) {
-                            player.onGround = true
-                            velocity.y = velocity.y.coerceAtMost(0f)
-                            if (e.componentOpt<TrampolineBlock>() != null) {
-                                velocity.y = -properties.trampolineSpeed
-                                player.currentJump = TrampolineJump
-                            }
-                            if (e.componentOpt<OscillatingBlock>() != null) {
-                                friction = e.component<OscillatingBlock>().get().speed
-                            }
-                        } else if (event.normal.y > 0) {
-                            player.onCeiling = true
-                            velocity.y = velocity.y.coerceAtLeast(0f)
+            eventQueues.own.receive(CollisionEvent::class).filter { entity.id == it.target }.forEach collision@{ event ->
+                val e = query(emptySet())[event.with] ?: return@collision
+                val solid = e.component<Collider>().get().solid
+                if (solid) {
+                    if (event.normal.y < 0) {
+                        player.onGround = true
+                        velocity.y = velocity.y.coerceAtMost(0f)
+                        if (e.componentOpt<TrampolineBlock>() != null) {
+                            velocity.y = -properties.trampolineSpeed
+                            player.currentJump = TrampolineJump
                         }
-                        if (event.normal.x < 0) {
-                            player.wall = WallStatus.Right
-                            velocity.x = velocity.x.coerceAtMost(0f)
-                        } else if (event.normal.x > 0) {
-                            player.wall = WallStatus.Left
-                            velocity.x = velocity.x.coerceAtLeast(0f)
+                        if (e.componentOpt<OscillatingBlock>() != null) {
+                            friction = e.component<OscillatingBlock>().get().speed
                         }
+                    } else if (event.normal.y > 0) {
+                        player.onCeiling = true
+                        velocity.y = velocity.y.coerceAtLeast(0f)
                     }
-                    if (e.componentOpt<SpikeBlock>() != null) {
-                        respawn(entity, query)
+                    if (event.normal.x < 0) {
+                        player.wall = WallStatus.Right
+                        velocity.x = velocity.x.coerceAtMost(0f)
+                    } else if (event.normal.x > 0) {
+                        player.wall = WallStatus.Left
+                        velocity.x = velocity.x.coerceAtLeast(0f)
                     }
-                    if (e.componentOpt<GoalBlock>() != null) {
-                        println("CONGRATS YOU PASSED THE LEVEL")
-                        respawn(entity, query)
-                    }
-                    if (e.componentOpt<StickyBlock>() != null) {
-                        sticky = true
-                    }
-                    if (e.componentOpt<IceBlock>() != null) {
-                        slippery = true
-                    }
+                }
+                if (e.componentOpt<SpikeBlock>() != null) {
+                    respawn(entity, query)
+                }
+                if (e.componentOpt<GoalBlock>() != null) {
+                    println("CONGRATS YOU PASSED THE LEVEL")
+                    respawn(entity, query)
+                }
+                if (e.componentOpt<StickyBlock>() != null) {
+                    sticky = true
+                }
+                if (e.componentOpt<IceBlock>() != null) {
+                    slippery = true
                 }
             }
 
