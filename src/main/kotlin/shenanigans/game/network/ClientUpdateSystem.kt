@@ -1,21 +1,17 @@
 package shenanigans.game.network
 
-import shenanigans.engine.ecs.Component
-import shenanigans.engine.ecs.EntitiesLifecycle
-import shenanigans.engine.ecs.QueryView
-import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
-import shenanigans.engine.physics.Collider
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
 import kotlin.reflect.KClass
 
 class ClientUpdateSystem : NetworkUpdateSystem() {
     override fun getUpdatePacket(
-        components: Iterable<KClass<out Component>>,
-        entities: QueryView,
+        components: Set<SynchronizedComponent>,
+        entities: Sequence<EntityView>,
         eventQueue: NetworkEventQueue
     ): EntityUpdatePacket {
         return EntityUpdatePacket(
@@ -26,7 +22,7 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
                         synchronized.get().ownerEndpoint == eventQueue.getEndpoint()
             }.map { entity ->
                 entity.id to entity.entity.components.filter { component ->
-                    components.contains(component.key)
+                    components.map { it.component }.contains(component.key)
                 }.mapValues { it.value.component }
             }.toMap()
         )
@@ -45,12 +41,14 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
                 return@packet
             }
 
-            entity.component<Transform>()
-                .get().position.lerp(((packetEntity.value)[Transform::class]!! as Transform).position, 1f / 3f)
-            entity.component<Transform>().mutate()
-
-            entity.component<Collider>().get().polygon = (packetEntity.value[Collider::class]!! as Collider).polygon
-            entity.component<Collider>().mutate()
+            synchronizedComponents().forEach {synchronizedComponent ->
+                entity.component(synchronizedComponent.component).replace(
+                    synchronizedComponent.updateClient(
+                        entity.component(synchronizedComponent.component).get(),
+                        packetEntity.value[synchronizedComponent.component]!!
+                    )
+                )
+            }
 
             entities[packetEntity.key]!!.component<Transform>().mutate()
         }
