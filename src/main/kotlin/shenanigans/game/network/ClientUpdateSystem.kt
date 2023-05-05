@@ -37,7 +37,7 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
             val entity = entities[packetEntity.key]
 
             if (entity == null) {
-                Logger.warn("Entity Movement", "entity does not exist: " + packetEntity.key)
+                Logger.warn("Entity Update Packet", "Received packet for unregistered entity with ID " + packetEntity.key)
                 return@packet
             }
 
@@ -111,8 +111,6 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
             entitySynchronization.get().ownerEndpoint =
                 (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
             entitySynchronization.mutate()
-
-            Logger.log("Network System", "WHaHOOO: " + registrationPacket.id)
             return
         }
 
@@ -120,7 +118,5 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
             registrationPacket.entity.values.asSequence(),
             registrationPacket.id,
         )
-
-        Logger.log("Network System", "WahoOO!: " + registrationPacket.id)
     }
 }
