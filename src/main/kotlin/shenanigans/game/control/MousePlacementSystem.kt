@@ -1,13 +1,16 @@
 package shenanigans.game.control
 
+import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.net.ClientOnly
+import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.camera.CameraResource
+import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.KeyAction
 import shenanigans.engine.window.MouseButton
@@ -17,6 +20,9 @@ import shenanigans.engine.window.events.MouseState
 import shenanigans.game.level.block.*
 import shenanigans.game.level.insertBlock
 import shenanigans.game.level.roundBlockPosition
+import shenanigans.game.state.Mode
+import shenanigans.game.state.ModeChangeEvent
+import shenanigans.game.state.ModeManager
 import kotlin.reflect.KClass
 
 @ClientOnly
@@ -24,11 +30,11 @@ object HeldObject : Component
 
 class Placeable(val sprite: Sprite, val factory: () -> Block)
 
+@ClientOnly
 class PlacementManager : Component {
     var heldPlaceable: Placeable? = null
 }
 
-// todo: make this only work in placement mode
 class MousePlacementSystem : System {
     override fun executePhysics(
         resources: ResourcesView,
@@ -36,7 +42,19 @@ class MousePlacementSystem : System {
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
+        val modeManager = query(setOf(ModeManager::class)).first().component<ModeManager>().get()
         val placementManager = query(setOf(PlacementManager::class)).first().component<PlacementManager>()
+
+        eventQueues.own.receive(ModeChangeEvent::class).forEach { _ ->
+            query(setOf(HeldObject::class)).forEach {
+                lifecycle.del(it.id)
+            }
+
+            placementManager.get().heldPlaceable = null
+            placementManager.mutate()
+        }
+
+        if(modeManager.mode != Mode.BUILD) return
 
         val position = resources.get<MouseState>().position()
         val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(
@@ -45,7 +63,7 @@ class MousePlacementSystem : System {
                 0f
             )
         )
-        val roundedPosition = roundBlockPosition(transformedPosition)
+        val roundedPosition = roundBlockPosition(Vector3f(transformedPosition))
 
         eventQueues.own.receive(KeyEvent::class).forEach { event ->
             if (event.action == KeyAction.PRESS) {
@@ -95,11 +113,25 @@ class MousePlacementSystem : System {
                 }
                 when(event.button) {
                     MouseButton.BUTTON_1 -> {
-                        insertBlock(lifecycle, placeable.factory(), roundedPosition)
+                        insertBlock(lifecycle, placeable.factory(), roundedPosition, modifiable = true)
                     }
                 }
                 placementManager.get().heldPlaceable = null
                 placementManager.mutate()
+            }
+        } else {
+            eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
+                when(event.button) {
+                    MouseButton.BUTTON_2 -> {
+                        query(setOf(Modifiable::class, Collider::class, Transform::class)).iterator().forEach {
+                            val transform = it.component<Transform>().get()
+                            val collider = it.component<Collider>().get()
+                            if(collider.polygon.isPointInside(Vector2f(transformedPosition.x, transformedPosition.y), transform)) {
+                                lifecycle.del(it.id)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

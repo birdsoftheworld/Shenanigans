@@ -3,6 +3,7 @@ package shenanigans.game.state
 import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
+import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.window.Key
@@ -13,6 +14,8 @@ import shenanigans.game.control.MovableCamera
 import shenanigans.game.player.Player
 import shenanigans.game.player.PlayerController
 import kotlin.reflect.KClass
+
+data class ModeChangeEvent(val from: Mode, val to: Mode) : Event
 
 class ModeChangeSystem : System {
     override fun executePhysics(
@@ -28,6 +31,7 @@ class ModeChangeSystem : System {
 
         val keyboard = resources.get<KeyboardState>()
         if (keyboard.isJustPressed(Key.B)) {
+            val modeBefore = modeManager.mode
             if (modeManager.mode == Mode.RUN) {
                 for (entityView in query(setOf(Player::class))) {
                     lifecycle.del(entityView.id)
@@ -47,6 +51,8 @@ class ModeChangeSystem : System {
                 modeManager.mode = Mode.RUN
             }
             mmComponent.mutate()
+            val modeAfter = modeManager.mode
+            eventQueues.own.queueLater(ModeChangeEvent(modeBefore, modeAfter))
         }
     }
 }

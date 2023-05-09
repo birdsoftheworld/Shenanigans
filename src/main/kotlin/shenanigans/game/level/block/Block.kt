@@ -8,6 +8,8 @@ import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Rectangle
 
+object Modifiable : Component
+
 sealed class Block : Component {
     abstract val solid: Boolean
     abstract val shape: Rectangle

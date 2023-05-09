@@ -4,10 +4,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.game.level.block.Block
-import shenanigans.game.level.block.GRID_SIZE
-import shenanigans.game.level.block.NormalBlock
-import shenanigans.game.level.block.RespawnBlock
+import shenanigans.game.level.block.*
 import shenanigans.game.network.Synchronized
 import kotlin.reflect.KClass
 
@@ -24,7 +21,8 @@ object BuildLevelSystem : System {
                     insertBlock(
                         lifecycle,
                         NormalBlock(),
-                        Vector3f(pos.x + c * (GRID_SIZE / 2), pos.y + r * (GRID_SIZE / 2), 50f)
+                        Vector3f(pos.x + c * (GRID_SIZE / 2), pos.y + r * (GRID_SIZE / 2), 50f),
+                        modifiable = false
                     )
                 }
             }
@@ -44,7 +42,8 @@ object BuildLevelSystem : System {
         insertBlock(
             lifecycle,
             RespawnBlock(),
-            Vector3f(96f, 608f, 100f)
+            Vector3f(96f, 608f, 100f),
+            modifiable = false
         )
 
         box(80,20, Vector3f(0f, 0f, .9f))
@@ -55,11 +54,15 @@ fun roundBlockPosition(position: Vector3f): Vector3f {
     return position.sub(GRID_SIZE / 2, GRID_SIZE / 2, 0f).mul(1 / GRID_SIZE).round().mul(GRID_SIZE)
 }
 
-fun insertBlock(lifecycle: EntitiesLifecycle, block: Block, pos: Vector3f) {
+fun insertBlock(lifecycle: EntitiesLifecycle, block: Block, pos: Vector3f, modifiable: Boolean) {
+    val set = mutableSetOf<Component>(Synchronized())
+
+    if(modifiable) {
+        set.add(Modifiable)
+    }
+
     val components = block.toComponents(roundBlockPosition(pos)).plus(
-        sequenceOf(
-            Synchronized()
-        )
+        set
     )
 
     lifecycle.add(components)
