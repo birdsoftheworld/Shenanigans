@@ -54,6 +54,7 @@ class ServerConnectionSystem : NetworkConnectionSystem() {
         lifecycle: EntitiesLifecycle
     ) {
         entities.forEach {
+            it.component<Synchronized>().get().registration = RegistrationStatus.Registered
             eventQueue.queueNetwork(
                 EntityRegistrationPacket(it),
                 delivery = MessageDelivery.ReliableOrdered,
