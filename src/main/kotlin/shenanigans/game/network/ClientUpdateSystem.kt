@@ -85,13 +85,13 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
 
         query(setOf(Synchronized::class)).filter {
             val sync = it.component<Synchronized>().get()
-            sync.registration == RegistrationStatus.Disconnected && sync.ownerEndpoint == eventQueues.network.getEndpoint()
+            sync.registration == RegistrationStatus.Disconnected
         }.forEach {
             val synchronized = it.component<Synchronized>()
 
             synchronized.get().registration = RegistrationStatus.Sent
-            synchronized.get().ownerEndpoint = eventQueues.network.getEndpoint()
             synchronized.mutate()
+
             eventQueues.network.queueLater(EntityRegistrationPacket(it))
         }
     }
@@ -103,12 +103,10 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
         lifecycle: EntitiesLifecycle
     ) {
         if (entities[registrationPacket.id] != null) {
-            val entitySynchronization = entities[registrationPacket.id]!!.component<Synchronized>()
-            entitySynchronization.get().registration =
-                (registrationPacket.entity[Synchronized::class]!! as Synchronized).registration
-            entitySynchronization.get().ownerEndpoint =
-                (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
-            entitySynchronization.mutate()
+            val localSync = entities[registrationPacket.id]!!.component<Synchronized>()
+            localSync.get().registration = RegistrationStatus.Registered
+            localSync.get().ownerEndpoint = (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
+            localSync.mutate()
             return
         }
 
