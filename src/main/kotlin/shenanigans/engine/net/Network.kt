@@ -113,16 +113,16 @@ fun builtinSendables(): Set<SendableClass<out Any>> {
     return setOf(
         // Components
         SendableClass(Component::class),
-        SendableClass(Shape::class, instantiator = { Shape(Polygon(arrayOf()), Color(0f, 0f, 0f)) }),
+        SendableClass(Shape::class, instantiator = { Shape(Polygon(listOf()), Color(0f, 0f, 0f)) }),
         SendableClass(
             Sprite::class,
             instantiator = { Sprite(TextureRegion(Texture(TextureKey()), 0f, 0f, 0f, 0f), Rectangle(0f, 0f)) }),
         SendableClass(
             Collider::class,
-            instantiator = { Collider(Polygon(arrayOf()), static = false, solid = true) }),
+            instantiator = { Collider(Polygon(listOf()), static = false, solid = true) }),
         SendableClass(Transform::class),
         SendableClass(Synchronized::class),
-        SendableClass(Polygon::class, instantiator = { Polygon(arrayOf()) }),
+        SendableClass(Polygon::class, instantiator = { Polygon(listOf()) }),
         SendableClass(Rectangle::class, instantiator = { Rectangle(0f, 0f) }),
 
         // Events
@@ -136,6 +136,7 @@ fun builtinSendables(): Set<SendableClass<out Any>> {
         // Utils
         SendableClass(Map::class),
         SendableClass(ArrayList::class),
+        SendableClass(Arrays.asList<Unit>()::class),
         SendableClass(Vector2f::class),
         SendableClass(Array<Vector2f>::class),
         SendableClass(Array<Component>::class),
