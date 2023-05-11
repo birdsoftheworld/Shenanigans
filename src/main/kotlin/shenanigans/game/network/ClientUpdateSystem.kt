@@ -90,8 +90,8 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
             val synchronized = it.component<Synchronized>()
 
             synchronized.get().registration = RegistrationStatus.Sent
-            synchronized.get().ownerEndpoint = eventQueues.network.getEndpoint()
             synchronized.mutate()
+
             eventQueues.network.queueLater(EntityRegistrationPacket(it))
         }
     }
