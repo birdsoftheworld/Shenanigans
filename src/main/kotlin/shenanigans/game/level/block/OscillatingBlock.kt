@@ -1,6 +1,7 @@
 package shenanigans.game.level.block
 
 import org.joml.Vector2f
+import org.joml.Vector2fc
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
@@ -11,14 +12,30 @@ import shenanigans.engine.util.Transform
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
-enum class Direction(sign: Int) {
-    Up(0), Right(1), Down(2), Left(3)
+enum class Direction(val vector: Vector2fc) {
+    Up(
+        Vector2f(0f, -1f)
+    ), Right(
+        Vector2f(1f, 0f)
+    ), Down(
+        Vector2f(0f, 1f)
+    ), Left(
+        Vector2f(-1f, 0f)
+    );
+    fun opposite(): Direction {
+        return when(this) {
+            Up -> Down
+            Down -> Up
+            Left -> Right
+            Right -> Left
+        }
+    }
 }
 
 class OscillatingBlock(
-    val distanceToOscillate: Float, var startPos: Vector2f, var speed: Float, var dir: Direction = Direction.Right,
+    val distanceToOscillate: Float, var startPos: Vector2f?, var speed: Float, var dir: Direction = Direction.Right,
 ) : Block() {
-    constructor() : this(128f, Vector2f(100f, 500f), 500f)
+    constructor() : this(128f, null, 100f)
     override val solid = true
     override val shape = SQUARE_BLOCK_SHAPE
     override val texture = OscillatingBlock.texture
@@ -42,16 +59,16 @@ class OscillatingBlock(
         }
     }
 
-    fun reset() {
-        speed = abs(speed)
-    }
-
     fun changeDirection() {
-        speed *= -1
+        dir = dir.opposite()
     }
 
     fun newStartPos(x: Float, y: Float) {
-        this.startPos.set(x, y)
+        this.startPos = Vector2f(x, y)
+    }
+
+    fun getMove(): Vector2f {
+        return this.dir.vector.mul(this.speed, Vector2f())
     }
 
     companion object {
@@ -60,7 +77,6 @@ class OscillatingBlock(
 }
 
 class OscillatingBlocksSystem : System {
-
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,
@@ -72,27 +88,15 @@ class OscillatingBlocksSystem : System {
         entities.forEach { entity ->
             val pos = entity.component<Transform>().get().position
             val oscillatingBlock = entity.component<OscillatingBlock>().get()
-            var deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
-            if (abs(pos.x - oscillatingBlock.startPos.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos.y) > oscillatingBlock.distanceToOscillate) {
+            val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+            if(oscillatingBlock.startPos == null) {
+                oscillatingBlock.newStartPos(pos.x, pos.y)
+            }
+            if (abs(pos.x - oscillatingBlock.startPos!!.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos!!.y) > oscillatingBlock.distanceToOscillate) {
                 oscillatingBlock.changeDirection()
             }
-            when (oscillatingBlock.dir) {
-                Direction.Up -> {
-                    pos.y -= oscillatingBlock.speed * deltaTimeF
-                }
-
-                Direction.Right -> {
-                    pos.x += oscillatingBlock.speed * deltaTimeF
-                }
-
-                Direction.Down -> {
-                    pos.y += oscillatingBlock.speed * deltaTimeF
-                }
-
-                Direction.Left -> {
-                    pos.x -= oscillatingBlock.speed * deltaTimeF
-                }
-            }
+            val change = oscillatingBlock.getMove().mul(deltaTimeF)
+            pos.add(change.x, change.y, 0f)
         }
     }
 }

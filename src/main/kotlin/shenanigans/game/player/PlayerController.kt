@@ -108,8 +108,8 @@ class PlayerController : System {
         lifecycle: EntitiesLifecycle
     ) {
         val keyboard = resources.get<KeyboardState>()
-        var deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
-        var friction = 0f
+        val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+        var blockMovement = Vector2f()
         query(setOf(Player::class, Transform::class, Collider::class)).forEach { entity ->
             val player = entity.component<Player>().get()
             val transform = entity.component<Transform>()
@@ -124,6 +124,16 @@ class PlayerController : System {
 
             val properties = player.properties
 
+            var moveDirection = 0f
+            //left
+            if (keyboard.isPressed(Key.A)) {
+                moveDirection -= 1f
+            }
+            //right
+            if (keyboard.isPressed(Key.D)) {
+                moveDirection += 1f
+            }
+
             eventQueues.own.receive(CollisionEvent::class).filter { entity.id == it.target }.forEach collision@{ event ->
                 val e = query(emptySet())[event.with] ?: return@collision
                 val solid = e.component<Collider>().get().solid
@@ -135,9 +145,6 @@ class PlayerController : System {
                             velocity.y = -properties.trampolineSpeed
                             player.currentJump = TrampolineJump
                         }
-                        if (e.componentOpt<OscillatingBlock>() != null) {
-                            friction = e.component<OscillatingBlock>().get().speed
-                        }
                     } else if (event.normal.y > 0) {
                         player.onCeiling = true
                         velocity.y = velocity.y.coerceAtLeast(0f)
@@ -148,6 +155,17 @@ class PlayerController : System {
                     } else if (event.normal.x > 0) {
                         player.wall = WallStatus.Left
                         velocity.x = velocity.x.coerceAtLeast(0f)
+                    }
+                    if (e.componentOpt<OscillatingBlock>() != null && event.normal.y <= 0f) {
+                        // if the collision isn't on a wall, or if the player
+                        // is moving in the same direction as the wall surface
+                        if (
+                            event.normal.x == 0f
+                            || (moveDirection != 0f && sign(moveDirection) != sign(event.normal.x))
+                        ) {
+                            val oscillatingBlock = e.component<OscillatingBlock>().get()
+                            blockMovement = oscillatingBlock.getMove()
+                        }
                     }
                 }
                 if (e.componentOpt<SpikeBlock>() != null) {
@@ -201,22 +219,12 @@ class PlayerController : System {
                 }
             }
 
-            var direction = 0f
-            //left
-            if (keyboard.isPressed(Key.A)) {
-                direction -= 1f
-            }
-            //right
-            if (keyboard.isPressed(Key.D)) {
-                direction += 1f
-            }
-
             if (keyboard.isPressed(Key.R)) {
                 respawn(entity, query)
             }
 
-            val desiredVelocity = Vector2f(direction * properties.maxSpeed, 0f)
-            if (!player.onGround && velocity.x * direction > desiredVelocity.x * direction) {
+            val desiredVelocity = Vector2f(moveDirection * properties.maxSpeed, 0f)
+            if (!player.onGround && velocity.x * moveDirection > desiredVelocity.x * moveDirection) {
                 desiredVelocity.x = velocity.x
             }
 
@@ -249,7 +257,7 @@ class PlayerController : System {
                 turnSpeed *= properties.slipperyTurnSpeedMultiplier
             }
 
-            val maxSpeedChange = if (direction != 0f) {
+            val maxSpeedChange = if (moveDirection != 0f) {
                 if (desiredVelocity.x.sign != velocity.x.sign) {
                     turnSpeed
                 } else {
@@ -313,11 +321,11 @@ class PlayerController : System {
                 velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
             }
 
-
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
 
+            blockMovement.mul(deltaTimeF)
+            pos.add(blockMovement.x, blockMovement.y, 0f)
 
-            pos.x += friction
             entity.component<Player>().mutate()
             transform.mutate()
         }

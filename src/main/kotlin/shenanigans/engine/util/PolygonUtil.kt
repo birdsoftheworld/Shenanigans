@@ -15,8 +15,8 @@ fun Polygon.isPointInside(point: Vector2fc, transform: Transform): Boolean {
 
     for (i in vertices.indices) {
         val vertex = Vector4f(vertices[i], 0f, 1f).mul(transformMatrix)
-        transformedVertices[i].x = vertex.x
-        transformedVertices[i].y = vertex.y
+        transformedVertices[i].x = vertex.x / vertex.w
+        transformedVertices[i].y = vertex.y / vertex.w
     }
 
     var count = 0
