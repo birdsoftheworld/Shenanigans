@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 abstract class NetworkUpdateSystem : System {
 
-    protected var lastUpdate : WeakHashMap<UUID, Map<KClass<out Component>, Int>> = WeakHashMap()
+    private var lastUpdate : MutableMap<UUID, Map<KClass<out Component>, Int>> = mutableMapOf()
 
     override fun executeNetwork(
         resources: ResourcesView,
@@ -19,6 +19,12 @@ abstract class NetworkUpdateSystem : System {
         lifecycle: EntitiesLifecycle
     ) {
         val entities = query(setOf(Synchronized::class))
+
+        lastUpdate.keys.filter { entities[it] == null }.forEach{
+            lastUpdate.remove(it)
+            deleteEntity(it, eventQueues)
+        }
+
 
         eventQueues.network.receive(EntityUpdatePacket::class).forEach {
             updateEntities(
@@ -56,6 +62,10 @@ abstract class NetworkUpdateSystem : System {
         entities: QueryView,
         eventQueue: NetworkEventQueue
     )
+
+    open fun deleteEntity(entity: UUID, eventQueues: EventQueues<NetworkEventQueue>) {
+        eventQueues.network.queueNetwork(EntityDeRegistrationPacket(entity))
+    }
 }
 
 abstract class NetworkConnectionSystem : System {
@@ -128,6 +138,8 @@ abstract class NetworkRegistrationSystem : System {
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
     ) {
-        lifecycle.del(deregistrationPacket.id)
+        if(entities[deregistrationPacket.id] != null) {
+            lifecycle.del(deregistrationPacket.id)
+        }
     }
 }
