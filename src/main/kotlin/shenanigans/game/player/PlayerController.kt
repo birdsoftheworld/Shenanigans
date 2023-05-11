@@ -61,6 +61,8 @@ data class PlayerProperties(
     val slipperyTurnSpeedMultiplier: Float = .2f,
     val slipperyDecelerationMultiplier: Float = .01f,
     val trampolineSpeed: Float = jumpSpeed * 2f,
+    val accelerationMultiplier: Float = 2f,
+
 
     val jumpCutoff: Float = 2f,
 
@@ -167,6 +169,12 @@ class PlayerController : System {
                             blockMovement = oscillatingBlock.getMove()
                         }
                     }
+                }
+                if(e.componentOpt<AccelerationBlock>() != null){
+                    lifecycle.del(e.id)
+                    velocity.mul(properties.accelerationMultiplier)
+                    velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+                    velocity.x = velocity.x.coerceAtMost(properties.terminalVelocity)
                 }
                 if (e.componentOpt<SpikeBlock>() != null) {
                     respawn(entity, query)

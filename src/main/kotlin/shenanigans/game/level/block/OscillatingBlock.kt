@@ -7,6 +7,7 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Polygon

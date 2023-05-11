@@ -4,6 +4,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.game.level.block.*
 import shenanigans.game.network.Synchronized
 import kotlin.reflect.KClass
