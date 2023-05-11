@@ -9,6 +9,7 @@ import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.physics.DeltaTime
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.shapes.Polygon
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
@@ -37,7 +38,8 @@ class OscillatingBlock(
 ) : Block() {
     constructor() : this(128f, null, 100f)
     override val solid = true
-    override val shape = SQUARE_BLOCK_SHAPE
+    override val colliderShape: Polygon = SQUARE_BLOCK_SHAPE
+    override val visualShape = SQUARE_BLOCK_SHAPE
     override val texture = OscillatingBlock.texture
 
 

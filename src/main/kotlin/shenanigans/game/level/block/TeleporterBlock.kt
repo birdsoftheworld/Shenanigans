@@ -8,11 +8,13 @@ import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.Texture
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.Transform
+import shenanigans.engine.util.shapes.Polygon
 import kotlin.reflect.KClass
 
 class TeleporterBlock : Block() {
     override val solid = false
-    override val shape = SQUARE_BLOCK_SHAPE
+    override val visualShape = SQUARE_BLOCK_SHAPE
+    override val colliderShape: Polygon = SLIGHTLY_SMALLER_SQUARE
     override val texture: Texture = TeleporterBlock.texture
 
     var targetPos = Vector3f(0f, 0f, 0f)

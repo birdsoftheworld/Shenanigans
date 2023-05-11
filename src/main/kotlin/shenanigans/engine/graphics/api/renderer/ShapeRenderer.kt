@@ -1,6 +1,6 @@
 package shenanigans.engine.graphics.api.renderer
 
-import org.joml.Vector2f
+import org.joml.Vector2fc
 import shenanigans.engine.graphics.VertexAttribute
 import shenanigans.engine.graphics.api.Color
 import shenanigans.engine.graphics.shader.Shader
@@ -96,7 +96,7 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
     /**
      * draw a convex polygon with the given vertices, transformed by this renderer's transformation
      */
-    fun polygon(vertices: Array<Vector2f>, color: Color, z: Float = 0f) {
+    fun polygon(vertices: Collection<Vector2fc>, color: Color, z: Float = 0f) {
         flushIfFull(vertices.size, 3 * (vertices.size - 2))
 
         for (i in 1..vertices.size - 2) {
@@ -106,7 +106,7 @@ class ShapeRenderer(vertexCapacity: Int = DEFAULT_MAX_VERTICES, indicesCapacity:
         }
 
         for (vertex in vertices) {
-            addVertex(vertex.x, vertex.y, z)
+            addVertex(vertex.x(), vertex.y(), z)
 
             colors.add(color.r)
             colors.add(color.g)
