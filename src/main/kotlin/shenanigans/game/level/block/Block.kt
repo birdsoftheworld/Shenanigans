@@ -41,6 +41,7 @@ sealed class Block : Component {
             StickyBlock
             TeleporterBlock
             TrampolineBlock
+            AccelerationBlock
         }
     }
 }

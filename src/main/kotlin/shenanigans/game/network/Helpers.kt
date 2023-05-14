@@ -43,6 +43,7 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(SpikeBlock::class),
         SendableClass(TrampolineBlock::class),
         SendableClass(StickyBlock::class),
+        SendableClass(AccelerationBlock::class),
         SendableClass(Direction::class),
         SendableClass(Array<Vector2f>::class),
         SendableClass(Modifiable::class),
