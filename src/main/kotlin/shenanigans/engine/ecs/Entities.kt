@@ -2,6 +2,7 @@ package shenanigans.engine.ecs
 
 import shenanigans.engine.events.EventQueue
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.term.Logger
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -133,7 +134,7 @@ class EntitiesLifecycle internal constructor() {
                 }
 
                 is LifecycleRequest.Del -> {
-                    entities.entities.remove(req.id) ?: throw IllegalStateException("Entity ${req.id} not found")
+                    entities.entities.remove(req.id)
                 }
             }
         }
