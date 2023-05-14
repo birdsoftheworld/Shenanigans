@@ -14,6 +14,7 @@ import shenanigans.engine.util.isPointInside
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.KeyAction
 import shenanigans.engine.window.MouseButton
+import shenanigans.engine.window.MouseButtonAction
 import shenanigans.engine.window.events.KeyEvent
 import shenanigans.engine.window.events.MouseButtonEvent
 import shenanigans.engine.window.events.MouseState
@@ -96,6 +97,7 @@ class MousePlacementSystem : System {
                     placementManager.mutate()
 
                     lifecycle.add(sequenceOf(HeldObject, placeable.sprite, Transform(roundedPosition)))
+                    return
                 }
             }
         }
@@ -124,11 +126,19 @@ class MousePlacementSystem : System {
             eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
                 when(event.button) {
                     MouseButton.BUTTON_2 -> {
-                        query(setOf(Modifiable::class, Collider::class, Transform::class)).iterator().forEach {
-                            val transform = it.component<Transform>().get()
-                            val collider = it.component<Collider>().get()
-                            if(collider.polygon.isPointInside(Vector2f(transformedPosition.x, transformedPosition.y), transform)) {
-                                lifecycle.del(it.id)
+                        if(event.action == MouseButtonAction.PRESS) {
+                            query(setOf(Modifiable::class, Collider::class, Transform::class)).iterator().forEach {
+                                val transform = it.component<Transform>().get()
+                                val collider = it.component<Collider>().get()
+                                if (collider.polygon.isPointInside(
+                                        Vector2f(
+                                            transformedPosition.x,
+                                            transformedPosition.y
+                                        ), transform
+                                    )
+                                ) {
+                                    lifecycle.del(it.id)
+                                }
                             }
                         }
                     }
