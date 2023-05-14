@@ -8,11 +8,14 @@ import shenanigans.engine.graphics.TextureOptions
 import java.nio.ByteBuffer
 
 object TextureManager {
-    private val queuedTextures = mutableListOf<Pair<TextureKey, TextureCreatable>>()
+    private val queuedTextures = mutableMapOf<TextureKey, TextureCreatable>()
     private val keyedTextures = mutableMapOf<TextureKey, GlTexture>()
 
     fun createTexture(key: TextureKey, path: String, options: TextureOptions = TextureOptions()): Texture {
-        queuedTextures.add(Pair(key, PathTexture(options, path)))
+        if(queuedTextures.containsKey(key)) {
+            throw IllegalArgumentException("can't create texture with a duplicate key")
+        }
+        queuedTextures[key] = PathTexture(options, path)
         if (GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
         }
@@ -26,7 +29,7 @@ object TextureManager {
         height: Int,
         options: TextureOptions = TextureOptions()
     ): Texture {
-        queuedTextures.add(Pair(key, RawTexture(options, data, Vector2i(width, height))))
+        queuedTextures[key] = RawTexture(options, data, Vector2i(width, height))
         if (GlobalRendererState.isInitializedAndOnRenderThread()) {
             dequeue()
         }
@@ -34,8 +37,8 @@ object TextureManager {
     }
 
     internal fun dequeue() {
-        for (queuedTexture in queuedTextures) {
-            keyedTextures[queuedTexture.first] = queuedTexture.second.create()
+        for ((key, creatable) in queuedTextures.entries) {
+            keyedTextures[key] = creatable.create()
         }
         queuedTextures.clear()
     }
