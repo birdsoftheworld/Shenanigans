@@ -11,6 +11,6 @@ class AccelerationBlock : Block() {
     override val texture = AccelerationBlock.texture
 
     companion object {
-        val texture = TextureManager.createTexture(TextureKey("trampoline"), "/acceleration.png")
+        val texture = TextureManager.createTexture(TextureKey("acceleration"), "/acceleration.png")
     }
 }
