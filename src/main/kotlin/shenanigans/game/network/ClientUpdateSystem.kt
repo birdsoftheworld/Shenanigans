@@ -2,10 +2,12 @@ package shenanigans.game.network
 
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
+import shenanigans.engine.net.MessageEndpoint
 import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
+import shenanigans.game.player.Player
 import kotlin.reflect.KClass
 
 class ClientUpdateSystem : NetworkUpdateSystem() {
@@ -90,7 +92,12 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
             val synchronized = it.component<Synchronized>()
 
             synchronized.get().registration = RegistrationStatus.Sent
-            synchronized.get().ownerEndpoint = eventQueues.network.getEndpoint()
+            synchronized.get().ownerEndpoint = MessageEndpoint.Server
+
+            if(it.componentOpt<Player>() != null) {
+                synchronized.get().ownerEndpoint = eventQueues.own.getEndpoint()
+            }
+
             synchronized.mutate()
 
             eventQueues.network.queueLater(EntityRegistrationPacket(it))

@@ -8,7 +8,6 @@ import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.net.events.ConnectionEventType
 import shenanigans.engine.physics.Time
-import shenanigans.engine.term.Logger
 import shenanigans.game.state.Mode
 import shenanigans.game.state.ModeChangeEvent
 import kotlin.reflect.KClass
@@ -80,8 +79,6 @@ class PlayerManagementSystem : System{
                 }
 
         if(currentTime - lastSwitch > switchTime) {
-
-            Logger.log("MODE Switch", "WAHOOooOOOOO! Runners: ${runners.size}, Builders: ${builders.size}")
             if(runners.size >= 1 && builders.size >= 1) {
                 eventQueues.own.queueNetwork(
                         ModeChangeEvent(Mode.RUN, Mode.BUILD),
