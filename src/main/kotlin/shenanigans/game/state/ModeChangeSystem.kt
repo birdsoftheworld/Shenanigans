@@ -6,6 +6,7 @@ import shenanigans.engine.ecs.*
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
+import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.control.CameraManager
@@ -18,9 +19,9 @@ import kotlin.reflect.KClass
 data class ModeChangeEvent(val from: Mode, val to: Mode) : Event
 
 class ModeChangeSystem : System {
-    override fun executePhysics(
+    override fun executeNetwork(
         resources: ResourcesView,
-        eventQueues: EventQueues<LocalEventQueue>,
+        eventQueues: EventQueues<NetworkEventQueue>,
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
@@ -29,10 +30,9 @@ class ModeChangeSystem : System {
         val cmComponent = query(setOf(CameraManager::class)).firstOrNull()?.component<CameraManager>() ?: return
         val cameraManager = cmComponent.get()
 
-        val keyboard = resources.get<KeyboardState>()
-        if (keyboard.isJustPressed(Key.B)) {
-            val modeBefore = modeManager.mode
-            if (modeManager.mode == Mode.RUN) {
+        eventQueues.network.receive(ModeChangeEvent::class).forEach { modeChangeEvent ->
+
+            if (modeChangeEvent.to == Mode.BUILD) {
                 for (entityView in query(setOf(Player::class))) {
                     lifecycle.del(entityView.id)
                 }
@@ -51,8 +51,7 @@ class ModeChangeSystem : System {
                 modeManager.mode = Mode.RUN
             }
             mmComponent.mutate()
-            val modeAfter = modeManager.mode
-            eventQueues.own.queueLater(ModeChangeEvent(modeBefore, modeAfter))
+            eventQueues.physics.queueLater(modeChangeEvent)
         }
     }
 }

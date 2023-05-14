@@ -14,7 +14,7 @@ import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
-import shenanigans.engine.physics.DeltaTime
+import shenanigans.engine.physics.Time
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
 import shenanigans.engine.util.raycast
@@ -110,7 +110,7 @@ class PlayerController : System {
         lifecycle: EntitiesLifecycle
     ) {
         val keyboard = resources.get<KeyboardState>()
-        val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+        val deltaTimeF = resources.get<Time>().deltaTime.toFloat()
         var blockMovement = Vector2f()
         query(setOf(Player::class, Transform::class, Collider::class)).forEach { entity ->
             val player = entity.component<Player>().get()

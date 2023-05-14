@@ -4,7 +4,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.physics.DeltaTime
+import shenanigans.engine.physics.Time
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
@@ -24,7 +24,7 @@ class CameraControlSystem : System {
         val mode = cameraManager.get().mode
         if (mode is MovableCamera) {
             val kb = resources.get<KeyboardState>()
-            val dt = resources.get<DeltaTime>().deltaTime
+            val dt = resources.get<Time>().deltaTime
             val move = Vector3f()
             if (kb.isPressed(Key.W)) {
                 move.y -= MOVE_SPEED

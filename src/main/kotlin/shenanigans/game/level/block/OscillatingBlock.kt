@@ -7,8 +7,7 @@ import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
-import shenanigans.engine.physics.CollisionEvent
-import shenanigans.engine.physics.DeltaTime
+import shenanigans.engine.physics.Time
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Polygon
 import kotlin.math.abs
@@ -91,7 +90,7 @@ class OscillatingBlocksSystem : System {
         entities.forEach { entity ->
             val pos = entity.component<Transform>().get().position
             val oscillatingBlock = entity.component<OscillatingBlock>().get()
-            val deltaTimeF = resources.get<DeltaTime>().deltaTime.toFloat()
+            val deltaTimeF = resources.get<Time>().deltaTime.toFloat()
             if(oscillatingBlock.startPos == null) {
                 oscillatingBlock.newStartPos(pos.x, pos.y)
             }

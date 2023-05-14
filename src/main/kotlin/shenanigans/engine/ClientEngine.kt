@@ -8,7 +8,7 @@ import shenanigans.engine.ecs.System
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.net.Client
 import shenanigans.engine.net.Network
-import shenanigans.engine.physics.DeltaTime
+import shenanigans.engine.physics.Time
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.util.camera.CameraResource
 import shenanigans.engine.util.camera.OrthoCamera
@@ -60,7 +60,7 @@ class ClientEngine(initScene: Scene, networkImpl: Network = Network(Client())) :
             transitionStateMachineResources(eventQueuesFor(physicsEvents)) // FIXME: shouldn't be physics events here
 
             val currentTime = GLFW.glfwGetTime()
-            engineResources.set(DeltaTime(currentTime - previousTime))
+            engineResources.set(Time(currentTime - previousTime, currentTime))
             previousTime = currentTime
 
             val physicsResources = ResourcesView(scene.sceneResources, engineResources)

@@ -7,6 +7,7 @@ import shenanigans.engine.scene.Scene
 import shenanigans.game.level.BuildLevelSystem
 import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.sendables
+import shenanigans.game.player.PlayerManagementSystem
 
 fun main() {
     val engine = HeadlessEngine(serverScene(), Network(Server(), sendables()))
@@ -21,6 +22,8 @@ fun serverScene(): Scene {
         defaultSystems.add(ServerUpdateSystem())
         defaultSystems.add(ServerConnectionSystem())
         defaultSystems.add(ServerRegistrationSystem())
+
+        defaultSystems.add(PlayerManagementSystem())
 
         defaultSystems.add(OscillatingBlocksSystem())
     }

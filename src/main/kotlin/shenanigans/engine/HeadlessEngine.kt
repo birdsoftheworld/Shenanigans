@@ -5,7 +5,7 @@ import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
 import shenanigans.engine.net.Network
 import shenanigans.engine.net.Server
-import shenanigans.engine.physics.DeltaTime
+import shenanigans.engine.physics.Time
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.timer.TimerSystem
 import kotlin.system.exitProcess
@@ -29,7 +29,7 @@ class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : E
             transitionStateMachineResources(eventQueuesFor(physicsEvents)) // FIXME: shouldn't be physics events here
 
             val currentTime = GLFW.glfwGetTime()
-            engineResources.set(DeltaTime(currentTime - previousTime))
+            engineResources.set(Time(currentTime - previousTime, currentTime))
             previousTime = currentTime
 
             val physicsResources = ResourcesView(scene.sceneResources, engineResources)
