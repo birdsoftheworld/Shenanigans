@@ -146,6 +146,7 @@ class PlayerController : System {
                         if (e.componentOpt<TrampolineBlock>() != null) {
                             velocity.y = -properties.trampolineSpeed
                             player.currentJump = TrampolineJump
+                            player.onGround = false
                         }
                     } else if (event.normal.y > 0) {
                         player.onCeiling = true
