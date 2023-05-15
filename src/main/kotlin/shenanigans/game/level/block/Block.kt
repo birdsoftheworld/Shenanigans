@@ -31,17 +31,19 @@ sealed class Block : Component {
     }
 
     companion object {
-        fun initAll() {
-            GoalBlock
-            NormalBlock
-            OscillatingBlock
-            RespawnBlock
-            IceBlock
-            SpikeBlock
-            StickyBlock
-            TeleporterBlock
-            TrampolineBlock
-            AccelerationBlock
+        fun all(): List<Block> {
+            return listOf(
+                GoalBlock(),
+                NormalBlock(),
+                OscillatingBlock(),
+                RespawnBlock(),
+                IceBlock(),
+                SpikeBlock(),
+                StickyBlock(),
+                TeleporterBlock(),
+                TrampolineBlock(),
+                AccelerationBlock()
+            )
         }
     }
 }
