@@ -17,7 +17,7 @@ sealed class Block : Component {
     abstract val colliderShape: Polygon
     abstract val texture: Texture
 
-    fun toComponents(pos: Vector3f): Sequence<Component> {
+    open fun toComponents(pos: Vector3f): Sequence<Component> {
         return sequenceOf(
             this,
             Transform(pos),

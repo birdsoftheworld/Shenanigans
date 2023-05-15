@@ -9,6 +9,7 @@ import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.game.level.block.*
+import shenanigans.game.level.component.PlayerModifier
 import shenanigans.game.state.Mode
 import shenanigans.game.state.ModeChangeEvent
 import java.util.*
@@ -45,6 +46,7 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(StickyBlock::class),
         SendableClass(AccelerationBlock::class),
         SendableClass(GoalBlock::class),
+        SendableClass(PlayerModifier::class, instantiator = { PlayerModifier("") }),
         SendableClass(Direction::class),
         SendableClass(Array<Vector2f>::class),
         SendableClass(Modifiable::class),

@@ -22,6 +22,8 @@ import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.engine.window.Key
 import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.level.block.*
+import shenanigans.game.level.component.MODIFIERS
+import shenanigans.game.level.component.PlayerModifier
 import shenanigans.game.network.Synchronized
 import kotlin.math.min
 import kotlin.math.sign
@@ -35,73 +37,74 @@ enum class WallStatus(val sign: Float) {
 }
 
 data class PlayerProperties(
-    val maxAcceleration: Float = 1375f,
-    val maxAirAcceleration: Float = .95f * maxAcceleration,
-    val maxDeceleration: Float = 1650f,
-    val maxAirDeceleration: Float = 0f,
-    val maxTurnSpeed: Float = 2750f,
-    val maxAirTurnSpeed: Float = 2150f,
+    var maxAcceleration: Float = 1375f,
+    var maxAirAcceleration: Float = .95f * maxAcceleration,
+    var maxDeceleration: Float = 1650f,
+    var maxAirDeceleration: Float = 0f,
+    var maxTurnSpeed: Float = 2750f,
+    var maxAirTurnSpeed: Float = 2150f,
 
-    val maxSpeed: Float = 275f,
-    val crouchedMoveSpeedMultiplier: Float = 0.35f,
-    val crouchedAirTurnSpeedMultiplier: Float = 0.6f,
+    var maxSpeed: Float = 275f,
+    var crouchedMoveSpeedMultiplier: Float = 0.35f,
+    var crouchedAirTurnSpeedMultiplier: Float = 0.6f,
 
-    val jumpSpeed: Float = 550f,
+    var jumpSpeed: Float = 550f,
 
-    val downwardMovementMultiplier: Float = 1f,
+    var downwardMovementMultiplier: Float = 1f,
 
-    val wallJumpHSpeed: Float = 400f,
-    val wallJumpVSpeed: Float = 500f,
-    val wallJumpSlideSpeed: Float = 140f,
+    var wallJumpHSpeed: Float = 400f,
+    var wallJumpVSpeed: Float = 500f,
+    var wallJumpSlideSpeed: Float = 140f,
 
-    val coyoteTime: Float = .1f,
-    val wallCoyoteTime: Float = .1f,
-    val jumpBufferTime: Float = .2f,
+    var coyoteTime: Float = .1f,
+    var wallCoyoteTime: Float = .1f,
+    var jumpBufferTime: Float = .2f,
 
-    val slipperyMovementMultiplier: Float = .4f,
-    val slipperyTurnSpeedMultiplier: Float = .2f,
-    val slipperyDecelerationMultiplier: Float = .01f,
-    val trampolineSpeed: Float = jumpSpeed * 2f,
-    val accelerationMultiplier: Float = 2f,
+    var trampolineSpeed: Float = jumpSpeed * 2f,
+    var accelerationMultiplier: Float = 2f,
 
+    var jumpCutoff: Float = 2f,
 
-    val jumpCutoff: Float = 2f,
+    var maxJumps: Int = 1,
+    var fallingCountsAsJumping: Boolean = true,
 
-    val maxJumps: Int = 1,
-    val fallingCountsAsJumping: Boolean = true,
-
-    val terminalVelocity: Float = 825f,
-    val gravity: Float = 1375f,
+    var terminalVelocity: Float = 825f,
+    var gravity: Float = 1375f,
 )
 
-sealed class Jump(val isCoyote: Boolean)
-class FloorJump(isCoyote: Boolean) : Jump(isCoyote)
-class WallJump(val wall: WallStatus, isCoyote: Boolean) : Jump(isCoyote)
-object AirJump : Jump(false)
-object FallJump : Jump(false)
-object TrampolineJump : Jump(false)
+sealed class Jump(val modifiers: List<PlayerModifier>)
+class FloorJump(modifiers: List<PlayerModifier>, isCoyote: Boolean) : Jump(modifiers)
+class WallJump(modifiers: List<PlayerModifier>, val wall: WallStatus, isCoyote: Boolean) : Jump(modifiers)
+class AirJump(modifiers: List<PlayerModifier>) : Jump(modifiers)
+class FallJump(modifiers: List<PlayerModifier>) : Jump(modifiers)
+object TrampolineJump : Jump(listOf())
 
 @ClientOnly
 data class Player(
-    val properties: PlayerProperties,
+    val properties: PlayerProperties
+) : Component {
+    var effectiveProperties: PlayerProperties = properties.copy()
 
-    val velocity: Vector2f = Vector2f(),
+    var previousActiveSurfaces: List<PlayerModifier> = listOf()
+    var activeSurfaces: MutableList<PlayerModifier> = mutableListOf()
 
-    var onGround: Boolean = false,
-    var onCeiling: Boolean = false,
-    var wall: WallStatus = WallStatus.Off,
+    val velocity: Vector2f = Vector2f()
 
-    var crouching: Boolean = false,
+    var onGround: Boolean = false
+    var onCeiling: Boolean = false
+    var wall: WallStatus = WallStatus.Off
 
-    var currentJump: Jump? = null,
-    var jumps: Int = 0,
+    var crouching: Boolean = false
 
-    var coyoteTime: Float = 0f,
-    var wallCoyoteTime: Float = 0f,
-    var lastWallDirectionTouched: WallStatus = WallStatus.Off,
+    var currentJump: Jump? = null
+    var jumps: Int = 0
+
+    var coyoteTime: Float = 0f
+    var wallCoyoteTime: Float = 0f
+    var lastWallDirectionTouched: WallStatus = WallStatus.Off
 
     var jumpBufferTime: Float = 0f
-) : Component
+}
 
 class PlayerController : System {
     override fun executePhysics(
@@ -118,14 +121,12 @@ class PlayerController : System {
             val transform = entity.component<Transform>()
 
             val velocity = player.velocity
-            var sticky = false
-            var slippery = false
 
             player.onGround = false
             player.wall = WallStatus.Off
             player.onCeiling = false
 
-            val properties = player.properties
+            val properties = player.effectiveProperties
 
             var moveDirection = 0f
             //left
@@ -137,6 +138,8 @@ class PlayerController : System {
                 moveDirection += 1f
             }
 
+            player.activeSurfaces = mutableListOf()
+            var trampolineBounce = false
             eventQueues.own.receive(CollisionEvent::class).filter { entity.id == it.target }.forEach collision@{ event ->
                 val e = query(emptySet())[event.with] ?: return@collision
                 val solid = e.component<Collider>().get().solid
@@ -145,10 +148,7 @@ class PlayerController : System {
                         player.onGround = true
                         velocity.y = velocity.y.coerceAtMost(0f)
                         if (e.componentOpt<TrampolineBlock>() != null) {
-                            velocity.y = -properties.trampolineSpeed
-                            player.currentJump = TrampolineJump
-                            player.onGround = false
-                            player.restoreJumps()
+                            trampolineBounce = true
                         }
                     } else if (event.normal.y > 0) {
                         player.onCeiling = true
@@ -176,8 +176,8 @@ class PlayerController : System {
                 if(e.componentOpt<AccelerationBlock>() != null){
                     lifecycle.del(e.id)
                     velocity.mul(properties.accelerationMultiplier)
-                    velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
                     velocity.x = velocity.x.coerceAtMost(properties.terminalVelocity)
+                    velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
                 }
                 if (e.componentOpt<SpikeBlock>() != null) {
                     respawn(entity, query)
@@ -186,12 +186,26 @@ class PlayerController : System {
                     println("CONGRATS YOU PASSED THE LEVEL")
                     respawn(entity, query)
                 }
-                if (e.componentOpt<StickyBlock>() != null) {
-                    sticky = true
+                if (e.componentOpt<PlayerModifier>() != null) {
+                    player.activeSurfaces.add(e.component<PlayerModifier>().get())
                 }
-                if (e.componentOpt<IceBlock>() != null) {
-                    slippery = true
-                }
+            }
+
+            player.effectiveProperties = player.properties.copy()
+            val modifiers = mutableSetOf<PlayerModifier>()
+            modifiers.addAll(player.activeSurfaces)
+            if(player.currentJump != null) {
+                modifiers.addAll(player.currentJump!!.modifiers)
+            }
+            modifiers.forEach {
+                MODIFIERS[it.name]?.let { it1 -> it1(player.effectiveProperties) }
+            }
+
+            if(trampolineBounce) {
+                velocity.y = -properties.trampolineSpeed
+                player.currentJump = TrampolineJump
+                player.onGround = false
+                player.restoreJumps()
             }
 
             if (player.onGround) {
@@ -268,12 +282,6 @@ class PlayerController : System {
                 turnSpeed *= properties.crouchedAirTurnSpeedMultiplier
             }
 
-            if (slippery) {
-                acceleration *= properties.slipperyMovementMultiplier
-                deceleration *= properties.slipperyDecelerationMultiplier
-                turnSpeed *= properties.slipperyTurnSpeedMultiplier
-            }
-
             val maxSpeedChange = if (moveDirection != 0f) {
                 if (desiredVelocity.x.sign != velocity.x.sign) {
                     turnSpeed
@@ -296,7 +304,7 @@ class PlayerController : System {
             val jump = player.getJump()
             if ((pressedJump || bufferedJump) && jump != null) {
                 jumped = true
-                player.jump(jump, sticky)
+                player.jump(jump)
             }
             if (pressedJump && !jumped) {
                 player.jumpBufferTime = properties.jumpBufferTime
@@ -322,9 +330,14 @@ class PlayerController : System {
                 player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
                 if (properties.fallingCountsAsJumping && player.currentJump == null && player.coyoteTime <= 0 && (player.wallCoyoteTime <= 0 || player.crouching)) {
                     player.jumps--
-                    player.currentJump = FallJump
+                    player.currentJump = FallJump(player.previousActiveSurfaces)
                 }
             }
+
+            if (player.onGround) {
+                player.previousActiveSurfaces = player.activeSurfaces
+            }
+
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
             pos.add(velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
@@ -368,40 +381,38 @@ class PlayerController : System {
     private fun Player.getGravity(holdingJump: Boolean): Float {
         val gravityMultiplier = if (velocity.y < 0f) {
             if (!holdingJump && (this.currentJump is FloorJump || this.currentJump is WallJump)) {
-                1f + properties.jumpCutoff
+                1f + effectiveProperties.jumpCutoff
             } else {
                 1f
             }
         } else if (velocity.y > 0f) {
-            properties.downwardMovementMultiplier
+            effectiveProperties.downwardMovementMultiplier
         } else {
             1f
         }
-        return properties.gravity * gravityMultiplier
+        return effectiveProperties.gravity * gravityMultiplier
     }
 
     private fun Player.restoreJumps() {
-        this.jumps = properties.maxJumps
+        this.jumps = effectiveProperties.maxJumps
     }
 
-    private fun Player.jump(jump: Jump, sticky: Boolean) {
+    private fun Player.jump(jump: Jump) {
         this.currentJump = jump
 
         val targetSpeed = if (jump is WallJump) {
             if (jump.wall == WallStatus.Right) {
-                velocity.x -= properties.wallJumpHSpeed
+                velocity.x -= effectiveProperties.wallJumpHSpeed
             } else if (jump.wall == WallStatus.Left) {
-                velocity.x += properties.wallJumpHSpeed
+                velocity.x += effectiveProperties.wallJumpHSpeed
             }
-            properties.wallJumpVSpeed
+            effectiveProperties.wallJumpVSpeed
         } else {
-            properties.jumpSpeed
+            effectiveProperties.jumpSpeed
         }
 
         var jumpSpeed = -targetSpeed
-        if (sticky) {
-            jumpSpeed *= .5f
-        }
+
         if (velocity.y < 0f) {
             jumpSpeed = min(jumpSpeed, velocity.y)
         }
@@ -418,15 +429,15 @@ class PlayerController : System {
             return null
         }
         return if (this.onGround) {
-            FloorJump(false)
+            FloorJump(this.activeSurfaces, false)
         } else if (this.coyoteTime > 0f) {
-            FloorJump(true)
+            FloorJump(this.activeSurfaces, true)
         } else if (this.wall != WallStatus.Off && !this.crouching) {
-            WallJump(this.wall, false)
+            WallJump(this.activeSurfaces, this.wall, false)
         } else if (this.wallCoyoteTime > 0f && !this.crouching) {
-            WallJump(this.lastWallDirectionTouched, true)
+            WallJump(this.activeSurfaces, this.lastWallDirectionTouched, true)
         } else {
-            return AirJump
+            return AirJump(this.previousActiveSurfaces)
         }
     }
 

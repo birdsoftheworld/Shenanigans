@@ -11,6 +11,7 @@ import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UISystem
 import shenanigans.game.control.*
+import shenanigans.game.level.RegistrySystem
 import shenanigans.game.level.block.Block
 import shenanigans.game.network.ClientConnectionSystem
 import shenanigans.game.network.ClientRegistrationSystem
@@ -27,6 +28,7 @@ fun main() {
 
     Block.initAll()
 
+    engine.runPhysicsOnce(RegistrySystem)
     engine.runPhysicsOnce(CreatePlayer)
 
     engine.run()
