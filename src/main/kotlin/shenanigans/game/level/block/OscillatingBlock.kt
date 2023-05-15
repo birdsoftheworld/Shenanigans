@@ -99,6 +99,8 @@ class OscillatingBlocksSystem : System {
             }
             val change = oscillatingBlock.getMove().mul(deltaTimeF)
             pos.add(change.x, change.y, 0f)
+
+            entity.component<Transform>().mutate()
         }
     }
 }

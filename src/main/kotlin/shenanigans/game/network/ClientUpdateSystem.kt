@@ -43,7 +43,9 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
                 return@packet
             }
 
-            synchronizedComponents().forEach {synchronizedComponent ->
+            synchronizedComponents()
+                    .filter { entity.componentOpt(it.component) != null }
+                    .forEach {synchronizedComponent ->
                 entity.component(synchronizedComponent.component).replace(
                     synchronizedComponent.updateClient(
                         entity.component(synchronizedComponent.component).get(),

@@ -12,7 +12,6 @@ import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UISystem
 import shenanigans.game.control.*
 import shenanigans.game.level.block.Block
-import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.ClientConnectionSystem
 import shenanigans.game.network.ClientRegistrationSystem
 import shenanigans.game.network.ClientUpdateSystem
@@ -36,7 +35,6 @@ fun main() {
 fun testScene(): Scene {
     val scene = Scene()
 
-    scene.defaultSystems.add(OscillatingBlocksSystem())
     scene.defaultSystems.add(ModeChangeSystem())
     scene.defaultSystems.add(MousePlacementSystem())
     scene.defaultSystems.add(PlayerController())

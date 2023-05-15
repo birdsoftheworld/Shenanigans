@@ -47,7 +47,9 @@ abstract class NetworkUpdateSystem : System {
         )
 
         entities.forEach { entity ->
-            lastUpdate[entity.id] = synchronizedComponents().associate { it.component to entity.component(it.component).version() }
+            lastUpdate[entity.id] = synchronizedComponents()
+                    .filter { entity.componentOpt(it.component) != null }
+                    .associate { it.component to entity.component(it.component).version() }
         }
     }
 

@@ -44,6 +44,7 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(TrampolineBlock::class),
         SendableClass(StickyBlock::class),
         SendableClass(AccelerationBlock::class),
+        SendableClass(GoalBlock::class),
         SendableClass(Direction::class),
         SendableClass(Array<Vector2f>::class),
         SendableClass(Modifiable::class),
@@ -67,5 +68,6 @@ fun synchronizedComponents(): Set<SynchronizedComponent> {
         }),
         SynchronizedComponent(Collider::class),
         SynchronizedComponent(Sprite::class),
+        SynchronizedComponent(OscillatingBlock::class),
     )
 }
