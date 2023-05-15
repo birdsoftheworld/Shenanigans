@@ -8,6 +8,7 @@ import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.term.Logger
 import shenanigans.game.network.*
+import shenanigans.game.player.Player
 
 class ServerUpdateSystem : NetworkUpdateSystem() {
 
@@ -87,15 +88,18 @@ class ServerRegistrationSystem : NetworkRegistrationSystem() {
         lifecycle: EntitiesLifecycle
     ) {
         if (entities[registrationPacket.id] != null) {
-            Logger.warn("Entity Registration", "Received registration pack with duplicate ID " + registrationPacket.id)
+            Logger.warn("Entity Registration", "Received registration packet with duplicate ID " + registrationPacket.id)
         }
 
-        (registrationPacket.entity[Synchronized::class] as Synchronized).registration = RegistrationStatus.Registered
+        val remoteSync = (registrationPacket.entity[Synchronized::class] as Synchronized)
+
+        remoteSync.registration = RegistrationStatus.Registered
 
         lifecycle.add(
             registrationPacket.entity.values.asSequence(),
             registrationPacket.id,
         )
+
         Logger.log("Entity Registration", registrationPacket.id.toString())
         eventQueue.queueNetwork(registrationPacket, MessageDelivery.ReliableOrdered)
     }

@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 
 class PlayerManagementSystem : System{
 
-    private val switchTime = 30;
+    private val switchTime = 30; // Seconds
 
     private var lastSwitch : Double = 0.0
 
@@ -88,7 +88,7 @@ class PlayerManagementSystem : System{
                 eventQueues.own.queueNetwork(
                         ModeChangeEvent(Mode.BUILD, Mode.RUN),
                         MessageDelivery.ReliableOrdered,
-                        runners.first()
+                        builders.first()
                 )
 
                 runners.addLast(builders.removeFirst())
