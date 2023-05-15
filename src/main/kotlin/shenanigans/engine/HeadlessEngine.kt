@@ -3,6 +3,7 @@ package shenanigans.engine
 import org.lwjgl.glfw.GLFW
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
+import shenanigans.engine.events.engine.InitializationEvent
 import shenanigans.engine.net.Network
 import shenanigans.engine.net.Server
 import shenanigans.engine.physics.Time
@@ -18,6 +19,9 @@ class HeadlessEngine(initScene: Scene, network: Network = Network(Server())) : E
         var lastTick = 0L
 
         network.impl.connect()
+
+        physicsEvents.queueLater(InitializationEvent)
+        physicsEvents.finish()
 
         var previousTime = GLFW.glfwGetTime()
 

@@ -5,6 +5,7 @@ import shenanigans.engine.net.Network
 import shenanigans.engine.net.Server
 import shenanigans.engine.scene.Scene
 import shenanigans.game.level.BuildLevelSystem
+import shenanigans.game.RegistrySystem
 import shenanigans.game.level.block.GoalSystem
 import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.sendables
@@ -13,6 +14,7 @@ import shenanigans.game.player.PlayerManagementSystem
 fun main() {
     val engine = HeadlessEngine(serverScene(), Network(Server(), sendables()))
 
+    engine.runPhysicsOnce(RegistrySystem)
     engine.runPhysicsOnce(BuildLevelSystem)
 
     engine.run()

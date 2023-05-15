@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30C
 import shenanigans.engine.ecs.ResourcesView
 import shenanigans.engine.ecs.System
+import shenanigans.engine.events.engine.InitializationEvent
 import shenanigans.engine.graphics.Renderer
 import shenanigans.engine.net.Client
 import shenanigans.engine.net.Network
@@ -48,6 +49,9 @@ class ClientEngine(initScene: Scene, networkImpl: Network = Network(Client())) :
         if (JSystem.getProperty("no_network") == null) {
             network.impl.connect()
         }
+
+        physicsEvents.queueLater(InitializationEvent)
+        physicsEvents.finish()
 
         var previousTime = GLFW.glfwGetTime()
 

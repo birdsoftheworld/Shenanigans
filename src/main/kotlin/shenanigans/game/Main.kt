@@ -27,6 +27,7 @@ fun main() {
 
     Block.initAll()
 
+    engine.runPhysicsOnce(RegistrySystem)
     engine.runPhysicsOnce(CreatePlayer)
 
     engine.run()

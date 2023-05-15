@@ -17,7 +17,7 @@ sealed class Block : Component {
     abstract val colliderShape: Polygon
     abstract val texture: Texture
 
-    fun toComponents(pos: Vector3f): Sequence<Component> {
+    open fun toComponents(pos: Vector3f): Sequence<Component> {
         return sequenceOf(
             this,
             Transform(pos),
@@ -31,17 +31,19 @@ sealed class Block : Component {
     }
 
     companion object {
-        fun initAll() {
-            GoalBlock
-            NormalBlock
-            OscillatingBlock
-            RespawnBlock
-            IceBlock
-            SpikeBlock
-            StickyBlock
-            TeleporterBlock
-            TrampolineBlock
-            AccelerationBlock
+        fun all(): List<Block> {
+            return listOf(
+                GoalBlock(),
+                NormalBlock(),
+                OscillatingBlock(),
+                RespawnBlock(),
+                IceBlock(),
+                SpikeBlock(),
+                StickyBlock(),
+                TeleporterBlock(),
+                TrampolineBlock(),
+                AccelerationBlock()
+            )
         }
     }
 }
