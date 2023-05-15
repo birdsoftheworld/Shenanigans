@@ -74,11 +74,11 @@ class MousePlacementSystem : System {
                     Key.NUM_3 -> Placeable(SpikeBlock().createSprite()) { SpikeBlock() }
                     Key.NUM_4 -> Placeable(StickyBlock().createSprite()) { StickyBlock() }
                     Key.NUM_5 -> Placeable(IceBlock().createSprite()) { IceBlock() }
-                    Key.NUM_6 -> Placeable(TeleporterBlock().createSprite()) { TeleporterBlock() }
-                    Key.NUM_7 -> Placeable(GoalBlock().createSprite()) { GoalBlock() }
-                    Key.NUM_8 -> Placeable(OscillatingBlock().createSprite()) { OscillatingBlock() }
-                    Key.NUM_9 -> Placeable(RespawnBlock().createSprite()) { RespawnBlock() }
-                    Key.NUM_0 -> Placeable(AccelerationBlock().createSprite()) { AccelerationBlock() }
+                    Key.NUM_6 -> Placeable(OscillatingBlock().createSprite()) { OscillatingBlock() }
+//                    Key.NUM_7 -> Placeable(TeleporterBlock().createSprite()) { TeleporterBlock() }
+//                    Key.NUM_8 -> Placeable(GoalBlock().createSprite()) { GoalBlock() }
+//                    Key.NUM_9 -> Placeable(RespawnBlock().createSprite()) { RespawnBlock() }
+//                    Key.NUM_0 -> Placeable(AccelerationBlock().createSprite()) { AccelerationBlock() }
                     Key.ESCAPE -> {
                         query(setOf(HeldObject::class)).forEach {
                             lifecycle.del(it.id)

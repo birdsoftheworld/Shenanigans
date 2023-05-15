@@ -146,6 +146,7 @@ class PlayerController : System {
                         if (e.componentOpt<TrampolineBlock>() != null) {
                             velocity.y = -properties.trampolineSpeed
                             player.currentJump = TrampolineJump
+                            player.onGround = false
                         }
                     } else if (event.normal.y > 0) {
                         player.onCeiling = true
@@ -204,7 +205,9 @@ class PlayerController : System {
             } else if (player.crouching && !holdingCrouch) {
                 val things = query(setOf(Collider::class, Transform::class))
                     .filter { e -> e.id != entity.id && e.component<Collider>().get().solid }
-                val topPosition = Vector2f(pos.x, pos.y)
+                val nudge = 0.05f
+
+                val topPosition = Vector2f(pos.x + nudge, pos.y)
                 val height = SHAPE_BASE.height - SHAPE_CROUCHED.height
                 var hit = raycast(
                     things,
@@ -213,7 +216,7 @@ class PlayerController : System {
                     height
                 )
                 if (hit == null) {
-                    topPosition.add(SHAPE_CROUCHED.width, 0f)
+                    topPosition.add(SHAPE_CROUCHED.width - 2 * nudge, 0f)
                     hit = raycast(
                         things,
                         topPosition,
