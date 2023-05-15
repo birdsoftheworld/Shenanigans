@@ -1,14 +1,11 @@
 package shenanigans.game.state
 
-import org.joml.Vector2f
 import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.net.NetworkEventQueue
-import shenanigans.engine.window.Key
-import shenanigans.engine.window.events.KeyboardState
+import shenanigans.engine.util.Transform
 import shenanigans.game.control.CameraManager
 import shenanigans.game.control.FollowingCamera
 import shenanigans.game.control.MovableCamera
@@ -41,9 +38,12 @@ class ModeChangeSystem : System {
             } else {
                 val id = lifecycle.add(
                     PlayerController.createPlayer(
-                        Vector2f(
-                            cameraManager.lastPosition.x(),
-                            cameraManager.lastPosition.y()
+                        Transform(
+                            Vector3f(
+                                cameraManager.lastPosition.x(),
+                                cameraManager.lastPosition.y(),
+                                0f
+                            )
                         )
                     )
                 )

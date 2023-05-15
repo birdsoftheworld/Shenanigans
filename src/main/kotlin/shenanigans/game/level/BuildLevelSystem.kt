@@ -4,7 +4,7 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.EventQueues
 import shenanigans.engine.events.LocalEventQueue
-import shenanigans.engine.util.shapes.Rectangle
+import shenanigans.engine.util.Transform
 import shenanigans.game.level.block.*
 import shenanigans.game.network.Synchronized
 import kotlin.reflect.KClass
@@ -22,7 +22,7 @@ object BuildLevelSystem : System {
                     insertBlock(
                         lifecycle,
                         NormalBlock(),
-                        Vector3f(pos.x + c * (GRID_SIZE / 2), pos.y + r * (GRID_SIZE / 2), 50f),
+                        Transform(Vector3f(pos.x + c * (GRID_SIZE / 2), pos.y + r * (GRID_SIZE / 2), 50f)),
                         modifiable = false
                     )
                 }
@@ -43,7 +43,7 @@ object BuildLevelSystem : System {
         insertBlock(
             lifecycle,
             RespawnBlock(),
-            Vector3f(96f, 608f, 100f),
+            Transform(Vector3f(96f, 608f, 100f)),
             modifiable = false
         )
 
@@ -55,14 +55,15 @@ fun roundBlockPosition(position: Vector3f): Vector3f {
     return position.sub(GRID_SIZE / 2, GRID_SIZE / 2, 0f).mul(1 / GRID_SIZE).round().mul(GRID_SIZE)
 }
 
-fun insertBlock(lifecycle: EntitiesLifecycle, block: Block, pos: Vector3f, modifiable: Boolean) {
+fun insertBlock(lifecycle: EntitiesLifecycle, block: Block, transform: Transform, modifiable: Boolean) {
     val set = mutableSetOf<Component>(Synchronized())
 
     if(modifiable) {
         set.add(Modifiable)
     }
 
-    val components = block.toComponents(roundBlockPosition(pos)).plus(
+    transform.position = roundBlockPosition(transform.position)
+    val components = block.toComponents(transform).plus(
         set
     )
 

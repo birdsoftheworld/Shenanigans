@@ -431,16 +431,16 @@ class PlayerController : System {
     }
 
     companion object {
-        fun createPlayer(position: Vector2fc): Sequence<Component> {
+        fun createPlayer(transform: Transform): Sequence<Component> {
             val player = Player(
                 PlayerProperties()
             )
-            val playerTransform = Transform(
-                Vector3f(position.x() - SHAPE_BASE.width / 2, position.y() - SHAPE_BASE.height / 2, 100f)
-            )
+            transform.position.x -= SHAPE_BASE.width / 2
+            transform.position.y -= SHAPE_BASE.height / 2
+            transform.position.z = 100f
 
             return sequenceOf(
-                playerTransform,
+                transform,
                 Sprite(TEXTURE.getRegion(), SHAPE_BASE),
                 Collider(SHAPE_BASE, false, tracked = true),
                 player,

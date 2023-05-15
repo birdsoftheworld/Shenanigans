@@ -10,6 +10,7 @@ import shenanigans.engine.net.Network
 import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
 import shenanigans.engine.ui.UISystem
+import shenanigans.engine.util.Transform
 import shenanigans.game.control.*
 import shenanigans.game.level.block.Block
 import shenanigans.game.network.ClientConnectionSystem
@@ -57,7 +58,7 @@ object CreatePlayer : System {
         lifecycle: EntitiesLifecycle
     ) {
         val player = lifecycle.add(
-            PlayerController.createPlayer(Vector2f())
+            PlayerController.createPlayer(Transform())
         )
 
         lifecycle.add(

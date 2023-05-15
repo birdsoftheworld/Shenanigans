@@ -17,10 +17,10 @@ sealed class Block : Component {
     abstract val colliderShape: Polygon
     abstract val texture: Texture
 
-    fun toComponents(pos: Vector3f): Sequence<Component> {
+    fun toComponents(transform: Transform): Sequence<Component> {
         return sequenceOf(
             this,
-            Transform(pos),
+            transform,
             Collider(colliderShape, true, solid, false),
             this.createSprite()
         )

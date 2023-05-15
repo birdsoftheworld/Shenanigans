@@ -15,9 +15,7 @@ import shenanigans.engine.window.Key
 import shenanigans.engine.window.KeyAction
 import shenanigans.engine.window.MouseButton
 import shenanigans.engine.window.MouseButtonAction
-import shenanigans.engine.window.events.KeyEvent
-import shenanigans.engine.window.events.MouseButtonEvent
-import shenanigans.engine.window.events.MouseState
+import shenanigans.engine.window.events.*
 import shenanigans.game.level.block.*
 import shenanigans.game.level.insertBlock
 import shenanigans.game.level.roundBlockPosition
@@ -29,7 +27,31 @@ import kotlin.reflect.KClass
 @ClientOnly
 object HeldObject : Component
 
-class Placeable(val sprite: Sprite, val factory: () -> Block)
+enum class PlacementRotation(val radians: Float) {
+    Up(0f),
+    Right(Math.PI.toFloat() / 2),
+    Down(Math.PI.toFloat()),
+    Left(Math.PI.toFloat() * 3/2);
+
+    fun next(): PlacementRotation {
+        return PlacementRotation.values()[(this.ordinal + 1) % PlacementRotation.values().size]
+    }
+
+    fun previous(): PlacementRotation {
+        val values = PlacementRotation.values()
+        return values[(values.size + this.ordinal - 1) % values.size]
+    }
+}
+
+private enum class RotationAction {
+    None,
+    CW,
+    CCW
+}
+
+class Placeable(val sprite: Sprite, val factory: () -> Block) {
+    var rotation: PlacementRotation = PlacementRotation.Up
+}
 
 @ClientOnly
 class PlacementManager : Component {
@@ -69,16 +91,16 @@ class MousePlacementSystem : System {
         eventQueues.own.receive(KeyEvent::class).forEach { event ->
             if (event.action == KeyAction.PRESS) {
                 val placeable = when (event.key) {
-                    Key.NUM_1 -> Placeable(NormalBlock().createSprite()) { NormalBlock() }
-                    Key.NUM_2 -> Placeable(TrampolineBlock().createSprite()) { TrampolineBlock() }
-                    Key.NUM_3 -> Placeable(SpikeBlock().createSprite()) { SpikeBlock() }
-                    Key.NUM_4 -> Placeable(StickyBlock().createSprite()) { StickyBlock() }
-                    Key.NUM_5 -> Placeable(IceBlock().createSprite()) { IceBlock() }
-                    Key.NUM_6 -> Placeable(OscillatingBlock().createSprite()) { OscillatingBlock() }
-//                    Key.NUM_7 -> Placeable(TeleporterBlock().createSprite()) { TeleporterBlock() }
-//                    Key.NUM_8 -> Placeable(GoalBlock().createSprite()) { GoalBlock() }
-//                    Key.NUM_9 -> Placeable(RespawnBlock().createSprite()) { RespawnBlock() }
-//                    Key.NUM_0 -> Placeable(AccelerationBlock().createSprite()) { AccelerationBlock() }
+                    Key.NUM_1 -> Placeable(NormalBlock().createSprite(), { NormalBlock() })
+                    Key.NUM_2 -> Placeable(TrampolineBlock().createSprite(), { TrampolineBlock() })
+                    Key.NUM_3 -> Placeable(SpikeBlock().createSprite(), { SpikeBlock() })
+                    Key.NUM_4 -> Placeable(StickyBlock().createSprite(), { StickyBlock() })
+                    Key.NUM_5 -> Placeable(IceBlock().createSprite(), { IceBlock() })
+                    Key.NUM_6 -> Placeable(OscillatingBlock().createSprite(), { OscillatingBlock() })
+//                    Key.NUM_7 -> Placeable(TeleporterBlock().createSprite(), { TeleporterBlock() })
+//                    Key.NUM_8 -> Placeable(GoalBlock().createSprite(), { GoalBlock() })
+//                    Key.NUM_9 -> Placeable(RespawnBlock().createSprite(), { RespawnBlock() })
+//                    Key.NUM_0 -> Placeable(AccelerationBlock().createSprite(), { AccelerationBlock() })
                     Key.ESCAPE -> {
                         query(setOf(HeldObject::class)).forEach {
                             lifecycle.del(it.id)
@@ -104,9 +126,30 @@ class MousePlacementSystem : System {
 
         val placeable = placementManager.get().heldPlaceable
         if(placeable != null) {
+            val kb = resources.get<KeyboardState>()
+            val rotation = if(kb.isJustPressed(Key.E)) {
+                RotationAction.CW
+            } else if(kb.isJustPressed(Key.Q)) {
+                RotationAction.CCW
+            } else {
+                eventQueues.own.receive(MouseScrollEvent::class).iterator().forEach { event ->
+                    if(event.offset.y() < 0f) {
+                        RotationAction.CW
+                    } else if(event.offset.y() > 0f) {
+                        RotationAction.CCW
+                    }
+                }
+                RotationAction.None
+            }
+
+            if(rotation != RotationAction.None) {
+                placeable.rotation = if(rotation == RotationAction.CW) { placeable.rotation.next() } else { placeable.rotation.previous() }
+            }
+
             query(setOf(HeldObject::class, Transform::class)).iterator().forEach {
                 val component = it.component<Transform>()
                 component.get().position = roundedPosition
+                component.get().rotation = placeable.rotation.radians
                 component.mutate()
             }
 
@@ -116,7 +159,7 @@ class MousePlacementSystem : System {
                 }
                 when(event.button) {
                     MouseButton.BUTTON_1 -> {
-                        insertBlock(lifecycle, placeable.factory(), roundedPosition, modifiable = true)
+                        insertBlock(lifecycle, placeable.factory(), Transform(roundedPosition, placeable.rotation.radians), modifiable = true)
                     }
                 }
                 placementManager.get().heldPlaceable = null
