@@ -8,7 +8,6 @@ import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.term.Logger
 import shenanigans.game.network.*
-import shenanigans.game.player.Player
 
 class ServerUpdateSystem : NetworkUpdateSystem() {
 

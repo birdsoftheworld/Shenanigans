@@ -9,6 +9,7 @@ import shenanigans.engine.physics.Collider
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.game.level.block.*
+import shenanigans.game.player.Player
 import shenanigans.game.state.Mode
 import shenanigans.game.state.ModeChangeEvent
 import java.util.*
@@ -50,6 +51,7 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(Modifiable::class),
         SendableClass(ModeChangeEvent::class, instantiator = { ModeChangeEvent(Mode.BUILD, Mode.RUN) }),
         SendableClass(Mode::class),
+        SendableClass(Player::class),
     )
 }
 

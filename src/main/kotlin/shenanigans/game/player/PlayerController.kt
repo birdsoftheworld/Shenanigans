@@ -81,8 +81,10 @@ object AirJump : Jump(false)
 object FallJump : Jump(false)
 object TrampolineJump : Jump(false)
 
+class Player : Component
+
 @ClientOnly
-data class Player(
+data class ClientPlayer(
     val properties: PlayerProperties,
 
     val velocity: Vector2f = Vector2f(),
@@ -113,8 +115,8 @@ class PlayerController : System {
         val keyboard = resources.get<KeyboardState>()
         val deltaTimeF = resources.get<Time>().deltaTime.toFloat()
         var blockMovement = Vector2f()
-        query(setOf(Player::class, Transform::class, Collider::class)).forEach { entity ->
-            val player = entity.component<Player>().get()
+        query(setOf(ClientPlayer::class, Transform::class, Collider::class)).forEach { entity ->
+            val player = entity.component<ClientPlayer>().get()
             val transform = entity.component<Transform>()
 
             val velocity = player.velocity
@@ -343,7 +345,7 @@ class PlayerController : System {
             blockMovement.mul(deltaTimeF)
             pos.add(blockMovement.x, blockMovement.y, 0f)
 
-            entity.component<Player>().mutate()
+            entity.component<ClientPlayer>().mutate()
             transform.mutate()
         }
     }
@@ -365,7 +367,7 @@ class PlayerController : System {
         storedSprite.mutate()
     }
 
-    private fun Player.getGravity(holdingJump: Boolean): Float {
+    private fun ClientPlayer.getGravity(holdingJump: Boolean): Float {
         val gravityMultiplier = if (velocity.y < 0f) {
             if (!holdingJump && (this.currentJump is FloorJump || this.currentJump is WallJump)) {
                 1f + properties.jumpCutoff
@@ -380,11 +382,11 @@ class PlayerController : System {
         return properties.gravity * gravityMultiplier
     }
 
-    private fun Player.restoreJumps() {
+    private fun ClientPlayer.restoreJumps() {
         this.jumps = properties.maxJumps
     }
 
-    private fun Player.jump(jump: Jump, sticky: Boolean) {
+    private fun ClientPlayer.jump(jump: Jump, sticky: Boolean) {
         this.currentJump = jump
 
         val targetSpeed = if (jump is WallJump) {
@@ -413,7 +415,7 @@ class PlayerController : System {
         this.jumps--
     }
 
-    private fun Player.getJump(): Jump? {
+    private fun ClientPlayer.getJump(): Jump? {
         if (this.jumps <= 0) {
             return null
         }
@@ -432,7 +434,7 @@ class PlayerController : System {
 
     companion object {
         fun createPlayer(position: Vector2fc): Sequence<Component> {
-            val player = Player(
+            val player = ClientPlayer(
                 PlayerProperties()
             )
             val playerTransform = Transform(
@@ -452,7 +454,7 @@ class PlayerController : System {
             val p = Vector3f(player.component<Transform>().get().position)
             p.x += SHAPE_BASE.width / 2
             p.y += SHAPE_BASE.height / 2
-            if (player.component<Player>().get().crouching) {
+            if (player.component<ClientPlayer>().get().crouching) {
                 p.y -= SHAPE_BASE.height - SHAPE_CROUCHED.height
             }
             return p

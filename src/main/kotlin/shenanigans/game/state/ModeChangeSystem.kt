@@ -5,14 +5,11 @@ import org.joml.Vector3f
 import shenanigans.engine.ecs.*
 import shenanigans.engine.events.Event
 import shenanigans.engine.events.EventQueues
-import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.net.NetworkEventQueue
-import shenanigans.engine.window.Key
-import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.control.CameraManager
 import shenanigans.game.control.FollowingCamera
 import shenanigans.game.control.MovableCamera
-import shenanigans.game.player.Player
+import shenanigans.game.player.ClientPlayer
 import shenanigans.game.player.PlayerController
 import kotlin.reflect.KClass
 
@@ -33,7 +30,7 @@ class ModeChangeSystem : System {
         eventQueues.network.receive(ModeChangeEvent::class).forEach { modeChangeEvent ->
 
             if (modeChangeEvent.to == Mode.BUILD) {
-                for (entityView in query(setOf(Player::class))) {
+                for (entityView in query(setOf(ClientPlayer::class))) {
                     lifecycle.del(entityView.id)
                 }
                 cameraManager.mode = MovableCamera(Vector3f(cameraManager.lastPosition))

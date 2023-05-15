@@ -7,7 +7,7 @@ import shenanigans.engine.net.NetworkEventQueue
 import shenanigans.engine.net.events.ConnectionEvent
 import shenanigans.engine.term.Logger
 import shenanigans.engine.util.Transform
-import shenanigans.game.player.Player
+import shenanigans.game.player.ClientPlayer
 import kotlin.reflect.KClass
 
 class ClientUpdateSystem : NetworkUpdateSystem() {
@@ -96,7 +96,7 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
             synchronized.get().registration = RegistrationStatus.Sent
             synchronized.get().ownerEndpoint = MessageEndpoint.Server
 
-            if(it.componentOpt<Player>() != null) {
+            if(it.componentOpt<ClientPlayer>() != null) {
                 synchronized.get().ownerEndpoint = eventQueues.own.getEndpoint()
             }
 
