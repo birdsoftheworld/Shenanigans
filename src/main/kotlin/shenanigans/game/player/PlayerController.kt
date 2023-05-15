@@ -44,6 +44,7 @@ data class PlayerProperties(
 
     val maxSpeed: Float = 275f,
     val crouchedMoveSpeedMultiplier: Float = 0.35f,
+    val crouchedAirTurnSpeedMultiplier: Float = 0.6f,
 
     val jumpSpeed: Float = 550f,
 
@@ -147,6 +148,7 @@ class PlayerController : System {
                             velocity.y = -properties.trampolineSpeed
                             player.currentJump = TrampolineJump
                             player.onGround = false
+                            player.restoreJumps()
                         }
                     } else if (event.normal.y > 0) {
                         player.onCeiling = true
@@ -262,6 +264,10 @@ class PlayerController : System {
                 }
             }
 
+            if(player.crouching) {
+                turnSpeed *= properties.crouchedAirTurnSpeedMultiplier
+            }
+
             if (slippery) {
                 acceleration *= properties.slipperyMovementMultiplier
                 deceleration *= properties.slipperyDecelerationMultiplier
@@ -303,12 +309,12 @@ class PlayerController : System {
                 }
                 if (player.currentJump != null && player.velocity.y >= 0 && !player.crouching) {
                     player.currentJump = null
-                    player.jumps = properties.maxJumps
+                    player.restoreJumps()
                 }
             }
             if (player.onGround && !jumped) {
                 player.coyoteTime = properties.coyoteTime
-                player.jumps = properties.maxJumps
+                player.restoreJumps()
             }
 
             if (!player.onGround) {
@@ -372,6 +378,10 @@ class PlayerController : System {
             1f
         }
         return properties.gravity * gravityMultiplier
+    }
+
+    private fun Player.restoreJumps() {
+        this.jumps = properties.maxJumps
     }
 
     private fun Player.jump(jump: Jump, sticky: Boolean) {
