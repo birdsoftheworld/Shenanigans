@@ -26,6 +26,7 @@ import shenanigans.game.level.component.MODIFIERS
 import shenanigans.game.level.component.PlayerModifier
 import shenanigans.game.level.component.SurfaceModifier
 import shenanigans.game.network.Synchronized
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.sign
 import kotlin.reflect.KClass
@@ -123,17 +124,17 @@ class PlayerController : System {
         val deltaTimeF = resources.get<Time>().deltaTime.toFloat()
         var blockMovement = Vector2f()
         query(setOf(ClientPlayer::class, Transform::class, Collider::class)).forEach { entity ->
+            // shorter names
             val player = entity.component<ClientPlayer>().get()
             val transform = entity.component<Transform>()
-
             val velocity = player.velocity
 
+            // reset statuses (will be set later in collisions)
             player.onGround = false
             player.wall = WallStatus.Off
             player.onCeiling = false
 
-            val properties = player.effectiveProperties
-
+            // horizontal move direction
             var moveDirection = 0f
             //left
             if (keyboard.isPressed(Key.A)) {
@@ -144,6 +145,7 @@ class PlayerController : System {
                 moveDirection += 1f
             }
 
+            // collisions
             player.activeModifiers = mutableSetOf()
             var trampolineBounce = false
             eventQueues.own.receive(CollisionEvent::class).filter { entity.id == it.target }.forEach collision@{ event ->
@@ -154,6 +156,7 @@ class PlayerController : System {
                         player.onGround = true
                         velocity.y = velocity.y.coerceAtMost(0f)
                         if (e.componentOpt<TrampolineBlock>() != null) {
+                            // defer until later; otherwise, player.onGround would be later set to true
                             trampolineBounce = true
                         }
 
@@ -194,11 +197,11 @@ class PlayerController : System {
                         }
                     }
                 }
-                if(e.componentOpt<AccelerationBlock>() != null){
+                if(e.componentOpt<AccelerationBlock>() != null) {
                     lifecycle.del(e.id)
-                    velocity.mul(properties.accelerationMultiplier)
-                    velocity.x = velocity.x.coerceAtMost(properties.terminalVelocity)
-                    velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+                    velocity.mul(player.effectiveProperties.accelerationMultiplier)
+                    velocity.x = velocity.x.coerceAtMost(player.effectiveProperties.terminalVelocity)
+                    velocity.y = velocity.y.coerceAtMost(player.effectiveProperties.terminalVelocity)
                 }
                 if (e.componentOpt<SpikeBlock>() != null) {
                     respawn(entity, query)
@@ -209,6 +212,7 @@ class PlayerController : System {
                 }
             }
 
+            // modify properties based off of current surfaces and current jump
             player.effectiveProperties = player.properties.copy()
             val modifiers = mutableSetOf<PlayerModifier>()
             modifiers.addAll(player.activeModifiers)
@@ -222,11 +226,15 @@ class PlayerController : System {
                 MODIFIERS[it.id]?.let { it1 -> it1(player.effectiveProperties) }
             }
 
+            val properties = player.effectiveProperties
+
+            // if a trampoline was collided with during the collision check, now bounce the player upwards
             if(trampolineBounce) {
                 velocity.y = -properties.trampolineSpeed
                 player.currentJump = TrampolineJump
                 player.onGround = false
                 player.restoreJumps()
+                player.jumps--
             }
 
             if (player.onGround) {
@@ -235,11 +243,13 @@ class PlayerController : System {
 
             val pos = transform.get().position
 
+            // crouch checks
             val holdingCrouch = keyboard.isPressed(Key.S)
             if (!player.crouching && holdingCrouch) {
                 player.crouching = true
                 entity.changeCrouch(true)
             } else if (player.crouching && !holdingCrouch) {
+                // un-crouching requires there is nothing above the player
                 val things = query(setOf(Collider::class, Transform::class))
                     .filter { e -> e.id != entity.id && e.component<Collider>().get().solid }
                 val nudge = 0.05f
@@ -272,19 +282,22 @@ class PlayerController : System {
             }
 
             val desiredVelocity = Vector2f(moveDirection * properties.maxSpeed, 0f)
-            if (!player.onGround && velocity.x * moveDirection > desiredVelocity.x * moveDirection) {
-                desiredVelocity.x = velocity.x
-            }
 
+            // slower movement while crouched
             if (player.crouching && player.onGround) {
                 desiredVelocity.x *= properties.crouchedMoveSpeedMultiplier
+            }
+
+            // in the air: if the player is moving faster than move speed, maintain the current speed
+            if (!player.onGround && velocity.x * moveDirection > desiredVelocity.x * moveDirection) {
+                desiredVelocity.x = velocity.x
             }
 
             var turnSpeed = 0f
             var acceleration = 0f
             var deceleration = 0f
 
-            //Deceleration based on whether on ground or in air
+            // different variables based on whether on ground or in air
             when (player.onGround) {
                 true -> {
                     acceleration = properties.maxAcceleration
@@ -299,22 +312,30 @@ class PlayerController : System {
                 }
             }
 
-            if(player.crouching) {
+            // nerf air turn speed while crouching
+            if(player.crouching && !player.onGround) {
                 turnSpeed *= properties.crouchedAirTurnSpeedMultiplier
             }
 
+            // maximum change for speed in this frame
             val maxSpeedChange = if (moveDirection != 0f) {
                 if (desiredVelocity.x.sign != velocity.x.sign) {
                     turnSpeed
-                } else {
+                } else if(abs(desiredVelocity.x) >= abs(velocity.x)) {
                     acceleration
+                } else {
+                    deceleration
                 }
             } else {
                 deceleration
             } * deltaTimeF
 
+            // move
             velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
 
+
+
+            // jumps
             var jumped = false
             val pressedJump = keyboard.isJustPressed(Key.SPACE)
             val holdingJump = keyboard.isPressed(Key.SPACE)
@@ -331,6 +352,7 @@ class PlayerController : System {
                 player.jumpBufferTime = properties.jumpBufferTime
             }
 
+            // touching a wall
             if (player.onWall) {
                 if (!jumped) {
                     player.lastWallDirectionTouched = player.wall
@@ -349,22 +371,28 @@ class PlayerController : System {
             if (!player.onGround) {
                 player.coyoteTime = (player.coyoteTime - deltaTimeF).coerceAtLeast(0f)
                 player.wallCoyoteTime = (player.wallCoyoteTime - deltaTimeF).coerceAtLeast(0f)
+                // once coyote time ends, remove the jump
                 if (properties.fallingCountsAsJumping && player.currentJump == null && player.coyoteTime <= 0 && (player.wallCoyoteTime <= 0 || player.crouching)) {
                     player.jumps--
                     player.currentJump = FallJump(player.previousActiveSurfaces)
                 }
             }
 
+            // save current surfaces, in case next frame the player is off the ground
             if (player.onGround || player.onWall) {
                 player.previousActiveSurfaces = player.activeModifiers
             }
 
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
 
+            // apply velocity
             pos.add(velocity.x * deltaTimeF, velocity.y * deltaTimeF, 0f)
 
+            // apply gravity
             if (!player.onGround && !jumped) {
                 velocity.y += gravity * deltaTimeF
+
+                // compensation
                 pos.add(Vector3f(0f, gravity, 0f).mul(1 / 2 * deltaTimeF * deltaTimeF))
             }
 
@@ -374,6 +402,7 @@ class PlayerController : System {
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
 
+            // movement from moving blocks
             blockMovement.mul(deltaTimeF)
             pos.add(blockMovement.x, blockMovement.y, 0f)
 
