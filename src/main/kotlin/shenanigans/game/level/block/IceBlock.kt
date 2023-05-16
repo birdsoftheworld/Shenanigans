@@ -5,11 +5,18 @@ import shenanigans.engine.ecs.Component
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.util.shapes.Polygon
+import shenanigans.game.level.component.ModifierId
 import shenanigans.game.level.component.PlayerModifier
+import shenanigans.game.level.component.SurfaceModifier
 
-const val slipperyMovementMultiplier: Float = .4f
-const val slipperyTurnSpeedMultiplier: Float = .2f
-const val slipperyDecelerationMultiplier: Float = .01f
+const val slipperyAccelerationX: Float = .4f
+const val slipperyAirAccelerationX: Float = .4f
+
+const val slipperyTurnSpeedX: Float = .2f
+const val slipperyAirTurnSpeedX: Float = .3f // my kindness knows no bounds
+
+const val slipperyDecelerationX: Float = .01f
+const val slipperyWallSlideSpeedX: Float = 1.75f
 
 class IceBlock : Block() {
     override val solid = true
@@ -18,7 +25,12 @@ class IceBlock : Block() {
     override val texture = IceBlock.texture
 
     override fun toComponents(pos: Vector3f): Sequence<Component> {
-        return super.toComponents(pos).plus(PlayerModifier("ice"))
+        return super.toComponents(pos).plus(
+            SurfaceModifier(
+                PlayerModifier(ModifierId("ice"), true),
+                PlayerModifier(ModifierId("wallIce"), true)
+            )
+        )
     }
 
     companion object {

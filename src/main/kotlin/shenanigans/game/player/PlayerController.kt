@@ -24,6 +24,7 @@ import shenanigans.engine.window.events.KeyboardState
 import shenanigans.game.level.block.*
 import shenanigans.game.level.component.MODIFIERS
 import shenanigans.game.level.component.PlayerModifier
+import shenanigans.game.level.component.SurfaceModifier
 import shenanigans.game.network.Synchronized
 import kotlin.math.min
 import kotlin.math.sign
@@ -54,7 +55,7 @@ data class PlayerProperties(
 
     var wallJumpHSpeed: Float = 400f,
     var wallJumpVSpeed: Float = 500f,
-    var wallJumpSlideSpeed: Float = 140f,
+    var wallSlideSpeed: Float = 140f,
 
     var coyoteTime: Float = .1f,
     var wallCoyoteTime: Float = .1f,
@@ -72,12 +73,12 @@ data class PlayerProperties(
     var gravity: Float = 1375f,
 )
 
-sealed class Jump(val modifiers: List<PlayerModifier>)
-class FloorJump(modifiers: List<PlayerModifier>, isCoyote: Boolean) : Jump(modifiers)
-class WallJump(modifiers: List<PlayerModifier>, val wall: WallStatus, isCoyote: Boolean) : Jump(modifiers)
-class AirJump(modifiers: List<PlayerModifier>) : Jump(modifiers)
-class FallJump(modifiers: List<PlayerModifier>) : Jump(modifiers)
-object TrampolineJump : Jump(listOf())
+sealed class Jump(val modifiers: Set<PlayerModifier>)
+class FloorJump(modifiers: Set<PlayerModifier>, isCoyote: Boolean) : Jump(modifiers)
+class WallJump(modifiers: Set<PlayerModifier>, val wall: WallStatus, isCoyote: Boolean) : Jump(modifiers)
+class AirJump(modifiers: Set<PlayerModifier>) : Jump(modifiers)
+class FallJump(modifiers: Set<PlayerModifier>) : Jump(modifiers)
+object TrampolineJump : Jump(setOf())
 
 @ClientOnly
 data class Player(
@@ -85,13 +86,16 @@ data class Player(
 ) : Component {
     var effectiveProperties: PlayerProperties = properties.copy()
 
-    var previousActiveSurfaces: List<PlayerModifier> = listOf()
-    var activeSurfaces: MutableList<PlayerModifier> = mutableListOf()
+    var previousActiveSurfaces: Set<PlayerModifier> = setOf()
+    var activeModifiers: MutableSet<PlayerModifier> = mutableSetOf()
 
     val velocity: Vector2f = Vector2f()
 
     var onGround: Boolean = false
     var onCeiling: Boolean = false
+    val onWall: Boolean
+        get() = wall != WallStatus.Off
+
     var wall: WallStatus = WallStatus.Off
 
     var crouching: Boolean = false
@@ -138,7 +142,7 @@ class PlayerController : System {
                 moveDirection += 1f
             }
 
-            player.activeSurfaces = mutableListOf()
+            player.activeModifiers = mutableSetOf()
             var trampolineBounce = false
             eventQueues.own.receive(CollisionEvent::class).filter { entity.id == it.target }.forEach collision@{ event ->
                 val e = query(emptySet())[event.with] ?: return@collision
@@ -149,6 +153,13 @@ class PlayerController : System {
                         velocity.y = velocity.y.coerceAtMost(0f)
                         if (e.componentOpt<TrampolineBlock>() != null) {
                             trampolineBounce = true
+                        }
+
+                        if (e.componentOpt<SurfaceModifier>() != null) {
+                            val surface = e.component<SurfaceModifier>().get()
+                            if(surface.floor != null) {
+                                player.activeModifiers.add(surface.floor)
+                            }
                         }
                     } else if (event.normal.y > 0) {
                         player.onCeiling = true
@@ -161,6 +172,14 @@ class PlayerController : System {
                         player.wall = WallStatus.Left
                         velocity.x = velocity.x.coerceAtLeast(0f)
                     }
+
+                    if (event.normal.x != 0f && e.componentOpt<SurfaceModifier>() != null) {
+                        val surface = e.component<SurfaceModifier>().get()
+                        if(surface.wall != null) {
+                            player.activeModifiers.add(surface.wall)
+                        }
+                    }
+
                     if (e.componentOpt<OscillatingBlock>() != null && event.normal.y <= 0f) {
                         // if the collision isn't on a wall, or if the player
                         // is moving in the same direction as the wall surface
@@ -186,19 +205,19 @@ class PlayerController : System {
                     println("CONGRATS YOU PASSED THE LEVEL")
                     respawn(entity, query)
                 }
-                if (e.componentOpt<PlayerModifier>() != null) {
-                    player.activeSurfaces.add(e.component<PlayerModifier>().get())
-                }
             }
 
             player.effectiveProperties = player.properties.copy()
             val modifiers = mutableSetOf<PlayerModifier>()
-            modifiers.addAll(player.activeSurfaces)
+            modifiers.addAll(player.activeModifiers)
             if(player.currentJump != null) {
                 modifiers.addAll(player.currentJump!!.modifiers)
             }
+            if(player.coyoteTime > 0f || player.wallCoyoteTime > 0f) {
+                modifiers.addAll(player.previousActiveSurfaces.filter { it.keepDuringCoyoteTime })
+            }
             modifiers.forEach {
-                MODIFIERS[it.name]?.let { it1 -> it1(player.effectiveProperties) }
+                MODIFIERS[it.id]?.let { it1 -> it1(player.effectiveProperties) }
             }
 
             if(trampolineBounce) {
@@ -310,7 +329,7 @@ class PlayerController : System {
                 player.jumpBufferTime = properties.jumpBufferTime
             }
 
-            if (player.wall != WallStatus.Off) {
+            if (player.onWall) {
                 if (!jumped) {
                     player.lastWallDirectionTouched = player.wall
                     player.wallCoyoteTime = properties.wallCoyoteTime
@@ -334,8 +353,8 @@ class PlayerController : System {
                 }
             }
 
-            if (player.onGround) {
-                player.previousActiveSurfaces = player.activeSurfaces
+            if (player.onGround || player.onWall) {
+                player.previousActiveSurfaces = player.activeModifiers
             }
 
             player.jumpBufferTime = (player.jumpBufferTime - deltaTimeF).coerceAtLeast(0f)
@@ -347,8 +366,8 @@ class PlayerController : System {
                 pos.add(Vector3f(0f, gravity, 0f).mul(1 / 2 * deltaTimeF * deltaTimeF))
             }
 
-            if (player.wall != WallStatus.Off && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
-                velocity.y = velocity.y.coerceAtMost(properties.wallJumpSlideSpeed)
+            if (player.onWall && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
+                velocity.y = velocity.y.coerceAtMost(properties.wallSlideSpeed)
             }
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
@@ -429,15 +448,15 @@ class PlayerController : System {
             return null
         }
         return if (this.onGround) {
-            FloorJump(this.activeSurfaces, false)
+            FloorJump(this.activeModifiers.filter { it.keepOnJump }.toSet(), false)
         } else if (this.coyoteTime > 0f) {
-            FloorJump(this.activeSurfaces, true)
+            FloorJump(this.previousActiveSurfaces, true)
         } else if (this.wall != WallStatus.Off && !this.crouching) {
-            WallJump(this.activeSurfaces, this.wall, false)
+            WallJump(this.activeModifiers.filter { it.keepOnJump }.toSet(), this.wall, false)
         } else if (this.wallCoyoteTime > 0f && !this.crouching) {
-            WallJump(this.activeSurfaces, this.lastWallDirectionTouched, true)
+            WallJump(this.previousActiveSurfaces, this.lastWallDirectionTouched, true)
         } else {
-            return AirJump(this.previousActiveSurfaces)
+            return AirJump(this.previousActiveSurfaces.filter { it.keepOnJump }.toSet())
         }
     }
 
