@@ -18,17 +18,11 @@ const val slipperyAirTurnSpeedX: Float = .3f // my kindness knows no bounds
 const val slipperyDecelerationX: Float = .01f
 const val slipperyWallSlideSpeedX: Float = 1.75f
 
-class IceBlock : ModifierBlock() {
+class IceBlock : Block() {
     override val solid = true
     override val visualShape = SQUARE_BLOCK_SHAPE
     override val colliderShape: Polygon = SQUARE_BLOCK_SHAPE
     override val texture = IceBlock.texture
-    override val modifier = "ice" to {
-        it.maxSpeed *= slipperyMovementMultiplier
-        it.maxTurnSpeed *= slipperyTurnSpeedMultiplier
-        it.maxDeceleration *= slipperyDecelerationMultiplier
-        it.maxAirTurnSpeed *= 0
-    }
 
     override fun toComponents(pos: Vector3f): Sequence<Component> {
         return super.toComponents(pos).plus(
