@@ -47,6 +47,13 @@ object BuildLevelSystem : System {
             modifiable = false
         )
 
+        insertBlock(
+            lifecycle,
+            AccelerationBlock(),
+            Vector3f(224f, 608f, 100f),
+            modifiable = true,
+        )
+
         box(80,20, Vector3f(0f, 0f, .9f))
     }
 }

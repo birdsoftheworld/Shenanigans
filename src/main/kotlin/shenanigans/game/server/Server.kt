@@ -5,6 +5,7 @@ import shenanigans.engine.net.Network
 import shenanigans.engine.net.Server
 import shenanigans.engine.scene.Scene
 import shenanigans.game.level.BuildLevelSystem
+import shenanigans.game.level.block.AccelerationSystem
 import shenanigans.game.RegistrySystem
 import shenanigans.game.level.block.GoalSystem
 import shenanigans.game.level.block.OscillatingBlocksSystem
