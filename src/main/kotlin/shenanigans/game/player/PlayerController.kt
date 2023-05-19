@@ -148,74 +148,75 @@ class PlayerController : System {
             // collisions
             player.activeModifiers = mutableSetOf()
             var trampolineBounce = false
-            eventQueues.own.receive(CollisionEvent::class).filter { entity.id == it.target }.forEach collision@{ event ->
-                val e = query(emptySet())[event.with] ?: return@collision
-                val solid = e.component<Collider>().get().solid
-                if (solid) {
-                    if (event.normal.y < 0) {
-                        player.onGround = true
-                        velocity.y = velocity.y.coerceAtMost(0f)
-                        if (e.componentOpt<TrampolineBlock>() != null) {
-                            // defer until later; otherwise, player.onGround would be later set to true
-                            trampolineBounce = true
+            eventQueues.own.receive(CollisionEvent::class).filter { entity.id == it.target }
+                .forEach collision@{ event ->
+                    val e = query(emptySet())[event.with] ?: return@collision
+                    val solid = e.component<Collider>().get().solid
+                    if (solid) {
+                        if (event.normal.y < 0) {
+                            player.onGround = true
+                            velocity.y = velocity.y.coerceAtMost(0f)
+                            if (e.componentOpt<TrampolineBlock>() != null) {
+                                // defer until later; otherwise, player.onGround would be later set to true
+                                trampolineBounce = true
+                            }
+
+                            if (e.componentOpt<SurfaceModifier>() != null) {
+                                val surface = e.component<SurfaceModifier>().get()
+                                if (surface.floor != null) {
+                                    player.activeModifiers.add(surface.floor)
+                                }
+                            }
+                        } else if (event.normal.y > 0) {
+                            player.onCeiling = true
+                            velocity.y = velocity.y.coerceAtLeast(0f)
+                        }
+                        if (event.normal.x < 0) {
+                            player.wall = WallStatus.Right
+                            velocity.x = velocity.x.coerceAtMost(0f)
+                        } else if (event.normal.x > 0) {
+                            player.wall = WallStatus.Left
+                            velocity.x = velocity.x.coerceAtLeast(0f)
                         }
 
-                        if (e.componentOpt<SurfaceModifier>() != null) {
+                        if (event.normal.x != 0f && e.componentOpt<SurfaceModifier>() != null) {
                             val surface = e.component<SurfaceModifier>().get()
-                            if(surface.floor != null) {
-                                player.activeModifiers.add(surface.floor)
+                            if (surface.wall != null) {
+                                player.activeModifiers.add(surface.wall)
                             }
                         }
-                    } else if (event.normal.y > 0) {
-                        player.onCeiling = true
-                        velocity.y = velocity.y.coerceAtLeast(0f)
-                    }
-                    if (event.normal.x < 0) {
-                        player.wall = WallStatus.Right
-                        velocity.x = velocity.x.coerceAtMost(0f)
-                    } else if (event.normal.x > 0) {
-                        player.wall = WallStatus.Left
-                        velocity.x = velocity.x.coerceAtLeast(0f)
-                    }
 
-                    if (event.normal.x != 0f && e.componentOpt<SurfaceModifier>() != null) {
-                        val surface = e.component<SurfaceModifier>().get()
-                        if(surface.wall != null) {
-                            player.activeModifiers.add(surface.wall)
+                        if (e.componentOpt<OscillatingBlock>() != null && event.normal.y <= 0f) {
+                            // if the collision isn't on a wall, or if the player
+                            // is moving in the same direction as the wall surface
+                            if (
+                                event.normal.x == 0f
+                                || (moveDirection != 0f && sign(moveDirection) != sign(event.normal.x))
+                            ) {
+                                val oscillatingBlock = e.component<OscillatingBlock>().get()
+                                blockMovement = oscillatingBlock.getMove()
+                            }
                         }
                     }
-
-                    if (e.componentOpt<OscillatingBlock>() != null && event.normal.y <= 0f) {
-                        // if the collision isn't on a wall, or if the player
-                        // is moving in the same direction as the wall surface
-                        if (
-                            event.normal.x == 0f
-                            || (moveDirection != 0f && sign(moveDirection) != sign(event.normal.x))
-                        ) {
-                            val oscillatingBlock = e.component<OscillatingBlock>().get()
-                            blockMovement = oscillatingBlock.getMove()
+                    if (e.componentOpt<AccelerationBlock>() != null) {
+                        if (!e.component<AccelerationBlock>().get().used) {
+                            velocity.mul(player.effectiveProperties.accelerationMultiplier)
+                            e.component<AccelerationBlock>().get().used = true
                         }
                     }
-                }
-                if(e.componentOpt<AccelerationBlock>() != null){
-                    if(!e.component<AccelerationBlock>().get().used){
-                        velocity.mul(player.effectiveProperties.accelerationMultiplier)
-                        e.component<AccelerationBlock>().get().used = true
+                    if (e.componentOpt<SpikeBlock>() != null) {
+                        respawn(entity, query)
                     }
                 }
-                if (e.componentOpt<SpikeBlock>() != null) {
-                    respawn(entity, query)
-                }
-            }
 
             // modify properties based off of current surfaces and current jump
             player.effectiveProperties = player.properties.copy()
             val modifiers = mutableSetOf<PlayerModifier>()
             modifiers.addAll(player.activeModifiers)
-            if(player.currentJump != null) {
+            if (player.currentJump != null) {
                 modifiers.addAll(player.currentJump!!.modifiers)
             }
-            if(player.coyoteTime > 0f || player.wallCoyoteTime > 0f) {
+            if (player.coyoteTime > 0f || player.wallCoyoteTime > 0f) {
                 modifiers.addAll(player.previousActiveSurfaces.filter { it.keepDuringCoyoteTime })
             }
             modifiers.forEach {
@@ -225,7 +226,7 @@ class PlayerController : System {
             val properties = player.effectiveProperties
 
             // if a trampoline was collided with during the collision check, now bounce the player upwards
-            if(trampolineBounce) {
+            if (trampolineBounce) {
                 velocity.y = -properties.trampolineSpeed
                 player.currentJump = TrampolineJump
                 player.onGround = false
@@ -309,7 +310,7 @@ class PlayerController : System {
             }
 
             // nerf air turn speed while crouching
-            if(player.crouching && !player.onGround) {
+            if (player.crouching && !player.onGround) {
                 turnSpeed *= properties.crouchedAirTurnSpeedMultiplier
             }
 
@@ -317,7 +318,7 @@ class PlayerController : System {
             val maxSpeedChange = if (moveDirection != 0f) {
                 if (desiredVelocity.x.sign != velocity.x.sign) {
                     turnSpeed
-                } else if(abs(desiredVelocity.x) >= abs(velocity.x)) {
+                } else if (abs(desiredVelocity.x) >= abs(velocity.x)) {
                     acceleration
                 } else {
                     deceleration
@@ -328,7 +329,6 @@ class PlayerController : System {
 
             // move
             velocity.x = moveTowards(velocity.x, desiredVelocity.x, maxSpeedChange)
-
 
 
             // jumps

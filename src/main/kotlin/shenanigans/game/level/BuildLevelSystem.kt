@@ -15,20 +15,20 @@ object BuildLevelSystem : System {
         query: (Iterable<KClass<out Component>>) -> QueryView,
         lifecycle: EntitiesLifecycle
     ) {
-        fun line(x : Int, y : Int, pos : Vector3f){
+        fun line(x: Int, y: Int, pos: Vector3f) {
             for (c in 1..x) {
                 for (r in 1..y) {
                     insertBlock(
                         lifecycle,
                         NormalBlock(),
-                        Vector3f(pos.x + c * GRID_SIZE, pos.y + r * GRID_SIZE,  pos.z),
+                        Vector3f(pos.x + c * GRID_SIZE, pos.y + r * GRID_SIZE, pos.z),
                         modifiable = false
                     )
                 }
             }
         }
 
-        fun box(x : Int, y : Int, pos : Vector3f) {
+        fun box(x: Int, y: Int, pos: Vector3f) {
             line(x, 1, pos)
             pos.y += y * (GRID_SIZE / 2)
             line(x, 1, pos)
@@ -53,9 +53,9 @@ object BuildLevelSystem : System {
             modifiable = false
         )
 
-        line(5, 1,  Vector3f(-3f * GRID_SIZE, 0.5f * GRID_SIZE, .9f))
+        line(5, 1, Vector3f(-3f * GRID_SIZE, 0.5f * GRID_SIZE, .9f))
 
-        line(5, 1,  Vector3f((25-3f) * GRID_SIZE, 0.5f * GRID_SIZE, .9f))
+        line(5, 1, Vector3f((25 - 3f) * GRID_SIZE, 0.5f * GRID_SIZE, .9f))
 
 //        box(80,20, Vector3f(0f, 0f, .9f))
     }
@@ -68,7 +68,7 @@ fun roundBlockPosition(position: Vector3f): Vector3f {
 fun insertBlock(lifecycle: EntitiesLifecycle, block: Block, pos: Vector3f, modifiable: Boolean) {
     val set = mutableSetOf<Component>(Synchronized())
 
-    if(modifiable) {
+    if (modifiable) {
         set.add(Modifiable)
     }
 

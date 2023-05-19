@@ -36,10 +36,10 @@ class GoalSystem : System {
         eventQueues.own.receive(CollisionEvent::class)
             .filter {
                 (entities[it.target] != null && entities[it.with] != null) &&
-                (
-                    entities[it.target]!!.componentOpt<Player>() != null &&
-                    entities[it.with]!!.componentOpt<GoalBlock>() != null
-                )
+                        (
+                                entities[it.target]!!.componentOpt<Player>() != null &&
+                                        entities[it.with]!!.componentOpt<GoalBlock>() != null
+                                )
             }
             .forEach { _ ->
                 Logger.log("test", "test")

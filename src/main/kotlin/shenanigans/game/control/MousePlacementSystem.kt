@@ -55,7 +55,7 @@ class MousePlacementSystem : System {
             placementManager.mutate()
         }
 
-        if(modeManager.mode != Mode.BUILD) return
+        if (modeManager.mode != Mode.BUILD) return
 
         val position = resources.get<MouseState>().position()
         val transformedPosition = resources.get<CameraResource>().camera!!.untransformPoint(
@@ -85,10 +85,11 @@ class MousePlacementSystem : System {
                         }
                         null
                     }
+
                     else -> null
                 }
 
-                if(placeable != null) {
+                if (placeable != null) {
                     query(setOf(HeldObject::class)).forEach {
                         lifecycle.del(it.id)
                     }
@@ -103,7 +104,7 @@ class MousePlacementSystem : System {
         }
 
         val placeable = placementManager.get().heldPlaceable
-        if(placeable != null) {
+        if (placeable != null) {
             query(setOf(HeldObject::class, Transform::class)).iterator().forEach {
                 val component = it.component<Transform>()
                 component.get().position = roundedPosition
@@ -114,7 +115,7 @@ class MousePlacementSystem : System {
                 query(setOf(HeldObject::class)).forEach {
                     lifecycle.del(it.id)
                 }
-                when(event.button) {
+                when (event.button) {
                     MouseButton.BUTTON_1 -> {
                         insertBlock(lifecycle, placeable.factory(), roundedPosition, modifiable = true)
                     }
@@ -124,9 +125,9 @@ class MousePlacementSystem : System {
             }
         } else {
             eventQueues.own.receive(MouseButtonEvent::class).forEach { event ->
-                when(event.button) {
+                when (event.button) {
                     MouseButton.BUTTON_2 -> {
-                        if(event.action == MouseButtonAction.PRESS) {
+                        if (event.action == MouseButtonAction.PRESS) {
                             query(setOf(Modifiable::class, Collider::class, Transform::class)).iterator().forEach {
                                 val transform = it.component<Transform>().get()
                                 val collider = it.component<Collider>().get()

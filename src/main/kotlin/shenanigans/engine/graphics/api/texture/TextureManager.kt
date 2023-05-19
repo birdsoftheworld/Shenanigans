@@ -12,7 +12,7 @@ object TextureManager {
     private val keyedTextures = mutableMapOf<TextureKey, GlTexture>()
 
     fun createTexture(key: TextureKey, path: String, options: TextureOptions = TextureOptions()): Texture {
-        if(queuedTextures.containsKey(key)) {
+        if (queuedTextures.containsKey(key)) {
             throw IllegalArgumentException("can't create texture with a duplicate key")
         }
         queuedTextures[key] = PathTexture(options, path)

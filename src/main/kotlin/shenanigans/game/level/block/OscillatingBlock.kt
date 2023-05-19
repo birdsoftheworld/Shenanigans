@@ -16,15 +16,19 @@ import kotlin.reflect.KClass
 enum class Direction(val vector: Vector2fc) {
     Up(
         Vector2f(0f, -1f)
-    ), Right(
+    ),
+    Right(
         Vector2f(1f, 0f)
-    ), Down(
+    ),
+    Down(
         Vector2f(0f, 1f)
-    ), Left(
+    ),
+    Left(
         Vector2f(-1f, 0f)
     );
+
     fun opposite(): Direction {
-        return when(this) {
+        return when (this) {
             Up -> Down
             Down -> Up
             Left -> Right
@@ -37,6 +41,7 @@ class OscillatingBlock(
     val distanceToOscillate: Float, var startPos: Vector2f?, var speed: Float, var dir: Direction = Direction.Right,
 ) : Block() {
     constructor() : this(128f, null, 100f)
+
     override val solid = true
     override val colliderShape: Polygon = SQUARE_BLOCK_SHAPE
     override val visualShape = SQUARE_BLOCK_SHAPE
@@ -91,7 +96,7 @@ class OscillatingBlocksSystem : System {
             val pos = entity.component<Transform>().get().position
             val oscillatingBlock = entity.component<OscillatingBlock>().get()
             val deltaTimeF = resources.get<Time>().deltaTime.toFloat()
-            if(oscillatingBlock.startPos == null) {
+            if (oscillatingBlock.startPos == null) {
                 oscillatingBlock.newStartPos(pos.x, pos.y)
             }
             if (abs(pos.x - oscillatingBlock.startPos!!.x) > oscillatingBlock.distanceToOscillate || abs(pos.y - oscillatingBlock.startPos!!.y) > oscillatingBlock.distanceToOscillate) {

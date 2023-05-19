@@ -35,7 +35,10 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
             val entity = entities[packetEntity.key]
 
             if (entity == null) {
-                Logger.warn("Entity Update Packet", "Received packet for unregistered entity with ID " + packetEntity.key)
+                Logger.warn(
+                    "Entity Update Packet",
+                    "Received packet for unregistered entity with ID " + packetEntity.key
+                )
                 return@packet
             }
 
@@ -44,15 +47,15 @@ class ClientUpdateSystem : NetworkUpdateSystem() {
             }
 
             synchronizedComponents()
-                    .filter { entity.componentOpt(it.component) != null }
-                    .forEach {synchronizedComponent ->
-                entity.component(synchronizedComponent.component).replace(
-                    synchronizedComponent.updateClient(
-                        entity.component(synchronizedComponent.component).get(),
-                        packetEntity.value[synchronizedComponent.component]!!
+                .filter { entity.componentOpt(it.component) != null }
+                .forEach { synchronizedComponent ->
+                    entity.component(synchronizedComponent.component).replace(
+                        synchronizedComponent.updateClient(
+                            entity.component(synchronizedComponent.component).get(),
+                            packetEntity.value[synchronizedComponent.component]!!
+                        )
                     )
-                )
-            }
+                }
 
             entities[packetEntity.key]!!.component<Transform>().mutate()
         }
@@ -96,7 +99,7 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
             synchronized.get().registration = RegistrationStatus.Sent
             synchronized.get().ownerEndpoint = MessageEndpoint.Server
 
-            if(it.componentOpt<ClientPlayer>() != null) {
+            if (it.componentOpt<ClientPlayer>() != null) {
                 synchronized.get().ownerEndpoint = eventQueues.own.getEndpoint()
             }
 
@@ -115,7 +118,8 @@ class ClientRegistrationSystem : NetworkRegistrationSystem() {
         if (entities[registrationPacket.id] != null) {
             val localSync = entities[registrationPacket.id]!!.component<Synchronized>()
             localSync.get().registration = RegistrationStatus.Registered
-            localSync.get().ownerEndpoint = (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
+            localSync.get().ownerEndpoint =
+                (registrationPacket.entity[Synchronized::class]!! as Synchronized).ownerEndpoint
             localSync.mutate()
             return
         }

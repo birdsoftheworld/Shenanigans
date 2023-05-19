@@ -19,7 +19,7 @@ class ServerUpdateSystem : NetworkUpdateSystem() {
         return EntityUpdatePacket(
             entities.map { entity ->
                 entity.id to entity.entity.components.filter { component ->
-                    components.map {it.component }.contains(component.key)
+                    components.map { it.component }.contains(component.key)
                 }.mapValues { it.value.component }
             }.toMap()
         )
@@ -35,15 +35,15 @@ class ServerUpdateSystem : NetworkUpdateSystem() {
             }
 
             synchronizedComponents()
-                    .filter { entity.componentOpt(it.component) != null }
-                    .forEach {synchronizedComponent ->
-                entity.component(synchronizedComponent.component).replace(
-                    synchronizedComponent.updateServer(
-                        entity.component(synchronizedComponent.component).get(),
-                        packetEntity.value[synchronizedComponent.component]!!
+                .filter { entity.componentOpt(it.component) != null }
+                .forEach { synchronizedComponent ->
+                    entity.component(synchronizedComponent.component).replace(
+                        synchronizedComponent.updateServer(
+                            entity.component(synchronizedComponent.component).get(),
+                            packetEntity.value[synchronizedComponent.component]!!
+                        )
                     )
-                )
-            }
+                }
         }
     }
 }
@@ -89,7 +89,10 @@ class ServerRegistrationSystem : NetworkRegistrationSystem() {
         lifecycle: EntitiesLifecycle
     ) {
         if (entities[registrationPacket.id] != null) {
-            Logger.warn("Entity Registration", "Received registration packet with duplicate ID " + registrationPacket.id)
+            Logger.warn(
+                "Entity Registration",
+                "Received registration packet with duplicate ID " + registrationPacket.id
+            )
         }
 
         val remoteSync = (registrationPacket.entity[Synchronized::class] as Synchronized)

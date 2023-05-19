@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 abstract class NetworkUpdateSystem : System {
 
-    private var lastUpdate : MutableMap<UUID, Map<KClass<out Component>, Int>> = mutableMapOf()
+    private var lastUpdate: MutableMap<UUID, Map<KClass<out Component>, Int>> = mutableMapOf()
 
     override fun executeNetwork(
         resources: ResourcesView,
@@ -20,7 +20,7 @@ abstract class NetworkUpdateSystem : System {
     ) {
         val entities = query(setOf(Synchronized::class))
 
-        lastUpdate.keys.filter { entities[it] == null }.forEach{
+        lastUpdate.keys.filter { entities[it] == null }.forEach {
             lastUpdate.remove(it)
             deleteEntity(it, eventQueues)
         }
@@ -30,17 +30,18 @@ abstract class NetworkUpdateSystem : System {
             updateEntities(
                 it,
                 entities,
-                eventQueues.network)
+                eventQueues.network
+            )
         }
 
         eventQueues.network.queueNetwork(
             getUpdatePacket(
                 synchronizedComponents(),
                 entities.filter { entity ->
-                        lastUpdate.containsKey(entity.id) &&
-                        lastUpdate[entity.id]!!.filter { lastVersion ->
-                            entity.component(lastVersion.key).version() != lastVersion.value
-                        }.isNotEmpty()
+                    lastUpdate.containsKey(entity.id) &&
+                            lastUpdate[entity.id]!!.filter { lastVersion ->
+                                entity.component(lastVersion.key).version() != lastVersion.value
+                            }.isNotEmpty()
                 },
                 eventQueues.network
             )
@@ -48,8 +49,8 @@ abstract class NetworkUpdateSystem : System {
 
         entities.forEach { entity ->
             lastUpdate[entity.id] = synchronizedComponents()
-                    .filter { entity.componentOpt(it.component) != null }
-                    .associate { it.component to entity.component(it.component).version() }
+                .filter { entity.componentOpt(it.component) != null }
+                .associate { it.component to entity.component(it.component).version() }
         }
     }
 
@@ -140,7 +141,7 @@ abstract class NetworkRegistrationSystem : System {
         eventQueue: NetworkEventQueue,
         lifecycle: EntitiesLifecycle
     ) {
-        if(entities[deregistrationPacket.id] != null) {
+        if (entities[deregistrationPacket.id] != null) {
             lifecycle.del(deregistrationPacket.id)
         }
     }

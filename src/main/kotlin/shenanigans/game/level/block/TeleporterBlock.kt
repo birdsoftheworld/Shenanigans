@@ -24,7 +24,8 @@ class TeleporterBlock : Block() {
     }
 }
 
-class TeleporterSystem : System {// Implement
+class TeleporterSystem : System {
+    // Implement
     override fun executePhysics(
         resources: ResourcesView,
         eventQueues: EventQueues<LocalEventQueue>,

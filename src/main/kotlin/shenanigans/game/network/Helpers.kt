@@ -10,9 +10,9 @@ import shenanigans.engine.util.Transform
 import shenanigans.engine.util.shapes.Rectangle
 import shenanigans.game.level.block.*
 import shenanigans.game.level.component.ModifierId
-import shenanigans.game.player.Player
 import shenanigans.game.level.component.PlayerModifier
 import shenanigans.game.level.component.SurfaceModifier
+import shenanigans.game.player.Player
 import shenanigans.game.state.Mode
 import shenanigans.game.state.ModeChangeEvent
 import java.util.*
@@ -50,7 +50,9 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(StickyBlock::class),
         SendableClass(AccelerationBlock::class),
         SendableClass(GoalBlock::class),
-        SendableClass(SurfaceModifier::class, instantiator = { SurfaceModifier(PlayerModifier(ModifierId(""), false)) }),
+        SendableClass(
+            SurfaceModifier::class,
+            instantiator = { SurfaceModifier(PlayerModifier(ModifierId(""), false)) }),
         SendableClass(PlayerModifier::class, instantiator = { PlayerModifier(ModifierId(""), false) }),
         SendableClass(ModifierId::class, instantiator = { ModifierId("") }),
         SendableClass(Direction::class),
@@ -70,8 +72,7 @@ class SynchronizedComponent(
 
 fun synchronizedComponents(): Set<SynchronizedComponent> {
     return setOf(
-        SynchronizedComponent(Transform::class, updateClient = {
-                initial: Component, updated : Component ->
+        SynchronizedComponent(Transform::class, updateClient = { initial: Component, updated: Component ->
             (initial as Transform).position.lerp((updated as Transform).position, 1f / 3f)
             return@SynchronizedComponent initial
         }),
