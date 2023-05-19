@@ -13,6 +13,8 @@ import shenanigans.engine.ui.UISystem
 import shenanigans.game.control.*
 import shenanigans.game.level.block.AccelerationSystem
 import shenanigans.game.level.block.Block
+import shenanigans.game.level.block.CrumbleBlock
+import shenanigans.game.level.block.CrumbleSystem
 import shenanigans.game.network.ClientConnectionSystem
 import shenanigans.game.network.ClientRegistrationSystem
 import shenanigans.game.network.ClientUpdateSystem
@@ -42,6 +44,7 @@ fun testScene(): Scene {
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(AccelerationSystem())
+    scene.defaultSystems.add(CrumbleSystem())
     scene.defaultSystems.add(UISystem())
     scene.defaultSystems.add(CameraControlSystem())
     scene.defaultSystems.add(ClientUpdateSystem())

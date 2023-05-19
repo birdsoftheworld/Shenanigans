@@ -42,6 +42,7 @@ sealed class Block : Component {
             TeleporterBlock
             TrampolineBlock
             AccelerationBlock
+            CrumbleBlock
         }
     }
 }

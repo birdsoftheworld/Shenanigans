@@ -75,7 +75,7 @@ class MousePlacementSystem : System {
                     Key.NUM_4 -> Placeable(StickyBlock().createSprite()) { StickyBlock() }
                     Key.NUM_5 -> Placeable(IceBlock().createSprite()) { IceBlock() }
                     Key.NUM_6 -> Placeable(OscillatingBlock().createSprite()) { OscillatingBlock() }
-//                    Key.NUM_7 -> Placeable(TeleporterBlock().createSprite()) { TeleporterBlock() }
+                    Key.NUM_7 -> Placeable(CrumbleBlock().createSprite()) { CrumbleBlock() }
 //                    Key.NUM_8 -> Placeable(GoalBlock().createSprite()) { GoalBlock() }
 //                    Key.NUM_9 -> Placeable(RespawnBlock().createSprite()) { RespawnBlock() }
                     Key.NUM_0 -> Placeable(AccelerationBlock().createSprite()) { AccelerationBlock() }

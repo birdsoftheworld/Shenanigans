@@ -15,6 +15,7 @@ import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.Time
+import shenanigans.engine.timer.timeEventPhysics
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
 import shenanigans.engine.util.raycast
@@ -202,6 +203,12 @@ class PlayerController : System {
                         if (!e.component<AccelerationBlock>().get().used) {
                             velocity.mul(player.effectiveProperties.accelerationMultiplier)
                             e.component<AccelerationBlock>().get().used = true
+                        }
+                    }
+                    if(e.componentOpt<CrumbleBlock>() != null){
+                        if(!e.component<CrumbleBlock>().get().touched){
+                            timeEventPhysics(2.0, DoSomething(e.id, false))
+                            e.component<CrumbleBlock>().get().touched = true
                         }
                     }
                     if (e.componentOpt<SpikeBlock>() != null) {

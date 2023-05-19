@@ -50,6 +50,8 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(StickyBlock::class),
         SendableClass(AccelerationBlock::class),
         SendableClass(GoalBlock::class),
+        SendableClass(CrumbleBlock::class),
+        SendableClass(SurfaceModifier::class, instantiator = { SurfaceModifier(PlayerModifier(ModifierId(""), false)) }),
         SendableClass(
             SurfaceModifier::class,
             instantiator = { SurfaceModifier(PlayerModifier(ModifierId(""), false)) }),
