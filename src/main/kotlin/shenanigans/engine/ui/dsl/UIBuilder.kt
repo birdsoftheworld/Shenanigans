@@ -1,27 +1,25 @@
 package shenanigans.engine.ui.dsl
 
 import shenanigans.engine.ui.elements.Box
+import shenanigans.engine.ui.elements.ColoredBox
+import shenanigans.engine.ui.elements.Text
 
-sealed interface UIBuilder<out T> {
-    fun build(): T
-}
+interface UIBuilder {
+    fun addChild(child: Box)
 
-sealed interface ParentUIBuilder {
-    fun addChild(child: UIBuilder<Box>)
-
-    fun box(init: BoxBuilder.() -> Unit) {
-        addChild(BoxBuilder().apply(init))
+    fun box(init: Box.() -> Unit) {
+        addChild(Box().apply(init))
     }
 
-    fun coloredBox(init: ColoredBoxBuilder.() -> Unit) {
-        addChild(ColoredBoxBuilder().apply(init))
+    fun coloredBox(init: ColoredBox.() -> Unit) {
+        addChild(ColoredBox().apply(init))
     }
 
-    fun text(init: TextBuilder.() -> Unit) {
-        addChild(TextBuilder().apply(init))
+    fun text(init: Text.() -> Unit) {
+        addChild(Text().apply(init))
     }
 
-    fun text(text: String, init: TextBuilder.() -> Unit = {}) {
+    fun text(text: String, init: Text.() -> Unit = {}) {
         text {
             this.text = text
             init()
@@ -29,6 +27,6 @@ sealed interface ParentUIBuilder {
     }
 }
 
-fun buildUI(init: BoxBuilder.() -> Unit): Box {
-    return BoxBuilder().apply(init).build()
+fun buildUI(init: UIBuilder.() -> Unit): Box {
+    return Box().apply(init)
 }

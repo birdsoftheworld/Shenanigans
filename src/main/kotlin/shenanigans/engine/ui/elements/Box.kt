@@ -4,8 +4,9 @@ import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.lwjgl.util.yoga.Yoga
 import shenanigans.engine.ecs.ResourcesView
+import shenanigans.engine.ui.dsl.UIBuilder
 
-open class Box : AutoCloseable {
+open class Box : AutoCloseable, UIBuilder {
     private val node = Yoga.YGNodeNew()
 
     private var _children = mutableListOf<Box>()
@@ -21,7 +22,7 @@ open class Box : AutoCloseable {
             _children = value.toMutableList()
         }
 
-    fun addChild(child: Box) {
+    override fun addChild(child: Box) {
         Yoga.YGNodeInsertChild(node, child.node, _children.size)
         _children.add(child)
     }
