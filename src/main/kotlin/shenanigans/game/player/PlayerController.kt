@@ -206,10 +206,6 @@ class PlayerController : System {
                 if (e.componentOpt<SpikeBlock>() != null) {
                     respawn(entity, query)
                 }
-                if (e.componentOpt<GoalBlock>() != null) {
-                    println("CONGRATS YOU PASSED THE LEVEL")
-                    respawn(entity, query)
-                }
             }
 
             // modify properties based off of current surfaces and current jump
@@ -505,6 +501,7 @@ class PlayerController : System {
                 Sprite(TEXTURE.getRegion(), SHAPE_BASE),
                 Collider(SHAPE_BASE, false, tracked = true),
                 player,
+                Player(),
                 Synchronized()
             )
         }

@@ -3,9 +3,10 @@ package shenanigans.game.server
 import shenanigans.engine.HeadlessEngine
 import shenanigans.engine.net.Network
 import shenanigans.engine.net.Server
+import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
-import shenanigans.game.level.BuildLevelSystem
 import shenanigans.game.RegistrySystem
+import shenanigans.game.level.BuildLevelSystem
 import shenanigans.game.level.block.GoalSystem
 import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.sendables
@@ -26,6 +27,7 @@ fun serverScene(): Scene {
         defaultSystems.add(ServerConnectionSystem())
         defaultSystems.add(ServerRegistrationSystem())
         defaultSystems.add(GoalSystem())
+        defaultSystems.add(CollisionSystem())
 
         defaultSystems.add(PlayerManagementSystem())
 

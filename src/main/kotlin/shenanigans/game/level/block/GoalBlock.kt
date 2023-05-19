@@ -7,6 +7,7 @@ import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.texture.TextureManager
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
+import shenanigans.engine.term.Logger
 import shenanigans.engine.util.shapes.Polygon
 import shenanigans.game.player.Player
 import kotlin.reflect.KClass
@@ -34,13 +35,14 @@ class GoalSystem : System {
 
         eventQueues.own.receive(CollisionEvent::class)
             .filter {
+                (entities[it.target] != null && entities[it.with] != null) &&
+                (
                     entities[it.target]!!.componentOpt<Player>() != null &&
                     entities[it.with]!!.componentOpt<GoalBlock>() != null
-                    ||
-                    entities[it.target]!!.componentOpt<Player>() != null &&
-                    entities[it.target]!!.componentOpt<GoalBlock>() != null
+                )
             }
             .forEach { _ ->
+                Logger.log("test", "test")
                 entities.filter { it.componentOpt<Modifiable>() != null }.forEach {
                     lifecycle.del(it.id)
                 }
