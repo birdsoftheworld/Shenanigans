@@ -13,19 +13,22 @@ open class Text : ColoredBox() {
     var text: String = ""
         set(value) {
             field = value
-            updateLayout()
+            size = Vector2f(
+                bmFont.measureText(text),
+                bmFont.verticalMetrics.ascent + bmFont.verticalMetrics.descent
+            )
         }
 
     var fontSize: Float = 16f
-    private lateinit var bmFont: BitmapFont
+        set(value) {
+            field = value
+            bmFont = notoSans.createSized(fontSize)
+        }
+    private var bmFont: BitmapFont
 
     var backgroundColor: Color? = null
 
     init {
-        updateLayout()
-    }
-
-    private fun updateLayout() {
         bmFont = notoSans.createSized(fontSize)
         size = Vector2f(
             bmFont.measureText(text),
@@ -33,7 +36,7 @@ open class Text : ColoredBox() {
         )
     }
 
-    override fun render(resources: ResourcesView, layout: Layout) {
+    override fun render(resources: ResourcesView, layout: Layout, z: Float) {
         val camera = resources.get<CameraResource>().camera!!
 
         if (backgroundColor !== null) {
@@ -41,7 +44,7 @@ open class Text : ColoredBox() {
 
             shapeRenderer.start()
             shapeRenderer.projection = camera.computeProjectionMatrix()
-            shapeRenderer.rect(layout.position.x(), layout.position.y(), layout.size.x(), layout.size.y(), color!!)
+            shapeRenderer.rect(layout.position.x(), layout.position.y(), z, layout.size.x(), layout.size.y(), color!!)
             shapeRenderer.end()
         }
 
@@ -55,7 +58,8 @@ open class Text : ColoredBox() {
                 bmFont,
                 text,
                 layout.position.x().toInt(),
-                (layout.position.y() + bmFont.verticalMetrics.ascent).toInt()
+                (layout.position.y() + bmFont.verticalMetrics.ascent).toInt(),
+                z
             )
             fontRenderer.end()
         }

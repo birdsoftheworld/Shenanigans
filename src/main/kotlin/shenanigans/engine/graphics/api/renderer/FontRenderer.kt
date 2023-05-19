@@ -24,7 +24,7 @@ class FontRenderer : TextureRenderer() {
                 }
             """.trimIndent()
 
-    fun drawText(font: BitmapFont, text: String, posX: Int, posY: Int) {
-        font.drawToFontRenderer(text, posX, posY, this)
+    fun drawText(font: BitmapFont, text: String, posX: Int, posY: Int, posZ: Float) {
+        font.drawToFontRenderer(text, posX, posY, posZ, this)
     }
 }
