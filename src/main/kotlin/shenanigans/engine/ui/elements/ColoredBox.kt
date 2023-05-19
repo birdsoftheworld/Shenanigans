@@ -8,14 +8,14 @@ import shenanigans.engine.util.camera.CameraResource
 open class ColoredBox : Box() {
     var color: Color? = null
 
-    override fun render(resources: ResourcesView, layout: Layout) {
+    override fun render(resources: ResourcesView, layout: Layout, z: Float) {
         if (color !== null) {
             val shapeRenderer = resources.get<ShapeRendererResource>().shapeRenderer
             val camera = resources.get<CameraResource>().camera!!
 
             shapeRenderer.start()
             shapeRenderer.projection = camera.computeProjectionMatrix()
-            shapeRenderer.rect(layout.position.x(), layout.position.y(), layout.size.x(), layout.size.y(), color!!)
+            shapeRenderer.rect(layout.position.x(), layout.position.y(), z, layout.size.x(), layout.size.y(), color!!)
             shapeRenderer.end()
         }
     }

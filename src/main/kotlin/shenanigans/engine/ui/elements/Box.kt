@@ -31,12 +31,14 @@ open class Box : AutoCloseable {
         _children.forEach { child -> Yoga.YGNodeFree(child.node) }
     }
 
-    open fun render(resources: ResourcesView, layout: Layout) {}
+    open fun render(resources: ResourcesView, layout: Layout, z: Float) {}
 
-    fun renderRecursive(resources: ResourcesView, parentLayout: Layout) {
+    fun renderRecursive(resources: ResourcesView, parentLayout: Layout, parentZ: Float) {
         val layout = getLayout(parentLayout)
-        render(resources, layout)
-        _children.forEach { child -> child.renderRecursive(resources, layout) }
+        val z = parentZ + 1f
+
+        render(resources, layout, z)
+        _children.forEach { child -> child.renderRecursive(resources, layout, z) }
     }
 
     data class Layout(val position: Vector2f, val size: Vector2f)

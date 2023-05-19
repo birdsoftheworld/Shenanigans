@@ -94,7 +94,7 @@ class BitmapFont internal constructor(
         }
     }
 
-    fun drawToFontRenderer(text: String, posX: Int, posY: Int, renderer: FontRenderer) {
+    fun drawToFontRenderer(text: String, posX: Int, posY: Int, posZ: Float, renderer: FontRenderer) {
         val scale = stbtt_ScaleForPixelHeight(info, height)
 
         stackPush().use { stack ->
@@ -115,7 +115,7 @@ class BitmapFont internal constructor(
                 val texWidth = quad.s1() - quad.s0()
                 val texHeight = quad.t1() - quad.t0()
                 renderer.textureRect(
-                    quad.x0() + posX, quad.y0() + posY, width, height, bmpTexture.getRegion(
+                    quad.x0() + posX, quad.y0() + posY, posZ, width, height, bmpTexture.getRegion(
                         quad.s0(), quad.t0(), texWidth, texHeight
                     )
                 )

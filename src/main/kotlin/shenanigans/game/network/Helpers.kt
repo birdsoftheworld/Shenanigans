@@ -42,6 +42,7 @@ fun sendables(): Set<SendableClass<Any>> {
         SendableClass(NormalBlock::class, instantiator = { NormalBlock(Rectangle(0f, 0f)) }),
         SendableClass(NormalBlock::class),
         SendableClass(OscillatingBlock::class),
+        SendableClass(AccelerationBlock::class),
         SendableClass(RespawnBlock::class),
         SendableClass(IceBlock::class),
         SendableClass(SpikeBlock::class),

@@ -21,10 +21,10 @@ class UISystem : System {
         query(setOf(UIComponent::class)).forEach {
             val ui = it.component<UIComponent>().get()
             ui.root.computeLayout(window.size.toFloat())
-            ui.root.renderRecursive(resources, Box.Layout(Vector2f(), window.size.toFloat()))
+            ui.root.renderRecursive(resources, Box.Layout(Vector2f(), window.size.toFloat()), ui.baseZ)
         }
     }
 }
 
-class UIComponent(var root: Box) : Component
+class UIComponent(var root: Box, var baseZ: Float = 0f) : Component
 

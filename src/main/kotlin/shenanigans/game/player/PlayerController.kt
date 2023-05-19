@@ -197,11 +197,11 @@ class PlayerController : System {
                         }
                     }
                 }
-                if(e.componentOpt<AccelerationBlock>() != null) {
-                    lifecycle.del(e.id)
-                    velocity.mul(player.effectiveProperties.accelerationMultiplier)
-                    velocity.x = velocity.x.coerceAtMost(player.effectiveProperties.terminalVelocity)
-                    velocity.y = velocity.y.coerceAtMost(player.effectiveProperties.terminalVelocity)
+                if(e.componentOpt<AccelerationBlock>() != null){
+                    if(!e.component<AccelerationBlock>().get().used){
+                        velocity.mul(player.effectiveProperties.accelerationMultiplier)
+                        e.component<AccelerationBlock>().get().used = true
+                    }
                 }
                 if (e.componentOpt<SpikeBlock>() != null) {
                     respawn(entity, query)
