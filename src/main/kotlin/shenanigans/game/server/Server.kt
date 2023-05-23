@@ -7,6 +7,7 @@ import shenanigans.engine.physics.CollisionSystem
 import shenanigans.engine.scene.Scene
 import shenanigans.game.RegistrySystem
 import shenanigans.game.level.BuildLevelSystem
+import shenanigans.game.level.block.CrumbleSystem
 import shenanigans.game.level.block.GoalSystem
 import shenanigans.game.level.block.OscillatingBlocksSystem
 import shenanigans.game.network.sendables
@@ -29,8 +30,10 @@ fun serverScene(): Scene {
         defaultSystems.add(GoalSystem())
         defaultSystems.add(CollisionSystem())
 
+
         defaultSystems.add(PlayerManagementSystem())
 
         defaultSystems.add(OscillatingBlocksSystem())
+        defaultSystems.add(CrumbleSystem())
     }
 }

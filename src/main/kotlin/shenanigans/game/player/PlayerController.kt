@@ -205,12 +205,7 @@ class PlayerController : System {
                             e.component<AccelerationBlock>().get().used = true
                         }
                     }
-                    if(e.componentOpt<CrumbleBlock>() != null){
-                        if(!e.component<CrumbleBlock>().get().touched){
-                            timeEventPhysics(2.0, DoSomething(e.id, false))
-                            e.component<CrumbleBlock>().get().touched = true
-                        }
-                    }
+
                     if (e.componentOpt<SpikeBlock>() != null) {
                         respawn(entity, query)
                     }

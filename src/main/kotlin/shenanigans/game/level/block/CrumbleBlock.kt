@@ -25,12 +25,14 @@ class CrumbleBlock : Block() {
     override var solid = true
     override val visualShape = SQUARE_BLOCK_SHAPE
     override val colliderShape: Polygon = SQUARE_BLOCK_SHAPE
-    override var texture = CrumbleBlock.texture
+    override var texture = CrumbleBlock.textureA
 
     var touched = false
 
     companion object {
-        val texture = TextureManager.createTexture(TextureKey("crumble"), "/crumble.png")
+        val textureA = TextureManager.createTexture(TextureKey("crumble"), "/crumble.png")
+        val textureB = TextureManager.createTexture(TextureKey("halfCrumble"), "/halfCrumble.png")
+        val textureC = TextureManager.createTexture(TextureKey("none"), "/none.png")
     }
 }
 
@@ -44,8 +46,17 @@ class CrumbleSystem :System {
         val entities = query(setOf(CrumbleBlock::class))
 
         entities.forEach { entity ->
+            eventQueues.own.receive(CollisionEvent::class).filter {entity.id == it.with}.forEach { event ->
+                if(entity.componentOpt<CrumbleBlock>() != null){
+                    if(!entity.component<CrumbleBlock>().get().touched){
+                        timeEventPhysics(2.0, DoSomething(entity.id, false))
+                        timeEventPhysics(1.0, HalfCrumble(entity.id))
+                        entity.component<CrumbleBlock>().get().touched = true
+                    }
+                }
+            }
             eventQueues.own.receive(HalfCrumble::class).filter {entity.id == it.target}.forEach { event ->
-                entity.component<CrumbleBlock>().get().texture = TextureManager.createTexture(TextureKey("halfCrumble"), "/halfCrumble.png")
+                entity.component<CrumbleBlock>().get().texture = CrumbleBlock.textureB
                 entity.component<Sprite>().get().sprite = entity.component<CrumbleBlock>().get().createSprite().sprite
             }
             eventQueues.own.receive(DoSomething::class).filter {entity.id == it.target}.forEach {event ->
@@ -53,19 +64,21 @@ class CrumbleSystem :System {
                     entity.component<Collider>().get().solid = true
                     entity.component<CrumbleBlock>().get().touched = false
 
-                    entity.component<CrumbleBlock>().get().texture = TextureManager.createTexture(TextureKey("crumble"), "/crumble.png")
+                    entity.component<CrumbleBlock>().get().texture = CrumbleBlock.textureA
                     entity.component<Sprite>().get().sprite = entity.component<CrumbleBlock>().get().createSprite().sprite
                 }
-                else{//make not solid
+                else{//make gone
                     entity.component<Collider>().get().solid = false
                     timeEventPhysics(3.0, DoSomething(entity.id,true))
                     timeEventPhysics(2.0, HalfCrumble(entity.id))
 
-                    entity.component<CrumbleBlock>().get().texture = TextureManager.createTexture(TextureKey("none"), "/none.png")
+                    entity.component<CrumbleBlock>().get().texture = CrumbleBlock.textureC
                     entity.component<Sprite>().get().sprite = entity.component<CrumbleBlock>().get().createSprite().sprite
                 }
-                entity.component<CrumbleBlock>().mutate()
             }
+            entity.component<CrumbleBlock>().mutate()
+            entity.component<Collider>().mutate()
+            entity.component<Sprite>().mutate()
         }
     }
 }

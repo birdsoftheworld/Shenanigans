@@ -44,7 +44,6 @@ fun testScene(): Scene {
     scene.defaultSystems.add(PlayerController())
     scene.defaultSystems.add(CollisionSystem())
     scene.defaultSystems.add(AccelerationSystem())
-    scene.defaultSystems.add(CrumbleSystem())
     scene.defaultSystems.add(UISystem())
     scene.defaultSystems.add(CameraControlSystem())
     scene.defaultSystems.add(ClientUpdateSystem())

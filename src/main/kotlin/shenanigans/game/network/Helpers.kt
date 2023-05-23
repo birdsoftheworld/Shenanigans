@@ -81,5 +81,5 @@ fun synchronizedComponents(): Set<SynchronizedComponent> {
         SynchronizedComponent(Collider::class),
         SynchronizedComponent(Sprite::class),
         SynchronizedComponent(OscillatingBlock::class),
-    )
+        )
 }
