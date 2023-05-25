@@ -49,8 +49,8 @@ class CrumbleSystem :System {
             eventQueues.own.receive(CollisionEvent::class).filter {entity.id == it.with}.forEach { event ->
                 if(entity.componentOpt<CrumbleBlock>() != null){
                     if(!entity.component<CrumbleBlock>().get().touched){
-                        timeEventPhysics(2.0, DoSomething(entity.id, false))
-                        timeEventPhysics(1.0, HalfCrumble(entity.id))
+                        timeEventPhysics(1.0, DoSomething(entity.id, false))
+                        timeEventPhysics(0.5, HalfCrumble(entity.id))
                         entity.component<CrumbleBlock>().get().touched = true
                     }
                 }
@@ -69,8 +69,8 @@ class CrumbleSystem :System {
                 }
                 else{//make gone
                     entity.component<Collider>().get().solid = false
-                    timeEventPhysics(3.0, DoSomething(entity.id,true))
-                    timeEventPhysics(2.0, HalfCrumble(entity.id))
+                    timeEventPhysics(3.5, DoSomething(entity.id,true))
+                    timeEventPhysics(3.0, HalfCrumble(entity.id))
 
                     entity.component<CrumbleBlock>().get().texture = CrumbleBlock.textureC
                     entity.component<Sprite>().get().sprite = entity.component<CrumbleBlock>().get().createSprite().sprite

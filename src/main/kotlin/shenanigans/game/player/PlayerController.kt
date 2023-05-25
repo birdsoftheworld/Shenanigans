@@ -11,11 +11,11 @@ import shenanigans.engine.events.LocalEventQueue
 import shenanigans.engine.graphics.TextureKey
 import shenanigans.engine.graphics.api.component.Sprite
 import shenanigans.engine.graphics.api.texture.TextureManager
+import shenanigans.engine.graphics.api.texture.TextureRegion
 import shenanigans.engine.net.ClientOnly
 import shenanigans.engine.physics.Collider
 import shenanigans.engine.physics.CollisionEvent
 import shenanigans.engine.physics.Time
-import shenanigans.engine.timer.timeEventPhysics
 import shenanigans.engine.util.Transform
 import shenanigans.engine.util.moveTowards
 import shenanigans.engine.util.raycast
@@ -156,6 +156,7 @@ class PlayerController : System {
                     if (solid) {
                         if (event.normal.y < 0) {
                             player.onGround = true
+                            entity.changeSprite(TEXTURESLAM.getRegion())
                             velocity.y = velocity.y.coerceAtMost(0f)
                             if (e.componentOpt<TrampolineBlock>() != null) {
                                 // defer until later; otherwise, player.onGround would be later set to true
@@ -174,9 +175,11 @@ class PlayerController : System {
                         }
                         if (event.normal.x < 0) {
                             player.wall = WallStatus.Right
+                            entity.changeSprite(TEXTURERIGHTSLIDE.getRegion())
                             velocity.x = velocity.x.coerceAtMost(0f)
                         } else if (event.normal.x > 0) {
                             player.wall = WallStatus.Left
+                            entity.changeSprite(TEXTURELEFTSLIDE.getRegion())
                             velocity.x = velocity.x.coerceAtLeast(0f)
                         }
 
@@ -397,8 +400,15 @@ class PlayerController : System {
             if (player.onWall && sign(velocity.x) == player.wall.sign && !holdingCrouch) {
                 velocity.y = velocity.y.coerceAtMost(properties.wallSlideSpeed)
             }
+            if(!player.onWall){
+                entity.changeSprite(TEXTURE.getRegion())
+            }
 
             velocity.y = velocity.y.coerceAtMost(properties.terminalVelocity)
+            velocity.y = velocity.y.coerceAtLeast(-properties.terminalVelocity)
+
+            velocity.x = velocity.x.coerceAtMost(properties.terminalVelocity)
+            velocity.x = velocity.x.coerceAtLeast(-properties.terminalVelocity)
 
             // movement from moving blocks
             blockMovement.mul(deltaTimeF)
@@ -421,8 +431,16 @@ class PlayerController : System {
         storedCollider.get().polygon = shape
         storedCollider.mutate()
 
+
         val storedSprite = this.component<Sprite>()
         storedSprite.get().rectangle = shape
+        storedSprite.mutate()
+    }
+
+    private fun EntityView.changeSprite(newTexture: TextureRegion) {
+
+        val storedSprite = this.component<Sprite>()
+        storedSprite.get().sprite = newTexture
         storedSprite.mutate()
     }
 
@@ -522,6 +540,9 @@ class PlayerController : System {
         val SHAPE_CROUCHED: Rectangle = Rectangle(40f, 48f)
 
         val TEXTURE = TextureManager.createTexture(TextureKey("player"), "/player.png")
+        val TEXTURESLAM = TextureManager.createTexture(TextureKey("playerSlam"), "/playerSlam.png")
+        val TEXTURERIGHTSLIDE = TextureManager.createTexture(TextureKey("playerRightSlide"), "/playerRightSlide.png")
+        val TEXTURELEFTSLIDE = TextureManager.createTexture(TextureKey("playerLeftSlide"), "/playerLeftSlide.png")
 
         val AUDIO_JUMP = AudioClip.fromFile("/jump.wav")
     }
