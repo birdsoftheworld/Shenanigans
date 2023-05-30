@@ -156,7 +156,7 @@ class PlayerController : System {
                     if (solid) {
                         if (event.normal.y < 0) {
                             player.onGround = true
-                            entity.changeSprite(TEXTURESLAM.getRegion())
+                            entity.changeSprite(TEXTURE.getRegion())
                             velocity.y = velocity.y.coerceAtMost(0f)
                             if (e.componentOpt<TrampolineBlock>() != null) {
                                 // defer until later; otherwise, player.onGround would be later set to true
